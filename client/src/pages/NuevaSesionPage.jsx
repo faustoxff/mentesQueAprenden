@@ -13,6 +13,18 @@ import FileUpload from '../components/ui/FileUpload';
 
 const CONSULTORIOS = [1, 2, 3];
 
+// Borrador de las notas: si la sesión de login vence mientras se escribe, no se pierde lo cargado.
+const claveBorrador = (pacienteId) => `borrador-notas-sesion:${pacienteId}`;
+const leerBorrador = (pacienteId) => {
+  try { return sessionStorage.getItem(claveBorrador(pacienteId)) || ''; } catch { return ''; }
+};
+const guardarBorrador = (pacienteId, texto) => {
+  try {
+    if (texto) sessionStorage.setItem(claveBorrador(pacienteId), texto);
+    else sessionStorage.removeItem(claveBorrador(pacienteId));
+  } catch { /* sessionStorage no disponible: se sigue sin borrador */ }
+};
+
 const TIPOS = [
   { value: 'tratamiento', label: 'Tratamiento' },
   { value: 'evaluacion', label: 'Evaluación' },
@@ -60,6 +72,18 @@ export default function NuevaSesionPage() {
     if (pacienteIdParam && pacientes?.length) setValue('paciente_id', pacienteIdParam);
   }, [pacientes, pacienteIdParam, setValue]);
 
+  // Al abrir el formulario de un paciente que tiene un borrador sin guardar, se restaura.
+  useEffect(() => {
+    if (!pacienteId) return;
+    const borrador = leerBorrador(pacienteId);
+    if (borrador) setNotasLibres((actual) => actual || borrador);
+  }, [pacienteId]);
+
+  const cambiarNotas = (texto) => {
+    setNotasLibres(texto);
+    if (pacienteId) guardarBorrador(pacienteId, texto);
+  };
+
   const { data: paciente } = useQuery({
     queryKey: ['paciente', pacienteId],
     queryFn: () => api.get(`/pacientes/${pacienteId}`).then(r => r.data),
@@ -71,6 +95,7 @@ export default function NuevaSesionPage() {
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['paciente-sesiones', res.data.paciente_id] });
       queryClient.invalidateQueries({ predicate: (q) => String(q.queryKey[0]).includes('turno') });
+      guardarBorrador(res.data.paciente_id, '');
       setSesionCreada(res.data);
     },
     onError: (err) => aplicarErroresAlForm(err, { setError, fallback: 'Error al guardar la sesión' })
@@ -208,7 +233,7 @@ export default function NuevaSesionPage() {
             <label className="text-sm font-medium text-gray-700 block mb-1">Notas libres</label>
             <textarea
               value={notasLibres}
-              onChange={(e) => setNotasLibres(e.target.value)}
+              onChange={(e) => cambiarNotas(e.target.value)}
               rows={5}
               className={`${inputClass} resize-none`}
               placeholder="Escribí las observaciones de la sesión..."
@@ -221,7 +246,7 @@ export default function NuevaSesionPage() {
               tipoSesion={tipoSesion}
               especialidad={profesional?.especialidad}
               notasParciales={notasLibres}
-              onAceptar={(texto) => setNotasLibres(texto)}
+              onAceptar={cambiarNotas}
             />
           )}
         </div>
