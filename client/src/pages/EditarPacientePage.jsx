@@ -58,7 +58,7 @@ export default function EditarPacientePage() {
       queryClient.invalidateQueries({ queryKey: ['paciente', id] });
       queryClient.invalidateQueries({ queryKey: ['pacientes'] });
       toast.success('Cambios guardados');
-      navigate(`/pacientes/${id}`);
+      navigate(`/pacientes/${id}`, { replace: true });
     },
     onError: () => toast.error('Error al guardar los cambios')
   });
@@ -86,7 +86,7 @@ export default function EditarPacientePage() {
   return (
     <div className="p-4 lg:p-6 max-w-3xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-gray-100">
+        <button onClick={() => navigate(`/pacientes/${id}`)} className="p-2 rounded-xl hover:bg-gray-100">
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-2xl font-bold text-gray-900">
@@ -216,7 +216,7 @@ export default function EditarPacientePage() {
         )}
 
         <div className="flex gap-3 pb-8">
-          <button type="button" onClick={() => navigate(-1)} className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
+          <button type="button" onClick={() => navigate(`/pacientes/${id}`)} className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
             Cancelar
           </button>
           <button type="submit" disabled={mutation.isPending} className="flex-1 py-3 bg-primary-600 hover:bg-primary-700 disabled:opacity-60 text-white rounded-xl font-medium">
