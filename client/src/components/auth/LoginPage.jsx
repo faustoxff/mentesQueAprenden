@@ -10,13 +10,17 @@ function ForgotPasswordForm({ onBack }) {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError(null);
     try {
       await api.post('/auth/forgot-password', { email });
       setSent(true);
+    } catch {
+      setError('No pudimos enviar el link, probá de nuevo en unos minutos');
     } finally {
       setLoading(false);
     }
@@ -74,6 +78,18 @@ function ForgotPasswordForm({ onBack }) {
           placeholder="tu@email.com"
         />
       </div>
+      <AnimatePresence>
+        {error && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm overflow-hidden"
+          >
+            {error}
+          </motion.div>
+        )}
+      </AnimatePresence>
       <button
         type="submit"
         disabled={loading}
