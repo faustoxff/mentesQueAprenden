@@ -23,7 +23,7 @@ export default function NuevoPacientePage() {
 
   const mutation = useMutation({
     mutationFn: (data) => api.post('/pacientes', data),
-    onSuccess: (res) => navigate(`/pacientes/${res.data.id}`),
+    onSuccess: (res) => navigate(`/pacientes/${res.data.id}`, { replace: true }),
     onError: (err) => toast.error(err?.response?.data?.error || 'Error al guardar el paciente')
   });
 
@@ -47,7 +47,7 @@ export default function NuevoPacientePage() {
   return (
     <div className="p-4 lg:p-6 max-w-3xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-gray-100">
+        <button onClick={() => navigate('/pacientes')} className="p-2 rounded-xl hover:bg-gray-100">
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-2xl font-bold text-gray-900">Nuevo paciente</h1>
@@ -217,7 +217,7 @@ export default function NuevoPacientePage() {
         <div className="flex gap-3 pb-8">
           <button
             type="button"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/pacientes')}
             className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors"
           >
             Cancelar

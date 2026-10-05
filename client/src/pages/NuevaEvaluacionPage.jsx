@@ -9,6 +9,7 @@ export default function NuevaEvaluacionPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const pacienteIdParam = searchParams.get('paciente_id');
+  const volverA = pacienteIdParam ? `/pacientes/${pacienteIdParam}` : '/';
 
   const { register, handleSubmit, formState: { errors } } = useForm({
     defaultValues: {
@@ -27,7 +28,7 @@ export default function NuevaEvaluacionPage() {
 
   const mutation = useMutation({
     mutationFn: (data) => api.post('/evaluaciones', data),
-    onSuccess: (res) => navigate(`/evaluaciones/${res.data.id}`),
+    onSuccess: (res) => navigate(`/evaluaciones/${res.data.id}`, { replace: true }),
     onError: (err) => toast.error(err.response?.data?.error || 'Error al crear la evaluación')
   });
 
@@ -36,7 +37,7 @@ export default function NuevaEvaluacionPage() {
   return (
     <div className="p-4 lg:p-6 max-w-3xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-gray-100">
+        <button onClick={() => navigate(volverA)} className="p-2 rounded-xl hover:bg-gray-100">
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-2xl font-bold text-gray-900">Nueva evaluación</h1>
@@ -79,7 +80,7 @@ export default function NuevaEvaluacionPage() {
         </p>
 
         <div className="flex gap-3 pb-8">
-          <button type="button" onClick={() => navigate(-1)} className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
+          <button type="button" onClick={() => navigate(volverA)} className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
             Cancelar
           </button>
           <button type="submit" disabled={mutation.isPending} className="flex-1 py-3 bg-primary-600 hover:bg-primary-700 disabled:opacity-60 text-white rounded-xl font-medium">

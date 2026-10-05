@@ -25,6 +25,7 @@ export default function NuevaSesionPage() {
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
   const pacienteIdParam = searchParams.get('paciente_id');
+  const volverA = pacienteIdParam ? `/pacientes/${pacienteIdParam}` : '/';
   const turnoIdParam = searchParams.get('turno_id');
   // Al venir de "Registrar sesión" en un turno, la sesión arranca con los
   // datos de ese turno para que ambos coincidan desde el principio.
@@ -77,7 +78,7 @@ export default function NuevaSesionPage() {
 
   const resumirMutation = useMutation({
     mutationFn: (data) => api.post('/ia/resumir-sesion', data),
-    onSuccess: () => navigate(`/pacientes/${pacienteId}`)
+    onSuccess: () => navigate(`/pacientes/${pacienteId}`, { replace: true })
   });
 
   const onSubmit = ({ monto, consultorio, ...data }) => {
@@ -114,7 +115,7 @@ export default function NuevaSesionPage() {
 
           <div className="flex gap-3">
             <button
-              onClick={() => navigate(`/pacientes/${pacienteId}`)}
+              onClick={() => navigate(`/pacientes/${pacienteId}`, { replace: true })}
               className="flex-1 py-3 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               Saltear
@@ -136,7 +137,7 @@ export default function NuevaSesionPage() {
   return (
     <div className="p-4 lg:p-6 max-w-3xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-gray-100">
+        <button onClick={() => navigate(volverA)} className="p-2 rounded-xl hover:bg-gray-100">
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-2xl font-bold text-gray-900">Nueva sesión</h1>
@@ -230,7 +231,7 @@ export default function NuevaSesionPage() {
         )}
 
         <div className="flex gap-3 pb-8">
-          <button type="button" onClick={() => navigate(-1)} className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
+          <button type="button" onClick={() => navigate(volverA)} className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50">
             Cancelar
           </button>
           <button type="submit" disabled={mutation.isPending} className="flex-1 py-3 bg-primary-600 hover:bg-primary-700 disabled:opacity-60 text-white rounded-xl font-medium">
