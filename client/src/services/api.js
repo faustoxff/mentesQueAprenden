@@ -25,8 +25,9 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Rutas donde un 401 no significa "token vencido": no se intenta renovar la sesión.
-const RUTAS_SIN_REFRESH = ['/auth/logout'];
+// Rutas donde un 401 no significa "token vencido" (credenciales incorrectas, refresh
+// token inválido, etc.): no se intenta renovar la sesión y el error llega tal cual.
+const RUTAS_SIN_REFRESH = ['/auth/login', '/auth/signup', '/auth/refresh', '/auth/forgot-password', '/auth/logout'];
 
 // Con rotación de refresh tokens de Supabase, un refresh_token solo sirve una vez:
 // si varias requests reciben 401 a la vez tiene que haber un único refresh en curso

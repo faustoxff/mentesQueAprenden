@@ -41,6 +41,29 @@ describe('interceptor de api (renovación de sesión)', () => {
     expect(refresh).toHaveBeenCalledWith('/auth/refresh', { refresh_token: 'refresh-1' }, { baseURL: api.defaults.baseURL });
   });
 
+  it('un 401 de /auth/login (contraseña incorrecta) no intenta refresh y conserva el mensaje', async () => {
+    api.defaults.adapter = (config) => Promise.reject(error401(config, { error: 'Credenciales inválidas' }));
+    const refresh = vi.spyOn(axios, 'post');
+
+    const error = await api.post('/auth/login', { email: 'a@b.com', password: 'mala' }).catch((e) => e);
+
+    expect(refresh).not.toHaveBeenCalled();
+    expect(toast.error).not.toHaveBeenCalled();
+    expect(error.response.data.error).toBe('Credenciales inválidas');
+    // la sesión que ya hubiera no se toca
+    expect(useAuthStore.getState().profesional).toEqual({ id: 1 });
+  });
+
+  it('el store muestra "Credenciales inválidas" y la promesa de login no queda en undefined', async () => {
+    api.defaults.adapter = (config) => Promise.reject(error401(config, { error: 'Credenciales inválidas' }));
+    vi.spyOn(axios, 'post');
+
+    const resultado = await useAuthStore.getState().login('a@b.com', 'mala');
+
+    expect(resultado).toEqual({ success: false, error: 'Credenciales inválidas' });
+    expect(useAuthStore.getState().error).toBe('Credenciales inválidas');
+  });
+
   it('guarda los tokens nuevos en localStorage y en el authStore', async () => {
     api.defaults.adapter = backendQueAceptaToken('nuevo');
     vi.spyOn(axios, 'post').mockResolvedValue({ data: { access_token: 'nuevo', refresh_token: 'refresh-2' } });
