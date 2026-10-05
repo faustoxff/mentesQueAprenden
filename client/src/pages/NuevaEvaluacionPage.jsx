@@ -47,7 +47,7 @@ export default function NuevaEvaluacionPage() {
           {!pacienteIdParam && (
             <div>
               <label className="text-sm font-medium text-gray-700 block mb-1">Paciente *</label>
-              <select {...register('paciente_id', { required: 'Requerido' })} className={inputClass}>
+              <select {...register('paciente_id', { required: 'Elegí un paciente' })} className={inputClass}>
                 <option value="">Seleccionar paciente</option>
                 {pacientes?.map(p => (
                   <option key={p.id} value={p.id}>{p.apellido}, {p.nombre} — DNI {p.dni}</option>
@@ -59,7 +59,7 @@ export default function NuevaEvaluacionPage() {
 
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-1">Fecha de evaluación *</label>
-            <input type="date" {...register('fecha_evaluacion', { required: 'Requerido' })} className={inputClass} />
+            <input type="date" {...register('fecha_evaluacion', { required: 'La fecha de evaluación es obligatoria' })} className={inputClass} />
             {errors.fecha_evaluacion && <p className="text-xs text-red-500 mt-1">{errors.fecha_evaluacion.message}</p>}
           </div>
 

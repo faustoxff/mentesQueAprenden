@@ -150,7 +150,7 @@ export default function NuevaSesionPage() {
           <div>
             <label className="text-sm font-medium text-gray-700 block mb-1">Paciente *</label>
             <select
-              {...register('paciente_id', { required: 'Requerido' })}
+              {...register('paciente_id', { required: 'Elegí un paciente' })}
               className={inputClass}
             >
               <option value="">Seleccionar paciente</option>
@@ -164,17 +164,20 @@ export default function NuevaSesionPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-gray-700 block mb-1">Fecha y hora *</label>
-              <input type="datetime-local" {...register('fecha', { required: 'Requerido' })} className={inputClass} />
+              <input type="datetime-local" {...register('fecha', { required: 'La fecha y hora son obligatorias' })} className={inputClass} />
+              {errors.fecha && <p className="text-xs text-red-500 mt-1">{errors.fecha.message}</p>}
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Tipo de sesión</label>
-              <select {...register('tipo')} className={inputClass}>
+              <label className="text-sm font-medium text-gray-700 block mb-1">Tipo de sesión *</label>
+              <select {...register('tipo', { required: 'Elegí el tipo de sesión' })} className={inputClass}>
                 {TIPOS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
+              {errors.tipo && <p className="text-xs text-red-500 mt-1">{errors.tipo.message}</p>}
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 block mb-1">Duración (min)</label>
               <input type="number" {...register('duracion_minutos')} min={15} max={480} step={5} className={inputClass} />
+              {errors.duracion_minutos && <p className="text-xs text-red-500 mt-1">{errors.duracion_minutos.message}</p>}
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 block mb-1">Consultorio</label>
@@ -185,7 +188,8 @@ export default function NuevaSesionPage() {
             </div>
             <div>
               <label className="text-sm font-medium text-gray-700 block mb-1">Monto ($)</label>
-              <input type="number" {...register('monto')} min={0} step={100} className={inputClass} placeholder="0" />
+              <input type="number" {...register('monto', { min: { value: 0, message: 'El monto debe ser un número mayor o igual a 0' } })} min={0} step={100} className={inputClass} placeholder="0" />
+              {errors.monto && <p className="text-xs text-red-500 mt-1">{errors.monto.message}</p>}
             </div>
           </div>
         </div>

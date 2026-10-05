@@ -60,14 +60,14 @@ export default function NuevoPacientePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Nombre" required error={errors.nombre}>
               <input
-                {...register('nombre', { required: 'Requerido' })}
+                {...register('nombre', { required: 'El nombre es obligatorio' })}
                 className={inputClass(errors.nombre)}
                 placeholder="Nombre"
               />
             </Field>
             <Field label="Apellido" required error={errors.apellido}>
               <input
-                {...register('apellido', { required: 'Requerido' })}
+                {...register('apellido', { required: 'El apellido es obligatorio' })}
                 className={inputClass(errors.apellido)}
                 placeholder="Apellido"
               />
@@ -75,8 +75,8 @@ export default function NuevoPacientePage() {
             <Field label="DNI" required error={errors.dni}>
               <input
                 {...register('dni', {
-                  required: 'Requerido',
-                  pattern: { value: /^\d{7,8}$/, message: '7 u 8 dígitos' }
+                  required: 'El DNI es obligatorio',
+                  pattern: { value: /^\d{7,8}$/, message: 'El DNI debe tener 7 u 8 dígitos, sin puntos ni espacios' }
                 })}
                 className={inputClass(errors.dni)}
                 placeholder="30123456"
@@ -86,7 +86,7 @@ export default function NuevoPacientePage() {
             <Field label="Fecha de nacimiento" required error={errors.fecha_nacimiento}>
               <input
                 type="date"
-                {...register('fecha_nacimiento', { required: 'Requerido' })}
+                {...register('fecha_nacimiento', { required: 'La fecha de nacimiento es obligatoria' })}
                 className={inputClass(errors.fecha_nacimiento)}
               />
             </Field>
@@ -116,8 +116,8 @@ export default function NuevoPacientePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Teléfono" error={errors.telefono}>
               <input
-                {...register('telefono')}
-                className={inputClass(false)}
+                {...register('telefono', { pattern: { value: /^[\d\s()+-]{8,20}$/, message: 'El teléfono debe tener entre 8 y 20 caracteres: solo números, espacios, +, ( ) o -' } })}
+                className={inputClass(errors.telefono)}
                 placeholder="11 1234-5678"
                 inputMode="tel"
               />
@@ -155,7 +155,7 @@ export default function NuevoPacientePage() {
               <input {...register('responsable_nombre')} className={inputClass(false)} />
             </Field>
             <Field label="Teléfono" error={errors.responsable_telefono}>
-              <input {...register('responsable_telefono')} className={inputClass(false)} inputMode="tel" />
+              <input {...register('responsable_telefono', { pattern: { value: /^[\d\s()+-]{8,20}$/, message: 'El teléfono debe tener entre 8 y 20 caracteres: solo números, espacios, +, ( ) o -' } })} className={inputClass(errors.responsable_telefono)} inputMode="tel" />
             </Field>
             <Field label="Vínculo" error={errors.responsable_vinculo}>
               <select {...register('responsable_vinculo')} className={inputClass(false)}>
@@ -193,7 +193,7 @@ export default function NuevoPacientePage() {
           <h2 className="font-semibold text-gray-900">Información clínica</h2>
           <Field label="Profesional asignado" required error={errors.profesional_principal_id}>
             <select
-              {...register('profesional_principal_id', { required: 'Requerido' })}
+              {...register('profesional_principal_id', { required: 'Elegí el profesional asignado' })}
               className={inputClass(errors.profesional_principal_id)}
             >
               <option value="">Seleccionar profesional</option>
