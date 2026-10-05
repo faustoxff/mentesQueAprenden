@@ -249,6 +249,7 @@ function AgendaCard({ grow, expanded, onToggle, turnosHoy, consultoriosHoy, onOp
             <button
               onClick={() => setMesActual(m => subMonths(m, 1))}
               className="w-7 h-7 rounded-full border border-gray-200 hover:bg-primary-50 hover:border-primary-500 flex items-center justify-center text-gray-600 transition-all"
+              aria-label="Mes anterior"
             >
               <ChevronLeft size={15} />
             </button>
@@ -258,6 +259,7 @@ function AgendaCard({ grow, expanded, onToggle, turnosHoy, consultoriosHoy, onOp
             <button
               onClick={() => setMesActual(m => addMonths(m, 1))}
               className="w-7 h-7 rounded-full border border-gray-200 hover:bg-primary-50 hover:border-primary-500 flex items-center justify-center text-gray-600 transition-all"
+              aria-label="Mes siguiente"
             >
               <ChevronRight size={15} />
             </button>

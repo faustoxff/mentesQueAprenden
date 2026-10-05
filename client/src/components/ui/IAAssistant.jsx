@@ -62,7 +62,7 @@ export default function IAAssistant({ pacienteId, sesionId, tipoSesion, especial
               <Sparkles size={13} />
               Sugerencia de IA — revisá antes de aceptar
             </div>
-            <button onClick={() => setEstado('idle')} className="text-primary-400 hover:text-primary-600">
+            <button onClick={() => setEstado('idle')} aria-label="Descartar sugerencia" className="text-primary-400 hover:text-primary-600">
               <X size={14} />
             </button>
           </div>

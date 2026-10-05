@@ -10,6 +10,7 @@ import { useAuthStore } from '../store/authStore';
 import IAAssistant from '../components/ui/IAAssistant';
 import FileUpload from '../components/ui/FileUpload';
 import Modal from '../components/ui/Modal';
+import { aplicarErroresAlForm } from '../utils/errores';
 
 const TIPO_LABEL = {
   evaluacion: 'Evaluación', tratamiento: 'Tratamiento',
@@ -94,7 +95,7 @@ export default function SesionDetallePage() {
       setEditando(false);
       toast.success('Cambios guardados');
     },
-    onError: (err) => toast.error(err.response?.data?.error || 'Error al guardar los cambios')
+    onError: (err) => aplicarErroresAlForm(err, { fallback: 'Error al guardar los cambios' })
   });
 
   const resumirMutation = useMutation({
@@ -125,7 +126,7 @@ export default function SesionDetallePage() {
   return (
     <div className="p-4 lg:p-6 max-w-3xl mx-auto">
       <div className="flex items-center gap-3 mb-4">
-        <button onClick={() => navigate(sesion?.paciente_id ? `/pacientes/${sesion.paciente_id}` : '/')} className="p-2 rounded-xl hover:bg-gray-100">
+        <button onClick={() => navigate(sesion?.paciente_id ? `/pacientes/${sesion.paciente_id}` : '/')} className="p-2 rounded-xl hover:bg-gray-100" aria-label="Volver">
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1 min-w-0">

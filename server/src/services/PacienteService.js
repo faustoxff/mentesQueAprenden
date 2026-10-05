@@ -1,5 +1,7 @@
 const { supabaseAdmin } = require('../config/supabase');
 
+const CAMPOS_UUID = ['obra_social_id', 'profesional_principal_id'];
+
 class PacienteService {
   // ─────────────────────────────────────────────────────────────
   // Pacientes
@@ -68,8 +70,9 @@ class PacienteService {
       'profesional_principal_id', 'responsable_nombre', 'responsable_vinculo',
       'responsable_telefono'
     ];
+    // Un <select> sin elegir llega como "": en una columna UUID eso rompe el insert.
     const insertData = Object.fromEntries(
-      Object.entries(body).filter(([k]) => CAMPOS_CREABLES.includes(k))
+      Object.entries(body).filter(([k, v]) => CAMPOS_CREABLES.includes(k) && !(CAMPOS_UUID.includes(k) && v === ''))
     );
 
     const { data, error } = await db
@@ -108,6 +111,9 @@ class PacienteService {
     const updateData = Object.fromEntries(
       Object.entries(body).filter(([k]) => CAMPOS_EDITABLES.includes(k))
     );
+    // "" en una columna UUID: sin obra social se guarda null; sin profesional se deja el actual.
+    if (updateData.obra_social_id === '') updateData.obra_social_id = null;
+    if (updateData.profesional_principal_id === '') delete updateData.profesional_principal_id;
 
     const { data, error } = await db
       .from('pacientes')

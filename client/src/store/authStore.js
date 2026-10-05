@@ -57,6 +57,13 @@ export const useAuthStore = create(
         }
       },
 
+      // Lo usa el interceptor de api.js al renovar la sesión: mantiene store y localStorage sincronizados.
+      setTokens: (accessToken, refreshToken) => {
+        localStorage.setItem('access_token', accessToken);
+        localStorage.setItem('refresh_token', refreshToken);
+        set({ accessToken, refreshToken });
+      },
+
       logout: async () => {
         try { await api.post('/auth/logout'); } catch {}
         localStorage.removeItem('access_token');

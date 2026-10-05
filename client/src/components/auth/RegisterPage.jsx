@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useId } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Eye, EyeOff, Mail, Lock, User, Loader2, ArrowLeft } from 'lucide-react';
@@ -12,6 +12,7 @@ const ESPECIALIDADES = [
 ];
 
 export default function RegisterPage() {
+  const uid = useId();
   const [form, setForm] = useState({
     nombre: '', apellido: '', email: '', password: '',
     especialidad: 'psicopedagogia', matricula: ''
@@ -55,31 +56,32 @@ export default function RegisterPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Nombre</label>
+              <label htmlFor={`${uid}-nombre`} className="block text-sm font-medium text-gray-700 mb-1.5">Nombre</label>
               <div className="relative">
                 <User size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input value={form.nombre} onChange={set('nombre')} required autoFocus className={inputClass} placeholder="Florencia" />
+                <input id={`${uid}-nombre`} value={form.nombre} onChange={set('nombre')} required autoFocus className={inputClass} placeholder="Florencia" />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Apellido</label>
-              <input value={form.apellido} onChange={set('apellido')} required className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-shadow" placeholder="García" />
+              <label htmlFor={`${uid}-apellido`} className="block text-sm font-medium text-gray-700 mb-1.5">Apellido</label>
+              <input id={`${uid}-apellido`} value={form.apellido} onChange={set('apellido')} required className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-shadow" placeholder="García" />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+            <label htmlFor={`${uid}-email`} className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
             <div className="relative">
               <Mail size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input type="email" value={form.email} onChange={set('email')} required autoComplete="email" className={inputClass} placeholder="tu@email.com" />
+              <input id={`${uid}-email`} type="email" value={form.email} onChange={set('email')} required autoComplete="email" className={inputClass} placeholder="tu@email.com" />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Contraseña</label>
+            <label htmlFor={`${uid}-password`} className="block text-sm font-medium text-gray-700 mb-1.5">Contraseña</label>
             <div className="relative">
               <Lock size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
               <input
+                id={`${uid}-password`}
                 type={showPassword ? 'text' : 'password'}
                 value={form.password}
                 onChange={set('password')}
@@ -93,7 +95,7 @@ export default function RegisterPage() {
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
                 className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                tabIndex={-1}
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
               >
                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
@@ -102,8 +104,9 @@ export default function RegisterPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Especialidad</label>
+              <label htmlFor={`${uid}-especialidad`} className="block text-sm font-medium text-gray-700 mb-1.5">Especialidad</label>
               <select
+                id={`${uid}-especialidad`}
                 value={form.especialidad}
                 onChange={set('especialidad')}
                 className="w-full px-3 py-3 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-shadow"
@@ -112,8 +115,8 @@ export default function RegisterPage() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Matrícula</label>
-              <input value={form.matricula} onChange={set('matricula')} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-shadow" placeholder="Opcional" />
+              <label htmlFor={`${uid}-matricula`} className="block text-sm font-medium text-gray-700 mb-1.5">Matrícula</label>
+              <input id={`${uid}-matricula`} value={form.matricula} onChange={set('matricula')} className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-transparent transition-shadow" placeholder="Opcional" />
             </div>
           </div>
 

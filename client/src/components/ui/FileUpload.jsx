@@ -135,7 +135,7 @@ export default function FileUpload({ pacienteId, sesionId, onSubido }) {
                 {item.estado === 'ok' && <CheckCircle size={16} className="text-green-500" />}
                 {item.estado === 'error' && <span className="text-xs text-red-500">{item.error}</span>}
                 {item.estado === 'pendiente' && (
-                  <button onClick={() => remover(item.file)} className="text-gray-400 hover:text-red-500">
+                  <button onClick={() => remover(item.file)} aria-label="Quitar archivo" className="text-gray-400 hover:text-red-500">
                     <X size={16} />
                   </button>
                 )}

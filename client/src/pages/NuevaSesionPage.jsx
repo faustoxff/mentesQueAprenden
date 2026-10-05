@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useId } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -6,11 +6,24 @@ import { format } from 'date-fns';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../services/api';
+import { aplicarErroresAlForm, getErrorMessage } from '../utils/errores';
 import { useAuthStore } from '../store/authStore';
 import IAAssistant from '../components/ui/IAAssistant';
 import FileUpload from '../components/ui/FileUpload';
 
 const CONSULTORIOS = [1, 2, 3];
+
+// Borrador de las notas: si la sesión de login vence mientras se escribe, no se pierde lo cargado.
+const claveBorrador = (pacienteId) => `borrador-notas-sesion:${pacienteId}`;
+const leerBorrador = (pacienteId) => {
+  try { return sessionStorage.getItem(claveBorrador(pacienteId)) || ''; } catch { return ''; }
+};
+const guardarBorrador = (pacienteId, texto) => {
+  try {
+    if (texto) sessionStorage.setItem(claveBorrador(pacienteId), texto);
+    else sessionStorage.removeItem(claveBorrador(pacienteId));
+  } catch { /* sessionStorage no disponible: se sigue sin borrador */ }
+};
 
 const TIPOS = [
   { value: 'tratamiento', label: 'Tratamiento' },
@@ -21,6 +34,7 @@ const TIPOS = [
 ];
 
 export default function NuevaSesionPage() {
+  const uid = useId();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
@@ -36,7 +50,7 @@ export default function NuevaSesionPage() {
 
   // datetime-local trabaja en hora local: el valor por defecto tiene que
   // estar en hora local (no UTC) y se convierte a UTC recién al enviar.
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
+  const { register, handleSubmit, watch, setValue, setError, formState: { errors } } = useForm({
     defaultValues: {
       paciente_id: pacienteIdParam || '',
       tipo: searchParams.get('tipo') || 'tratamiento',
@@ -60,6 +74,18 @@ export default function NuevaSesionPage() {
     if (pacienteIdParam && pacientes?.length) setValue('paciente_id', pacienteIdParam);
   }, [pacientes, pacienteIdParam, setValue]);
 
+  // Al abrir el formulario de un paciente que tiene un borrador sin guardar, se restaura.
+  useEffect(() => {
+    if (!pacienteId) return;
+    const borrador = leerBorrador(pacienteId);
+    if (borrador) setNotasLibres((actual) => actual || borrador);
+  }, [pacienteId]);
+
+  const cambiarNotas = (texto) => {
+    setNotasLibres(texto);
+    if (pacienteId) guardarBorrador(pacienteId, texto);
+  };
+
   const { data: paciente } = useQuery({
     queryKey: ['paciente', pacienteId],
     queryFn: () => api.get(`/pacientes/${pacienteId}`).then(r => r.data),
@@ -71,9 +97,10 @@ export default function NuevaSesionPage() {
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['paciente-sesiones', res.data.paciente_id] });
       queryClient.invalidateQueries({ predicate: (q) => String(q.queryKey[0]).includes('turno') });
+      guardarBorrador(res.data.paciente_id, '');
       setSesionCreada(res.data);
     },
-    onError: (err) => toast.error(err?.response?.data?.error || 'Error al guardar la sesión')
+    onError: (err) => aplicarErroresAlForm(err, { setError, fallback: 'Error al guardar la sesión' })
   });
 
   const resumirMutation = useMutation({
@@ -137,7 +164,7 @@ export default function NuevaSesionPage() {
   return (
     <div className="p-4 lg:p-6 max-w-3xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate(volverA)} className="p-2 rounded-xl hover:bg-gray-100">
+        <button onClick={() => navigate(volverA)} className="p-2 rounded-xl hover:bg-gray-100" aria-label="Volver">
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-2xl font-bold text-gray-900">Nueva sesión</h1>
@@ -148,9 +175,10 @@ export default function NuevaSesionPage() {
         <div className="bg-white rounded-2xl p-5 border border-gray-100 space-y-4">
           <h2 className="font-semibold text-gray-900">Datos de la sesión</h2>
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Paciente *</label>
+            <label htmlFor={`${uid}-paciente`} className="text-sm font-medium text-gray-700 block mb-1">Paciente *</label>
             <select
-              {...register('paciente_id', { required: 'Requerido' })}
+              id={`${uid}-paciente`}
+              {...register('paciente_id', { required: 'Elegí un paciente' })}
               className={inputClass}
             >
               <option value="">Seleccionar paciente</option>
@@ -163,29 +191,33 @@ export default function NuevaSesionPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Fecha y hora *</label>
-              <input type="datetime-local" {...register('fecha', { required: 'Requerido' })} className={inputClass} />
+              <label htmlFor={`${uid}-fecha`} className="text-sm font-medium text-gray-700 block mb-1">Fecha y hora *</label>
+              <input id={`${uid}-fecha`} type="datetime-local" {...register('fecha', { required: 'La fecha y hora son obligatorias' })} className={inputClass} />
+              {errors.fecha && <p className="text-xs text-red-500 mt-1">{errors.fecha.message}</p>}
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Tipo de sesión</label>
-              <select {...register('tipo')} className={inputClass}>
+              <label htmlFor={`${uid}-tipo`} className="text-sm font-medium text-gray-700 block mb-1">Tipo de sesión *</label>
+              <select id={`${uid}-tipo`} {...register('tipo', { required: 'Elegí el tipo de sesión' })} className={inputClass}>
                 {TIPOS.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
+              {errors.tipo && <p className="text-xs text-red-500 mt-1">{errors.tipo.message}</p>}
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Duración (min)</label>
-              <input type="number" {...register('duracion_minutos')} min={15} max={480} step={5} className={inputClass} />
+              <label htmlFor={`${uid}-duracion`} className="text-sm font-medium text-gray-700 block mb-1">Duración (min)</label>
+              <input id={`${uid}-duracion`} type="number" {...register('duracion_minutos')} min={15} max={480} step={5} className={inputClass} />
+              {errors.duracion_minutos && <p className="text-xs text-red-500 mt-1">{errors.duracion_minutos.message}</p>}
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Consultorio</label>
-              <select {...register('consultorio')} className={inputClass}>
+              <label htmlFor={`${uid}-consultorio`} className="text-sm font-medium text-gray-700 block mb-1">Consultorio</label>
+              <select id={`${uid}-consultorio`} {...register('consultorio')} className={inputClass}>
                 {CONSULTORIOS.map(n => <option key={n} value={n}>Consultorio {n}</option>)}
                 <option value="">Sin consultorio</option>
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Monto ($)</label>
-              <input type="number" {...register('monto')} min={0} step={100} className={inputClass} placeholder="0" />
+              <label htmlFor={`${uid}-monto`} className="text-sm font-medium text-gray-700 block mb-1">Monto ($)</label>
+              <input id={`${uid}-monto`} type="number" {...register('monto', { min: { value: 0, message: 'El monto debe ser un número mayor o igual a 0' } })} min={0} step={100} className={inputClass} placeholder="0" />
+              {errors.monto && <p className="text-xs text-red-500 mt-1">{errors.monto.message}</p>}
             </div>
           </div>
         </div>
@@ -201,10 +233,11 @@ export default function NuevaSesionPage() {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Notas libres</label>
+            <label htmlFor={`${uid}-notas`} className="text-sm font-medium text-gray-700 block mb-1">Notas libres</label>
             <textarea
+              id={`${uid}-notas`}
               value={notasLibres}
-              onChange={(e) => setNotasLibres(e.target.value)}
+              onChange={(e) => cambiarNotas(e.target.value)}
               rows={5}
               className={`${inputClass} resize-none`}
               placeholder="Escribí las observaciones de la sesión..."
@@ -217,7 +250,7 @@ export default function NuevaSesionPage() {
               tipoSesion={tipoSesion}
               especialidad={profesional?.especialidad}
               notasParciales={notasLibres}
-              onAceptar={(texto) => setNotasLibres(texto)}
+              onAceptar={cambiarNotas}
             />
           )}
         </div>

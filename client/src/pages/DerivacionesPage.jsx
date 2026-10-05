@@ -116,7 +116,7 @@ export default function DerivacionesPage() {
     <div className="p-4 lg:p-6 max-w-4xl mx-auto">
       <div className="flex items-center justify-between mb-6 gap-3">
         <div className="flex items-center gap-3">
-          <button onClick={() => navigate('/')} className="p-2 rounded-xl hover:bg-gray-100">
+          <button onClick={() => navigate('/')} className="p-2 rounded-xl hover:bg-gray-100" aria-label="Volver">
             <ArrowLeft size={20} />
           </button>
           <h1 className="text-2xl font-bold text-gray-900">Derivaciones</h1>

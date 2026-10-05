@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useId, cloneElement } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../services/api';
+import { aplicarErroresAlForm, getErrorMessage } from '../utils/errores';
 
 export default function EditarPacientePage() {
   const { id } = useParams();
@@ -26,7 +27,7 @@ export default function EditarPacientePage() {
     queryFn: () => api.get('/obras-sociales').then(r => r.data)
   });
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset, setError, formState: { errors } } = useForm();
 
   useEffect(() => {
     if (paciente) {
@@ -60,20 +61,23 @@ export default function EditarPacientePage() {
       toast.success('Cambios guardados');
       navigate(`/pacientes/${id}`, { replace: true });
     },
-    onError: () => toast.error('Error al guardar los cambios')
+    onError: (err) => aplicarErroresAlForm(err, { setError, fallback: 'Error al guardar los cambios' })
   });
 
   const onSubmit = (data) => mutation.mutate(data);
 
-  const Field = ({ label, error, required, children }) => (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      {children}
-      {error && <p className="text-red-500 text-xs mt-1">{error.message}</p>}
-    </div>
-  );
+  const Field = ({ label, error, required, children }) => {
+    const id = useId();
+    return (
+      <div>
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+        {cloneElement(children, { id })}
+        {error && <p className="text-red-500 text-xs mt-1">{error.message}</p>}
+      </div>
+    );
+  };
 
   const inputClass = (hasError) =>
     `w-full px-3 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm ${
@@ -86,7 +90,7 @@ export default function EditarPacientePage() {
   return (
     <div className="p-4 lg:p-6 max-w-3xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate(`/pacientes/${id}`)} className="p-2 rounded-xl hover:bg-gray-100">
+        <button onClick={() => navigate(`/pacientes/${id}`)} className="p-2 rounded-xl hover:bg-gray-100" aria-label="Volver">
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-2xl font-bold text-gray-900">
@@ -99,20 +103,20 @@ export default function EditarPacientePage() {
           <h2 className="font-semibold text-gray-900">Datos personales</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field label="Nombre" required error={errors.nombre}>
-              <input {...register('nombre', { required: 'Requerido' })} className={inputClass(errors.nombre)} />
+              <input {...register('nombre', { required: 'El nombre es obligatorio' })} className={inputClass(errors.nombre)} />
             </Field>
             <Field label="Apellido" required error={errors.apellido}>
-              <input {...register('apellido', { required: 'Requerido' })} className={inputClass(errors.apellido)} />
+              <input {...register('apellido', { required: 'El apellido es obligatorio' })} className={inputClass(errors.apellido)} />
             </Field>
             <Field label="DNI" required error={errors.dni}>
               <input
-                {...register('dni', { required: 'Requerido', pattern: { value: /^\d{7,8}$/, message: '7 u 8 dígitos' } })}
+                {...register('dni', { required: 'El DNI es obligatorio', pattern: { value: /^\d{7,8}$/, message: 'El DNI debe tener 7 u 8 dígitos, sin puntos ni espacios' } })}
                 className={inputClass(errors.dni)}
                 inputMode="numeric"
               />
             </Field>
             <Field label="Fecha de nacimiento" required error={errors.fecha_nacimiento}>
-              <input type="date" {...register('fecha_nacimiento', { required: 'Requerido' })} className={inputClass(errors.fecha_nacimiento)} />
+              <input type="date" {...register('fecha_nacimiento', { required: 'La fecha de nacimiento es obligatoria' })} className={inputClass(errors.fecha_nacimiento)} />
             </Field>
             <Field label="Género">
               <select {...register('genero')} className={inputClass(false)}>
@@ -137,8 +141,8 @@ export default function EditarPacientePage() {
         <section className="bg-white rounded-2xl p-5 border border-gray-100 space-y-4">
           <h2 className="font-semibold text-gray-900">Contacto</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Field label="Teléfono">
-              <input {...register('telefono')} className={inputClass(false)} inputMode="tel" />
+            <Field label="Teléfono" error={errors.telefono}>
+              <input {...register('telefono', { pattern: { value: /^[\d\s()+-]{8,20}$/, message: 'El teléfono debe tener entre 8 y 20 caracteres: solo números, espacios, +, ( ) o -' } })} className={inputClass(errors.telefono)} inputMode="tel" />
             </Field>
             <Field label="Email">
               <input type="email" {...register('email')} className={inputClass(false)} />
@@ -158,8 +162,8 @@ export default function EditarPacientePage() {
             <Field label="Nombre completo">
               <input {...register('responsable_nombre')} className={inputClass(false)} />
             </Field>
-            <Field label="Teléfono">
-              <input {...register('responsable_telefono')} className={inputClass(false)} inputMode="tel" />
+            <Field label="Teléfono" error={errors.responsable_telefono}>
+              <input {...register('responsable_telefono', { pattern: { value: /^[\d\s()+-]{8,20}$/, message: 'El teléfono debe tener entre 8 y 20 caracteres: solo números, espacios, +, ( ) o -' } })} className={inputClass(errors.responsable_telefono)} inputMode="tel" />
             </Field>
             <Field label="Vínculo">
               <select {...register('responsable_vinculo')} className={inputClass(false)}>
@@ -195,7 +199,7 @@ export default function EditarPacientePage() {
           <h2 className="font-semibold text-gray-900">Información clínica</h2>
           <Field label="Profesional asignado" required error={errors.profesional_principal_id}>
             <select
-              {...register('profesional_principal_id', { required: 'Requerido' })}
+              {...register('profesional_principal_id', { required: 'Elegí el profesional asignado' })}
               className={inputClass(errors.profesional_principal_id)}
             >
               <option value="">Seleccionar profesional</option>
@@ -211,7 +215,7 @@ export default function EditarPacientePage() {
 
         {mutation.isError && (
           <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm">
-            {mutation.error?.response?.data?.error || 'Error al guardar los cambios'}
+            {getErrorMessage(mutation.error, 'Error al guardar los cambios')}
           </div>
         )}
 

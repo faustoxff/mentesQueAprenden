@@ -53,7 +53,7 @@ function PruebaCard({ prueba, onGuardar, onEliminar }) {
             <p className="text-sm text-gray-500 mt-1 line-clamp-2 whitespace-pre-wrap">{prueba.resultados.texto}</p>
           )}
         </button>
-        <button onClick={onEliminar} className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 flex-shrink-0">
+        <button onClick={onEliminar} aria-label="Eliminar prueba" className="p-1.5 rounded-lg hover:bg-red-50 text-red-400 flex-shrink-0">
           <Trash2 size={15} />
         </button>
       </div>
@@ -142,7 +142,7 @@ export default function EvaluacionDetallePage() {
   return (
     <div className="p-4 lg:p-6 max-w-3xl mx-auto">
       <div className="flex items-center gap-3 mb-4">
-        <button onClick={() => navigate(evaluacion?.paciente_id ? `/pacientes/${evaluacion.paciente_id}` : '/')} className="p-2 rounded-xl hover:bg-gray-100">
+        <button onClick={() => navigate(evaluacion?.paciente_id ? `/pacientes/${evaluacion.paciente_id}` : '/')} className="p-2 rounded-xl hover:bg-gray-100" aria-label="Volver">
           <ArrowLeft size={20} />
         </button>
         <div className="flex-1 min-w-0">
