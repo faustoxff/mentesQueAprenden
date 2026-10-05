@@ -169,6 +169,7 @@ export default function ChatSidebar() {
           onClick={() => setMenuOpen(o => !o)}
           className="p-1 text-[#9891a8] hover:text-[#f2eef7] transition-colors flex-shrink-0"
           title="Menú"
+          aria-label="Más opciones"
         >
           <MoreVertical size={18} />
         </button>
@@ -297,6 +298,7 @@ export default function ChatSidebar() {
             disabled={loading}
             title="Adjuntar archivo"
             className="text-[#9891a8] hover:text-[#f2eef7] disabled:opacity-50 rounded-xl px-2.5 py-2.5 transition-colors flex-shrink-0"
+            aria-label="Adjuntar archivo"
           >
             <Paperclip size={16} />
           </button>
@@ -313,6 +315,7 @@ export default function ChatSidebar() {
             onClick={() => enviar(input)}
             disabled={!input.trim() || loading}
             className="bg-primary-500 hover:bg-primary-600 disabled:opacity-50 text-white rounded-xl px-4 py-2.5 text-[13px] font-medium transition-colors flex-shrink-0"
+            aria-label="Enviar mensaje"
           >
             <Send size={14} />
           </button>

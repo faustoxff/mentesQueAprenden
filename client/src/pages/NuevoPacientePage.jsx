@@ -1,3 +1,4 @@
+import { useId, cloneElement } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -29,15 +30,18 @@ export default function NuevoPacientePage() {
 
   const onSubmit = (data) => mutation.mutate(data);
 
-  const Field = ({ label, error, required, children }) => (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label} {required && <span className="text-red-500">*</span>}
-      </label>
-      {children}
-      {error && <p className="text-red-500 text-xs mt-1">{error.message}</p>}
-    </div>
-  );
+  const Field = ({ label, error, required, children }) => {
+    const id = useId();
+    return (
+      <div>
+        <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+        {cloneElement(children, { id })}
+        {error && <p className="text-red-500 text-xs mt-1">{error.message}</p>}
+      </div>
+    );
+  };
 
   const inputClass = (hasError) =>
     `w-full px-3 py-2.5 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm ${
@@ -47,7 +51,7 @@ export default function NuevoPacientePage() {
   return (
     <div className="p-4 lg:p-6 max-w-3xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-gray-100">
+        <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-gray-100" aria-label="Volver">
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-2xl font-bold text-gray-900">Nuevo paciente</h1>

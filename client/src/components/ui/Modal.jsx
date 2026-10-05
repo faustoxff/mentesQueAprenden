@@ -28,7 +28,7 @@ export default function Modal({ open, onClose, title, children, size = 'md' }) {
       <div className={`relative bg-white w-full ${sizes[size]} rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[90vh] flex flex-col`}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
           <h2 className="font-semibold text-gray-900">{title}</h2>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-gray-100 text-gray-500">
+          <button onClick={onClose} aria-label="Cerrar" className="p-2 rounded-xl hover:bg-gray-100 text-gray-500">
             <X size={20} />
           </button>
         </div>

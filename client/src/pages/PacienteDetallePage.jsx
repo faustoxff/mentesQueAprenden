@@ -129,7 +129,7 @@ export default function PacienteDetallePage() {
     <div className="p-4 lg:p-6 max-w-4xl mx-auto">
       {/* Header */}
       <div className="flex items-center gap-3 mb-4">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-gray-100">
+        <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-gray-100" aria-label="Volver">
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-xl font-bold text-gray-900 flex-1 min-w-0 truncate">
@@ -139,6 +139,7 @@ export default function PacienteDetallePage() {
           onClick={() => setConfirmarEliminar(true)}
           className="p-2 rounded-xl hover:bg-red-50 text-red-500"
           title="Eliminar paciente"
+          aria-label="Eliminar paciente"
         >
           <Trash2 size={18} />
         </button>

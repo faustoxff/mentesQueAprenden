@@ -112,6 +112,7 @@ export default function AdminPage() {
                     onClick={() => setModalEditar(prof)}
                     className="p-2 rounded-xl hover:bg-gray-100 text-gray-500"
                     title="Editar"
+                    aria-label="Editar profesional"
                   >
                     <Edit2 size={16} />
                   </button>
@@ -120,6 +121,7 @@ export default function AdminPage() {
                       onClick={() => setModalDesactivar(prof)}
                       className="p-2 rounded-xl hover:bg-red-50 text-red-400"
                       title="Desactivar"
+                      aria-label="Desactivar profesional"
                     >
                       <Power size={16} />
                     </button>

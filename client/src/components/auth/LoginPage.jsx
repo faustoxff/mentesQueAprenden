@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useId } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Eye, EyeOff, Mail, Lock, Loader2, ArrowLeft, CheckCircle2, Brain } from 'lucide-react';
@@ -68,6 +68,7 @@ function ForgotPasswordForm({ onBack }) {
       <div className="relative">
         <Mail size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
         <input
+          aria-label="Email"
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
@@ -103,6 +104,7 @@ function ForgotPasswordForm({ onBack }) {
 }
 
 export default function LoginPage() {
+  const uid = useId();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -162,10 +164,11 @@ export default function LoginPage() {
               className="space-y-4"
             >
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
+                <label htmlFor={`${uid}-email`} className="block text-sm font-medium text-gray-700 mb-1.5">Email</label>
                 <div className="relative">
                   <Mail size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
+                    id={`${uid}-email`}
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -180,7 +183,7 @@ export default function LoginPage() {
 
               <div>
                 <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-sm font-medium text-gray-700">Contraseña</label>
+                  <label htmlFor={`${uid}-password`} className="block text-sm font-medium text-gray-700">Contraseña</label>
                   <button
                     type="button"
                     onClick={() => setModo('forgot')}
@@ -192,6 +195,7 @@ export default function LoginPage() {
                 <div className="relative">
                   <Lock size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
                   <input
+                    id={`${uid}-password`}
                     type={showPassword ? 'text' : 'password'}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -204,7 +208,7 @@ export default function LoginPage() {
                     type="button"
                     onClick={() => setShowPassword((v) => !v)}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                    tabIndex={-1}
+                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                   >
                     {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
                   </button>

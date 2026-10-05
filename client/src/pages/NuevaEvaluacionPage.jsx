@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery } from '@tanstack/react-query';
@@ -6,6 +7,7 @@ import api from '../services/api';
 import { aplicarErroresAlForm, getErrorMessage } from '../utils/errores';
 
 export default function NuevaEvaluacionPage() {
+  const uid = useId();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const pacienteIdParam = searchParams.get('paciente_id');
@@ -36,7 +38,7 @@ export default function NuevaEvaluacionPage() {
   return (
     <div className="p-4 lg:p-6 max-w-3xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-gray-100">
+        <button onClick={() => navigate(-1)} className="p-2 rounded-xl hover:bg-gray-100" aria-label="Volver">
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-2xl font-bold text-gray-900">Nueva evaluación</h1>
@@ -46,8 +48,8 @@ export default function NuevaEvaluacionPage() {
         <div className="bg-white rounded-2xl p-5 border border-gray-100 space-y-4">
           {!pacienteIdParam && (
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Paciente *</label>
-              <select {...register('paciente_id', { required: 'Elegí un paciente' })} className={inputClass}>
+              <label htmlFor={`${uid}-paciente`} className="text-sm font-medium text-gray-700 block mb-1">Paciente *</label>
+              <select id={`${uid}-paciente`} {...register('paciente_id', { required: 'Elegí un paciente' })} className={inputClass}>
                 <option value="">Seleccionar paciente</option>
                 {pacientes?.map(p => (
                   <option key={p.id} value={p.id}>{p.apellido}, {p.nombre} — DNI {p.dni}</option>
@@ -58,19 +60,19 @@ export default function NuevaEvaluacionPage() {
           )}
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Fecha de evaluación *</label>
-            <input type="date" {...register('fecha_evaluacion', { required: 'La fecha de evaluación es obligatoria' })} className={inputClass} />
+            <label htmlFor={`${uid}-fecha`} className="text-sm font-medium text-gray-700 block mb-1">Fecha de evaluación *</label>
+            <input id={`${uid}-fecha`} type="date" {...register('fecha_evaluacion', { required: 'La fecha de evaluación es obligatoria' })} className={inputClass} />
             {errors.fecha_evaluacion && <p className="text-xs text-red-500 mt-1">{errors.fecha_evaluacion.message}</p>}
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Motivo de consulta</label>
-            <textarea {...register('motivo_consulta')} rows={3} className={`${inputClass} resize-none`} placeholder="¿Por qué se solicita esta evaluación?" />
+            <label htmlFor={`${uid}-motivo`} className="text-sm font-medium text-gray-700 block mb-1">Motivo de consulta</label>
+            <textarea id={`${uid}-motivo`} {...register('motivo_consulta')} rows={3} className={`${inputClass} resize-none`} placeholder="¿Por qué se solicita esta evaluación?" />
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Antecedentes</label>
-            <textarea {...register('antecedentes')} rows={4} className={`${inputClass} resize-none`} placeholder="Antecedentes significativos (desarrollo, escolaridad, tratamientos previos, etc.)" />
+            <label htmlFor={`${uid}-antecedentes`} className="text-sm font-medium text-gray-700 block mb-1">Antecedentes</label>
+            <textarea id={`${uid}-antecedentes`} {...register('antecedentes')} rows={4} className={`${inputClass} resize-none`} placeholder="Antecedentes significativos (desarrollo, escolaridad, tratamientos previos, etc.)" />
           </div>
         </div>
 
