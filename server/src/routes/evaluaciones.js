@@ -31,13 +31,13 @@ router.get('/:id',
 router.post('/',
   requireAuth,
   [
-    body('paciente_id').isUUID(),
-    body('fecha_evaluacion').isISO8601(),
-    body('motivo_consulta').optional().isString(),
-    body('antecedentes').optional().isString(),
-    body('observacion_conducta').optional().isString(),
-    body('conclusiones').optional().isString(),
-    body('sugerencias').optional().isString()
+    body('paciente_id').isUUID().withMessage('Elegí un paciente'),
+    body('fecha_evaluacion').isISO8601().withMessage('La fecha de evaluación no es válida'),
+    body('motivo_consulta').optional().isString().withMessage('El texto no tiene el formato correcto'),
+    body('antecedentes').optional().isString().withMessage('El texto no tiene el formato correcto'),
+    body('observacion_conducta').optional().isString().withMessage('El texto no tiene el formato correcto'),
+    body('conclusiones').optional().isString().withMessage('El texto no tiene el formato correcto'),
+    body('sugerencias').optional().isString().withMessage('El texto no tiene el formato correcto')
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -56,14 +56,14 @@ router.post('/',
 router.patch('/:id',
   requireAuth,
   [
-    param('id').isUUID(),
-    body('fecha_evaluacion').optional().isISO8601(),
-    body('motivo_consulta').optional().isString(),
-    body('antecedentes').optional().isString(),
-    body('observacion_conducta').optional().isString(),
-    body('conclusiones').optional().isString(),
-    body('sugerencias').optional().isString(),
-    body('estado').optional().isIn(['borrador', 'finalizado'])
+    param('id').isUUID().withMessage('El identificador de la evaluación no es válido'),
+    body('fecha_evaluacion').optional().isISO8601().withMessage('La fecha de evaluación no es válida'),
+    body('motivo_consulta').optional().isString().withMessage('El texto no tiene el formato correcto'),
+    body('antecedentes').optional().isString().withMessage('El texto no tiene el formato correcto'),
+    body('observacion_conducta').optional().isString().withMessage('El texto no tiene el formato correcto'),
+    body('conclusiones').optional().isString().withMessage('El texto no tiene el formato correcto'),
+    body('sugerencias').optional().isString().withMessage('El texto no tiene el formato correcto'),
+    body('estado').optional().isIn(['borrador', 'finalizado']).withMessage('El estado no es válido')
   ],
   async (req, res) => {
     const errors = validationResult(req);

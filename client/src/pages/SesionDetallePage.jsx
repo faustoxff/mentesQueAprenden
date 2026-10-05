@@ -10,6 +10,7 @@ import { useAuthStore } from '../store/authStore';
 import IAAssistant from '../components/ui/IAAssistant';
 import FileUpload from '../components/ui/FileUpload';
 import Modal from '../components/ui/Modal';
+import { aplicarErroresAlForm } from '../utils/errores';
 
 const TIPO_LABEL = {
   evaluacion: 'Evaluación', tratamiento: 'Tratamiento',
@@ -94,7 +95,7 @@ export default function SesionDetallePage() {
       setEditando(false);
       toast.success('Cambios guardados');
     },
-    onError: (err) => toast.error(err.response?.data?.error || 'Error al guardar los cambios')
+    onError: (err) => aplicarErroresAlForm(err, { fallback: 'Error al guardar los cambios' })
   });
 
   const resumirMutation = useMutation({

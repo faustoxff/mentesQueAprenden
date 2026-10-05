@@ -33,6 +33,29 @@ describe('Validación de POST/PATCH /pacientes', () => {
     expect(res.status).toBe(422);
   });
 
+  test('los 422 traen mensajes en español que dicen qué corregir', async () => {
+    const res = await request(app)
+      .post('/api/pacientes')
+      .set('Authorization', `Bearer ${fausto.token}`)
+      .send({ nombre: 'Test', apellido: 'Mensajes', dni: '123', fecha_nacimiento: '2000-01-01', telefono: 'abc' });
+
+    expect(res.status).toBe(422);
+    const porCampo = Object.fromEntries(res.body.errors.map((e) => [e.path, e.msg]));
+    expect(porCampo.dni).toMatch(/7 u 8 dígitos/);
+    expect(porCampo.telefono).toMatch(/teléfono/i);
+    expect(res.body.errors.some((e) => /invalid value/i.test(e.msg))).toBe(false);
+  });
+
+  test('una obra social vacía (select sin elegir) no se rechaza como UUID inválido', async () => {
+    const res = await request(app)
+      .post('/api/pacientes')
+      .set('Authorization', `Bearer ${fausto.token}`)
+      .send({ nombre: 'Test', apellido: 'Mensajes', dni: '123', fecha_nacimiento: '2000-01-01', obra_social_id: '' });
+
+    expect(res.status).toBe(422);
+    expect(res.body.errors.map((e) => e.path)).not.toContain('obra_social_id');
+  });
+
   test('crear paciente inyectando campos no permitidos (created_by, id) los ignora', async () => {
     const res = await request(app)
       .post('/api/pacientes')

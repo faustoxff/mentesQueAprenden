@@ -27,15 +27,15 @@ router.get('/:id',
 router.post('/',
   requireAuth,
   [
-    body('paciente_id').isUUID(),
-    body('fecha').isISO8601(),
-    body('tipo').isIn(['evaluacion', 'tratamiento', 'seguimiento', 'devolucion', 'reunion_interdisciplinaria']),
-    body('duracion_minutos').optional().isInt({ min: 1, max: 480 }),
-    body('notas_libres').optional().isString(),
-    body('notas_estructuradas').optional().isObject(),
-    body('monto').optional().isFloat({ min: 0 }),
-    body('turno_id').optional().isUUID(),
-    body('consultorio').optional({ nullable: true }).isInt({ min: 1, max: 3 }).toInt()
+    body('paciente_id').isUUID().withMessage('Elegí un paciente'),
+    body('fecha').isISO8601().withMessage('La fecha y hora de la sesión no son válidas'),
+    body('tipo').isIn(['evaluacion', 'tratamiento', 'seguimiento', 'devolucion', 'reunion_interdisciplinaria']).withMessage('El tipo de sesión no es válido'),
+    body('duracion_minutos').optional().isInt({ min: 1, max: 480 }).withMessage('La duración debe estar entre 1 y 480 minutos'),
+    body('notas_libres').optional().isString().withMessage('Las notas deben ser texto'),
+    body('notas_estructuradas').optional().isObject().withMessage('Las notas estructuradas no tienen el formato correcto'),
+    body('monto').optional().isFloat({ min: 0 }).withMessage('El monto debe ser un número mayor o igual a 0'),
+    body('turno_id').optional().isUUID().withMessage('El turno no es válido'),
+    body('consultorio').optional({ nullable: true }).isInt({ min: 1, max: 3 }).withMessage('El consultorio debe ser 1, 2 o 3').toInt()
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -54,17 +54,17 @@ router.post('/',
 router.patch('/:id',
   requireAuth,
   [
-    param('id').isUUID(),
-    body('fecha').optional().isISO8601(),
-    body('tipo').optional().isIn(['evaluacion', 'tratamiento', 'seguimiento', 'devolucion', 'reunion_interdisciplinaria']),
-    body('duracion_minutos').optional().isInt({ min: 1, max: 480 }),
-    body('consultorio').optional({ nullable: true }).isInt({ min: 1, max: 3 }).toInt(),
-    body('notas_libres').optional().isString(),
-    body('notas_estructuradas').optional().isObject(),
-    body('resumen_ia').optional().isString(),
-    body('monto').optional({ nullable: true }).isFloat({ min: 0 }),
-    body('pagado').optional().isBoolean(),
-    body('fecha_pago').optional().isISO8601()
+    param('id').isUUID().withMessage('El identificador de la sesión no es válido'),
+    body('fecha').optional().isISO8601().withMessage('La fecha y hora de la sesión no son válidas'),
+    body('tipo').optional().isIn(['evaluacion', 'tratamiento', 'seguimiento', 'devolucion', 'reunion_interdisciplinaria']).withMessage('El tipo de sesión no es válido'),
+    body('duracion_minutos').optional().isInt({ min: 1, max: 480 }).withMessage('La duración debe estar entre 1 y 480 minutos'),
+    body('consultorio').optional({ nullable: true }).isInt({ min: 1, max: 3 }).withMessage('El consultorio debe ser 1, 2 o 3').toInt(),
+    body('notas_libres').optional().isString().withMessage('Las notas deben ser texto'),
+    body('notas_estructuradas').optional().isObject().withMessage('Las notas estructuradas no tienen el formato correcto'),
+    body('resumen_ia').optional().isString().withMessage('El resumen debe ser texto'),
+    body('monto').optional({ nullable: true }).isFloat({ min: 0 }).withMessage('El monto debe ser un número mayor o igual a 0'),
+    body('pagado').optional().isBoolean().withMessage('El estado de pago no es válido'),
+    body('fecha_pago').optional().isISO8601().withMessage('La fecha de pago no es válida')
   ],
   async (req, res) => {
     const errors = validationResult(req);

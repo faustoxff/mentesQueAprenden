@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../services/api';
+import { aplicarErroresAlForm, getErrorMessage } from '../utils/errores';
 
 export default function EditarPacientePage() {
   const { id } = useParams();
@@ -26,7 +27,7 @@ export default function EditarPacientePage() {
     queryFn: () => api.get('/obras-sociales').then(r => r.data)
   });
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm();
+  const { register, handleSubmit, reset, setError, formState: { errors } } = useForm();
 
   useEffect(() => {
     if (paciente) {
@@ -60,7 +61,7 @@ export default function EditarPacientePage() {
       toast.success('Cambios guardados');
       navigate(`/pacientes/${id}`);
     },
-    onError: () => toast.error('Error al guardar los cambios')
+    onError: (err) => aplicarErroresAlForm(err, { setError, fallback: 'Error al guardar los cambios' })
   });
 
   const onSubmit = (data) => mutation.mutate(data);
@@ -211,7 +212,7 @@ export default function EditarPacientePage() {
 
         {mutation.isError && (
           <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-xl text-sm">
-            {mutation.error?.response?.data?.error || 'Error al guardar los cambios'}
+            {getErrorMessage(mutation.error, 'Error al guardar los cambios')}
           </div>
         )}
 

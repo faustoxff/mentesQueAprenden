@@ -7,6 +7,11 @@ const pacienteService = require('../services/PacienteService');
 
 const router = express.Router();
 
+// Los teléfonos son opcionales, pero si vienen deben ser razonables y entrar
+// en la columna (VARCHAR(20)): 8 a 20 caracteres entre dígitos, espacios, + ( ) -.
+const MSG_TELEFONO = 'El teléfono debe tener entre 8 y 20 caracteres: solo números, espacios, +, ( ) o -';
+const telefonoValido = (v) => v === '' || /^[\d\s()+-]{8,20}$/.test(v);
+
 // GET /pacientes
 router.get('/',
   requireAuth,
@@ -38,9 +43,10 @@ router.get('/:id',
 router.post('/',
   requireAuth,
   [
-    body('nombre').trim().notEmpty(),
-    body('apellido').trim().notEmpty(),
-    body('dni').trim().notEmpty().matches(/^\d{7,8}$/),
+    body('nombre').trim().notEmpty().withMessage('El nombre es obligatorio'),
+    body('apellido').trim().notEmpty().withMessage('El apellido es obligatorio'),
+    body('dni').trim().notEmpty().withMessage('El DNI es obligatorio').bail()
+      .matches(/^\d{7,8}$/).withMessage('El DNI debe tener 7 u 8 dígitos, sin puntos ni espacios'),
     body('fecha_nacimiento').customSanitizer(v => {
       // Convertir dd/MM/yyyy → yyyy-MM-dd si viene del browser en español
       if (v && /^\d{2}\/\d{2}\/\d{4}$/.test(v)) {
@@ -48,12 +54,13 @@ router.post('/',
         return `${y}-${m}-${d}`;
       }
       return v;
-    }).isISO8601(),
-    body('profesional_principal_id').optional().isUUID(),
-    body('obra_social_id').optional().isUUID(),
-    body('estado').optional().isIn(['activo', 'derivado', 'alta', 'inactivo']),
-    body('telefono').optional().trim(),
-    body('email').optional({ checkFalsy: true }).isEmail().normalizeEmail()
+    }).isISO8601().withMessage('La fecha de nacimiento es obligatoria y debe ser una fecha válida'),
+    body('profesional_principal_id').optional({ checkFalsy: true }).isUUID().withMessage('El profesional asignado no es válido'),
+    body('obra_social_id').optional({ checkFalsy: true }).isUUID().withMessage('La obra social no es válida'),
+    body('estado').optional().isIn(['activo', 'derivado', 'alta', 'inactivo']).withMessage('El estado no es válido'),
+    body('telefono').optional().trim().custom(telefonoValido).withMessage(MSG_TELEFONO),
+    body('responsable_telefono').optional().trim().custom(telefonoValido).withMessage(MSG_TELEFONO),
+    body('email').optional({ checkFalsy: true }).isEmail().withMessage('El email no es válido').normalizeEmail()
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -73,11 +80,17 @@ router.patch('/:id',
   requireAuth,
   registrarAcceso('editar', 'paciente'),
   [
-    param('id').isUUID(),
-    body('dni').optional().matches(/^\d{7,8}$/),
-    body('fecha_nacimiento').optional().isISO8601(),
-    body('estado').optional().isIn(['activo', 'derivado', 'alta', 'inactivo']),
-    body('email').optional({ checkFalsy: true }).isEmail().normalizeEmail()
+    param('id').isUUID().withMessage('El identificador del paciente no es válido'),
+    body('nombre').optional().trim().notEmpty().withMessage('El nombre no puede quedar vacío'),
+    body('apellido').optional().trim().notEmpty().withMessage('El apellido no puede quedar vacío'),
+    body('dni').optional().matches(/^\d{7,8}$/).withMessage('El DNI debe tener 7 u 8 dígitos, sin puntos ni espacios'),
+    body('fecha_nacimiento').optional().isISO8601().withMessage('La fecha de nacimiento no es válida'),
+    body('estado').optional().isIn(['activo', 'derivado', 'alta', 'inactivo']).withMessage('El estado no es válido'),
+    body('profesional_principal_id').optional({ checkFalsy: true }).isUUID().withMessage('El profesional asignado no es válido'),
+    body('obra_social_id').optional({ checkFalsy: true }).isUUID().withMessage('La obra social no es válida'),
+    body('telefono').optional().trim().custom(telefonoValido).withMessage(MSG_TELEFONO),
+    body('responsable_telefono').optional().trim().custom(telefonoValido).withMessage(MSG_TELEFONO),
+    body('email').optional({ checkFalsy: true }).isEmail().withMessage('El email no es válido').normalizeEmail()
   ],
   async (req, res) => {
     const errors = validationResult(req);

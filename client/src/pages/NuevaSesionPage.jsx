@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { ArrowLeft, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../services/api';
+import { aplicarErroresAlForm, getErrorMessage } from '../utils/errores';
 import { useAuthStore } from '../store/authStore';
 import IAAssistant from '../components/ui/IAAssistant';
 import FileUpload from '../components/ui/FileUpload';
@@ -35,7 +36,7 @@ export default function NuevaSesionPage() {
 
   // datetime-local trabaja en hora local: el valor por defecto tiene que
   // estar en hora local (no UTC) y se convierte a UTC recién al enviar.
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
+  const { register, handleSubmit, watch, setValue, setError, formState: { errors } } = useForm({
     defaultValues: {
       paciente_id: pacienteIdParam || '',
       tipo: searchParams.get('tipo') || 'tratamiento',
@@ -72,7 +73,7 @@ export default function NuevaSesionPage() {
       queryClient.invalidateQueries({ predicate: (q) => String(q.queryKey[0]).includes('turno') });
       setSesionCreada(res.data);
     },
-    onError: (err) => toast.error(err?.response?.data?.error || 'Error al guardar la sesión')
+    onError: (err) => aplicarErroresAlForm(err, { setError, fallback: 'Error al guardar la sesión' })
   });
 
   const resumirMutation = useMutation({

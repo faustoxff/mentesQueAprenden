@@ -2,12 +2,12 @@ import { useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
-import { toast } from 'sonner';
 import api from '../services/api';
+import { aplicarErroresAlForm, getErrorMessage } from '../utils/errores';
 
 export default function NuevoPacientePage() {
   const navigate = useNavigate();
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, setError, formState: { errors } } = useForm({
     defaultValues: { estado: 'activo', provincia: 'Buenos Aires' }
   });
 
@@ -24,7 +24,7 @@ export default function NuevoPacientePage() {
   const mutation = useMutation({
     mutationFn: (data) => api.post('/pacientes', data),
     onSuccess: (res) => navigate(`/pacientes/${res.data.id}`),
-    onError: (err) => toast.error(err?.response?.data?.error || 'Error al guardar el paciente')
+    onError: (err) => aplicarErroresAlForm(err, { setError, fallback: 'Error al guardar el paciente' })
   });
 
   const onSubmit = (data) => mutation.mutate(data);

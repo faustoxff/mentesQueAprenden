@@ -15,11 +15,11 @@ router.post('/register',
   requireAuth,
   requireAdmin,
   [
-    body('email').isEmail().normalizeEmail(),
-    body('password').isLength({ min: 8 }),
-    body('nombre').trim().notEmpty(),
-    body('apellido').trim().notEmpty(),
-    body('especialidad').isIn(['psicopedagogia', 'psicologia', 'fonoaudiologia', 'otro']),
+    body('email').isEmail().withMessage('El email no es válido').normalizeEmail(),
+    body('password').isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres'),
+    body('nombre').trim().notEmpty().withMessage('El nombre es obligatorio'),
+    body('apellido').trim().notEmpty().withMessage('El apellido es obligatorio'),
+    body('especialidad').isIn(['psicopedagogia', 'psicologia', 'fonoaudiologia', 'otro']).withMessage('Elegí una especialidad válida'),
     body('rol').optional().isIn(['admin', 'profesional']),
     body('matricula').optional().trim(),
     body('porcentaje_honorarios').optional().isFloat({ min: 0, max: 100 })
@@ -40,11 +40,11 @@ router.post('/register',
 // POST /auth/signup - Registro público de profesionales (sin admin)
 router.post('/signup',
   [
-    body('email').isEmail().normalizeEmail(),
-    body('password').isLength({ min: 8 }),
-    body('nombre').trim().notEmpty(),
-    body('apellido').trim().notEmpty(),
-    body('especialidad').isIn(['psicopedagogia', 'psicologia', 'fonoaudiologia', 'otro']),
+    body('email').isEmail().withMessage('El email no es válido').normalizeEmail(),
+    body('password').isLength({ min: 8 }).withMessage('La contraseña debe tener al menos 8 caracteres'),
+    body('nombre').trim().notEmpty().withMessage('El nombre es obligatorio'),
+    body('apellido').trim().notEmpty().withMessage('El apellido es obligatorio'),
+    body('especialidad').isIn(['psicopedagogia', 'psicologia', 'fonoaudiologia', 'otro']).withMessage('Elegí una especialidad válida'),
     body('matricula').optional().trim(),
     body('telefono').optional().trim()
   ],
@@ -64,8 +64,8 @@ router.post('/signup',
 // POST /auth/login
 router.post('/login',
   [
-    body('email').isEmail().normalizeEmail(),
-    body('password').notEmpty()
+    body('email').isEmail().withMessage('El email no es válido').normalizeEmail(),
+    body('password').notEmpty().withMessage('Ingresá tu contraseña')
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -88,7 +88,7 @@ router.post('/logout', requireAuth, async (req, res) => {
 
 // POST /auth/forgot-password - Envía email con link para restablecer contraseña
 router.post('/forgot-password',
-  [body('email').isEmail().normalizeEmail()],
+  [body('email').isEmail().withMessage('El email no es válido').normalizeEmail()],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });

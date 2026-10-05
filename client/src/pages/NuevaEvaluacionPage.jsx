@@ -2,15 +2,15 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { useMutation, useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
-import { toast } from 'sonner';
 import api from '../services/api';
+import { aplicarErroresAlForm, getErrorMessage } from '../utils/errores';
 
 export default function NuevaEvaluacionPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const pacienteIdParam = searchParams.get('paciente_id');
 
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, setError, formState: { errors } } = useForm({
     defaultValues: {
       paciente_id: pacienteIdParam || '',
       fecha_evaluacion: new Date().toISOString().slice(0, 10),
@@ -28,7 +28,7 @@ export default function NuevaEvaluacionPage() {
   const mutation = useMutation({
     mutationFn: (data) => api.post('/evaluaciones', data),
     onSuccess: (res) => navigate(`/evaluaciones/${res.data.id}`),
-    onError: (err) => toast.error(err.response?.data?.error || 'Error al crear la evaluación')
+    onError: (err) => aplicarErroresAlForm(err, { setError, fallback: 'Error al crear la evaluación' })
   });
 
   const inputClass = 'w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500';
