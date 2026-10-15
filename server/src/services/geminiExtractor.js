@@ -1,5 +1,4 @@
 const OpenAI = require('openai');
-const { PDFParse } = require('pdf-parse');
 
 // Cliente separado del de ia.js: mismo proveedor (OpenRouter) pero con un
 // único propósito — extraer texto crudo de un documento, sin interpretarlo.
@@ -35,8 +34,12 @@ Devolvé solo la transcripción, sin comentarios tuyos antes o después.`;
 // Intenta extraer el texto nativo del PDF localmente (sin IA). Devuelve null
 // si falla el parseo o si el resultado es demasiado corto (PDF escaneado).
 async function extraerTextoNativoPdf(buffer) {
-  const parser = new PDFParse({ data: buffer });
+  // Se carga bajo demanda: en entornos serverless sin DOMMatrix (Vercel) pdf-parse
+  // rompe al hacer require y tumbaba toda la API. Si no carga, se cae a la IA.
+  let parser;
   try {
+    const { PDFParse } = require('pdf-parse');
+    parser = new PDFParse({ data: buffer });
     const { text } = await parser.getText();
     const limpio = (text || '').trim();
     if (limpio.length < MIN_CARACTERES_TEXTO_NATIVO) return null;
@@ -44,7 +47,7 @@ async function extraerTextoNativoPdf(buffer) {
   } catch {
     return null;
   } finally {
-    await parser.destroy();
+    if (parser) await parser.destroy();
   }
 }
 
