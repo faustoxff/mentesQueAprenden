@@ -26,6 +26,49 @@
   }
 }
 
+/* Agenda (FullCalendar) con la paleta de la app */
+.agenda-calendar .fc {
+  --fc-border-color: #eee7f4;
+  --fc-today-bg-color: #f6f0fb;
+  --fc-now-indicator-color: #e97979;
+  --fc-neutral-bg-color: #faf7fd;
+  --fc-non-business-color: rgba(246, 240, 251, 0.6);
+  --fc-event-border-color: transparent;
+  --fc-page-bg-color: #ffffff;
+  font-size: 13px;
+}
+.agenda-calendar .fc-toolbar { padding: 14px 16px 6px; gap: 8px; flex-wrap: wrap; }
+.agenda-calendar .fc-toolbar-title { font-size: 1.1rem; font-weight: 700; color: #3d1f61; text-transform: capitalize; }
+.agenda-calendar .fc-button {
+  background: #fff; color: #6b37ab; border: 1px solid #dcc2ef; border-radius: 10px;
+  padding: 6px 12px; font-size: 13px; font-weight: 500; box-shadow: none; text-transform: capitalize;
+}
+.agenda-calendar .fc-button:hover { background: #f6f0fb; color: #542b86; border-color: #c5a3f0; }
+.agenda-calendar .fc-button:focus { box-shadow: 0 0 0 2px #dcc2ef; }
+.agenda-calendar .fc-button-primary:not(:disabled).fc-button-active,
+.agenda-calendar .fc-button-primary:not(:disabled):active {
+  background: #8347d1; color: #fff; border-color: #8347d1;
+}
+.agenda-calendar .fc-button:disabled { opacity: 0.45; }
+.agenda-calendar .fc-button-group > .fc-button { border-radius: 0; }
+.agenda-calendar .fc-button-group > .fc-button:first-child { border-radius: 10px 0 0 10px; }
+.agenda-calendar .fc-button-group > .fc-button:last-child { border-radius: 0 10px 10px 0; }
+.agenda-calendar .fc-toolbar-chunk { display: flex; align-items: center; gap: 8px; }
+.agenda-calendar .fc-col-header-cell { background: #faf7fd; padding: 6px 0; }
+.agenda-calendar .fc-col-header-cell-cushion { color: #542b86; font-weight: 600; font-size: 12px; text-transform: capitalize; }
+.agenda-calendar .fc-timegrid-slot-label-cushion { color: #9891a8; font-size: 11px; }
+.agenda-calendar .fc-timegrid-slot { height: 2.6em; }
+.agenda-calendar .fc-timegrid-slot-minor { border-top-style: dotted; }
+.agenda-calendar .fc-event { border-radius: 8px; padding: 1px 3px; cursor: pointer; }
+.agenda-calendar .fc-list-day-cushion { background: #faf7fd; color: #542b86; }
+.agenda-calendar .fc-theme-standard .fc-scrollgrid { border-color: #eee7f4; }
+
+@media (max-width: 767px) {
+  .agenda-calendar .fc-toolbar { padding: 10px 10px 4px; flex-wrap: nowrap; }
+  .agenda-calendar .fc-footer-toolbar { justify-content: center; padding: 8px 10px 10px; }
+  .agenda-calendar .fc-button { padding: 6px 10px; }
+}
+
 @media print {
   /* Ocultar navegación y elementos de UI */
   nav, aside, header, .print\:hidden {

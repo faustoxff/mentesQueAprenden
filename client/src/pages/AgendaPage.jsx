@@ -36,6 +36,10 @@ const CONSULTORIOS = [1, 2, 3];
 // exceeded"). Al vivir fuera del componente, son la misma referencia siempre.
 const BUSINESS_HOURS = { daysOfWeek: [1, 2, 3, 4, 5, 6], startTime: '08:00', endTime: '20:00' };
 const EVENT_TIME_FORMAT = { hour: '2-digit', minute: '2-digit', hour12: false };
+const TOOLBAR_DESKTOP = { left: 'prev,next today', center: 'title', right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek' };
+const TITLE_MOBILE = { day: 'numeric', month: 'short' };
+const TOOLBAR_MOBILE = { left: 'title', center: '', right: 'prev,today,next' };
+const FOOTER_MOBILE = { center: 'timeGridDay,listWeek,dayGridMonth' };
 
 const TIPO_OPTIONS = [
   { value: 'tratamiento', label: 'Tratamiento' },
@@ -50,6 +54,8 @@ export default function AgendaPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const calendarRef = useRef(null);
+  // Se decide una sola vez al montar (los props del calendario tienen que ser estables, ver arriba).
+  const [esMobile] = useState(() => window.matchMedia('(max-width: 767px)').matches);
   const [rango, setRango] = useState({ inicio: null, fin: null });
   const [modalNuevo, setModalNuevo] = useState(false);
   const [modalDetalle, setModalDetalle] = useState(null);
@@ -233,18 +239,16 @@ export default function AgendaPage() {
           <div className="h-96 bg-gray-50 rounded" />
         </div>
       ) : (
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+      <div className="agenda-calendar bg-white rounded-2xl border border-gray-100 overflow-hidden">
         <FullCalendar
           ref={calendarRef}
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin, listPlugin]}
-          initialView="timeGridWeek"
+          initialView={esMobile ? 'timeGridDay' : 'timeGridWeek'}
           locales={[esLocale]}
           locale="es"
-          headerToolbar={{
-            left: 'prev,next today',
-            center: 'title',
-            right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
-          }}
+          headerToolbar={esMobile ? TOOLBAR_MOBILE : TOOLBAR_DESKTOP}
+          footerToolbar={esMobile ? FOOTER_MOBILE : undefined}
+          titleFormat={esMobile ? TITLE_MOBILE : undefined}
           slotMinTime="07:00:00"
           slotMaxTime="21:00:00"
           allDaySlot={false}
@@ -259,7 +263,7 @@ export default function AgendaPage() {
               : { inicio: info.startStr, fin: info.endStr }
           )}
           height="auto"
-          aspectRatio={1.8}
+          aspectRatio={esMobile ? 0.7 : 1.8}
           nowIndicator
           businessHours={BUSINESS_HOURS}
           eventTimeFormat={EVENT_TIME_FORMAT}
