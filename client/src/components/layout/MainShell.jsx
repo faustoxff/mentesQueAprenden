@@ -35,9 +35,9 @@ export default function MainShell({ children }) {
             {label}
           </NavLink>
         ))}
-        <button type="button" onClick={() => setVerChat(true)} className={tabClass(verChat)} aria-label="Abrir chat con la IA">
+        <button type="button" onClick={() => setVerChat(true)} className={tabClass(verChat)} aria-label="Abrir chat con Menta">
           <Bot size={20} />
-          Chat IA
+          Menta
         </button>
       </nav>
     </div>

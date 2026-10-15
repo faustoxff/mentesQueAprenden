@@ -243,7 +243,7 @@ export default function ChatSidebar({ className = 'flex' }) {
           return (
             <div key={i} className={`flex gap-2 ${isUser ? 'justify-end' : ''}`}>
               {!isUser && (
-                <div className="w-7 h-7 rounded-full bg-primary-500 flex-shrink-0 flex items-center justify-center text-white text-xs font-semibold">IA</div>
+                <div className="w-7 h-7 rounded-full bg-primary-500 flex-shrink-0 flex items-center justify-center text-white text-xs font-semibold">M</div>
               )}
               <div className={`flex flex-col max-w-[85%] ${isUser ? 'items-end' : 'items-start'}`}>
                 {msg.content && (
@@ -274,7 +274,7 @@ export default function ChatSidebar({ className = 'flex' }) {
 
         {loading && (
           <div className="flex gap-2">
-            <div className="w-7 h-7 rounded-full bg-primary-500 flex-shrink-0 flex items-center justify-center text-white text-xs font-semibold">IA</div>
+            <div className="w-7 h-7 rounded-full bg-primary-500 flex-shrink-0 flex items-center justify-center text-white text-xs font-semibold">M</div>
             <div className="bg-sidebar-bubble border border-sidebar-borderLight rounded-xl px-3 py-2.5">
               <Loader2 size={16} className="animate-spin text-[#9891a8]" />
             </div>
@@ -309,7 +309,7 @@ export default function ChatSidebar({ className = 'flex' }) {
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKey}
             disabled={loading}
-            placeholder="Pregunta algo..."
+            placeholder="Preguntale algo a Menta..."
             className="flex-1 border border-sidebar-borderLight rounded-xl px-3 py-2.5 text-[13px] text-[#f2eef7] bg-sidebar-bubble placeholder:text-[#7a7288] focus:outline-none focus:border-primary-500 disabled:opacity-60"
           />
           <button
@@ -322,7 +322,7 @@ export default function ChatSidebar({ className = 'flex' }) {
           </button>
         </div>
         <p className="text-[10px] text-[#7a7288] mt-2 text-center leading-tight">
-          La IA puede cometer errores, incluso en temas clínicos o técnicos. Verificá siempre la información importante en fuentes oficiales.
+          Menta puede cometer errores, incluso en temas clínicos o técnicos. Verificá siempre la información importante en fuentes oficiales.
         </p>
       </div>
     </div>
