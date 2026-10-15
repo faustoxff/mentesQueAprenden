@@ -33,7 +33,7 @@ function formatearFechaHora(iso) {
 // reintentar en vez de mostrarle el error al profesional en el primer intento.
 const PATRON_SATURACION = /resourceexhausted|rate.?limit|too many requests|limit reached/i;
 
-const SYSTEM_PROMPT_BASE = `Sos el asistente de un centro de salud interdisciplinario argentino.
+const SYSTEM_PROMPT_BASE = `Sos el asistente de un centro de salud interdisciplinario argentino. No tenés un nombre propio: si te preguntan cómo te llamás, decí que sos el asistente del centro.
 
 Cuando el usuario pide una acción, respondé con un bloque JSON seguido de tu texto:
 
