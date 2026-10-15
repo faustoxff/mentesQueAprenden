@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Settings, Users, UserPlus, Edit2, Power } from 'lucide-react';
 import api from '../services/api';
 import Modal from '../components/ui/Modal';
+import { getErrorMessage } from '../utils/errores';
 
 const ESPECIALIDAD_LABEL = {
   psicopedagogia: 'Psicopedagogía',
@@ -197,7 +198,7 @@ export default function AdminPage() {
             </div>
           </div>
           {crearMutation.isError && (
-            <p className="text-sm text-red-600">{crearMutation.error?.response?.data?.error}</p>
+            <p className="text-sm text-red-600">{getErrorMessage(crearMutation.error)}</p>
           )}
           <div className="flex gap-3">
             <button onClick={() => setModalNuevo(false)} className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700">Cancelar</button>

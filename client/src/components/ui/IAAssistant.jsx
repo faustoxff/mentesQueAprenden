@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Sparkles, CheckCircle, X, Loader } from 'lucide-react';
 import api from '../../services/api';
+import { getErrorMessage } from '../../utils/errores';
 
 export default function IAAssistant({ pacienteId, sesionId, tipoSesion, especialidad, notasParciales, onAceptar }) {
   const [estado, setEstado] = useState('idle'); // idle | loading | mostrar | error
@@ -25,7 +26,7 @@ export default function IAAssistant({ pacienteId, sesionId, tipoSesion, especial
       setSugerencia(data.sugerencia);
       setEstado('mostrar');
     } catch (err) {
-      setError(err.response?.data?.error || 'Error al conectar con la IA');
+      setError(getErrorMessage(err, 'Error al conectar con la IA'));
       setEstado('error');
     }
   };

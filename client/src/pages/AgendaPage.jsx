@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import Modal from '../components/ui/Modal';
+import { getErrorMessage } from '../utils/errores';
 
 const COLORES_ESTADO = {
   programado: '#6366f1',
@@ -90,7 +91,7 @@ export default function AgendaPage() {
       setFormData({ paciente_id: '', tipo: 'tratamiento', notas: '', duracion: 50, profesional_id: '', consultorio: 1 });
       toast.success('Turno creado');
     },
-    onError: (err) => toast.error(err.response?.data?.error || 'Error al crear el turno')
+    onError: (err) => toast.error(getErrorMessage(err, 'Error al crear el turno'))
   });
 
   const actualizarMutation = useMutation({
@@ -369,7 +370,7 @@ export default function AgendaPage() {
           </div>
 
           {crearMutation.isError && (
-            <p className="text-sm text-red-600">{crearMutation.error?.response?.data?.error}</p>
+            <p className="text-sm text-red-600">{getErrorMessage(crearMutation.error)}</p>
           )}
 
           <div className="flex gap-3 pt-2">

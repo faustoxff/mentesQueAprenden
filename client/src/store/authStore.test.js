@@ -37,6 +37,23 @@ describe('authStore', () => {
     expect(useAuthStore.getState().isAuthenticated()).toBe(false);
   });
 
+  it('login con error { code, message } guarda el message como string', async () => {
+    api.post.mockRejectedValueOnce({ response: { data: { error: { code: 'x', message: 'Fallo' } } } });
+
+    const resultado = await useAuthStore.getState().login('ana@test.com', 'mala');
+
+    expect(resultado).toEqual({ success: false, error: 'Fallo' });
+    expect(useAuthStore.getState().error).toBe('Fallo');
+  });
+
+  it('signup con error { code, message } guarda el message como string', async () => {
+    api.post.mockRejectedValueOnce({ response: { data: { error: { code: 'x', message: 'Fallo' } } } });
+
+    await useAuthStore.getState().signup({});
+
+    expect(useAuthStore.getState().error).toBe('Fallo');
+  });
+
   it('isAdmin refleja el rol del profesional logueado', async () => {
     api.post.mockResolvedValueOnce({
       data: {

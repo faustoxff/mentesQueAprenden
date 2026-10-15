@@ -5,6 +5,7 @@ import { CheckCircle, Paperclip, Sparkles, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../../services/api';
 import MiniMarkdown from '../ui/MiniMarkdown';
+import { getErrorMessage } from '../../utils/errores';
 
 const TIPO_POR_EXT = { pdf: 'informe', jpg: 'estudio', jpeg: 'estudio', png: 'estudio', webp: 'estudio' };
 
@@ -59,7 +60,7 @@ export function ChatAttachCard({ file }) {
       setArchivoId(urlData.archivo_id);
       toast.success('Archivo subido');
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Error al subir el archivo');
+      toast.error(getErrorMessage(err, 'Error al subir el archivo'));
       setPacienteSel(null);
     } finally {
       setSubiendo(false);
@@ -72,7 +73,7 @@ export function ChatAttachCard({ file }) {
       const { data } = await api.post('/ia/analizar-pdf', { archivo_id: archivoId });
       setAnalisis(data.analisis);
     } catch (err) {
-      toast.error(err.response?.data?.error || 'Error al analizar el archivo');
+      toast.error(getErrorMessage(err, 'Error al analizar el archivo'));
     } finally {
       setAnalizando(false);
     }

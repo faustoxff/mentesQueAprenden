@@ -12,6 +12,7 @@ import Modal from '../components/ui/Modal';
 import FileUpload from '../components/ui/FileUpload';
 import MiniMarkdown from '../components/ui/MiniMarkdown';
 import api from '../services/api';
+import { getErrorMessage } from '../utils/errores';
 
 const TABS = [
   { id: 'historial', label: 'Historial', icon: FileText },
@@ -72,7 +73,7 @@ export default function PacienteDetallePage() {
       toast.success('Paciente eliminado');
       navigate('/');
     },
-    onError: (err) => toast.error(err.response?.data?.error || 'Error al eliminar el paciente')
+    onError: (err) => toast.error(getErrorMessage(err, 'Error al eliminar el paciente'))
   });
 
   const { data: paciente, isLoading } = useQuery({
@@ -544,7 +545,7 @@ export default function PacienteDetallePage() {
             </div>
 
             {analizarPDFMutation.isError && (
-              <p className="text-sm text-red-600">{analizarPDFMutation.error?.response?.data?.error}</p>
+              <p className="text-sm text-red-600">{getErrorMessage(analizarPDFMutation.error)}</p>
             )}
 
             <div className="flex gap-3">

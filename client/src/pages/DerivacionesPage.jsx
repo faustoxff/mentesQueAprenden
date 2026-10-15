@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import Modal from '../components/ui/Modal';
+import { getErrorMessage } from '../utils/errores';
 
 const ESTADO_COLOR = {
   pendiente: 'bg-amber-100 text-amber-700',
@@ -82,7 +83,7 @@ export default function DerivacionesPage() {
       queryClient.invalidateQueries({ queryKey: ['pacientes'] });
       toast.success('Derivación completada — el acceso al paciente se cerró');
     },
-    onError: (err) => toast.error(err.response?.data?.error || 'Error al completar la derivación')
+    onError: (err) => toast.error(getErrorMessage(err, 'Error al completar la derivación'))
   });
 
   const crearMutation = useMutation({
@@ -341,7 +342,7 @@ export default function DerivacionesPage() {
           )}
 
           {crearMutation.isError && (
-            <p className="text-sm text-red-600">{crearMutation.error?.response?.data?.error}</p>
+            <p className="text-sm text-red-600">{getErrorMessage(crearMutation.error)}</p>
           )}
 
           <div className="flex gap-3">

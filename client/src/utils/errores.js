@@ -16,7 +16,10 @@ const unicos = (mensajes) => [...new Set(mensajes)];
 export function getErrorMessage(err, fallback = MENSAJE_GENERICO) {
   const campos = erroresDeCampo(err);
   if (campos.length) return unicos(campos.map((e) => e.msg)).join('. ');
-  if (err?.response?.data?.error) return err.response.data.error;
+  // `error` puede ser un string o un objeto { code, message }: siempre devolvemos un string.
+  const raw = err?.response?.data?.error;
+  if (typeof raw === 'string' && raw) return raw;
+  if (typeof raw?.message === 'string' && raw.message) return raw.message;
   if (err && !err.response) return MENSAJE_SIN_CONEXION;
   return fallback;
 }

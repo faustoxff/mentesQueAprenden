@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import api from '../services/api';
+import { getErrorMessage } from '../utils/errores';
 
 export const useAuthStore = create(
   persist(
@@ -25,7 +26,7 @@ export const useAuthStore = create(
           });
           return { success: true };
         } catch (err) {
-          const error = err.response?.data?.error || 'Error al iniciar sesión';
+          const error = getErrorMessage(err, 'Error al iniciar sesión');
           set({ isLoading: false, error });
           return { success: false, error };
         }
@@ -49,9 +50,7 @@ export const useAuthStore = create(
           }
           return { success: true, autoLogin: !!data.session };
         } catch (err) {
-          const error = err.response?.data?.error
-            || err.response?.data?.errors?.map(e => e.msg).join(', ')
-            || 'Error al crear la cuenta';
+          const error = getErrorMessage(err, 'Error al crear la cuenta');
           set({ isLoading: false, error });
           return { success: false, error };
         }

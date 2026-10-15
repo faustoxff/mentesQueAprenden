@@ -8,6 +8,7 @@ import { useAuthStore } from '../../store/authStore';
 import { ToolResultCard } from './ChatToolResults';
 import { ChatAttachCard } from './ChatAttachCard';
 import MiniMarkdown from '../ui/MiniMarkdown';
+import { getErrorMessage } from '../../utils/errores';
 
 const MIMES_ADJUNTABLES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
 
@@ -112,7 +113,7 @@ export default function ChatSidebar() {
       });
       setMessages(prev => [...prev, { role: 'assistant', content: data.message, tool_results: data.tool_results }]);
     } catch (err) {
-      setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${err.response?.data?.error || err.message}` }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${getErrorMessage(err, err.message)}` }]);
     } finally {
       setLoading(false);
     }
