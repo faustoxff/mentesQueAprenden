@@ -37,7 +37,7 @@ function detectarAccionLocal(texto) {
   return null;
 }
 
-export default function ChatSidebar() {
+export default function ChatSidebar({ className = 'flex' }) {
   const { profesional, logout, isAdmin } = useAuthStore();
   const navigate = useNavigate();
 
@@ -140,7 +140,7 @@ export default function ChatSidebar() {
       onDragOver={(e) => e.preventDefault()}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
-      className="relative w-full md:w-[380px] bg-sidebar flex flex-col flex-shrink-0 h-[55vh] md:h-full"
+      className={`${className} relative w-full md:w-[380px] bg-sidebar flex-col flex-1 min-h-0 md:flex-none md:h-full`}
     >
       {dragOver && (
         <div className="absolute inset-0 z-30 bg-primary-500/20 border-2 border-dashed border-primary-400 rounded-xl flex items-center justify-center pointer-events-none">
