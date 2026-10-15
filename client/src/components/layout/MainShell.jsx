@@ -1,12 +1,11 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Users, CalendarDays, Bot } from 'lucide-react';
+import { Home, Users, Bot } from 'lucide-react';
 import ChatSidebar from '../chat/ChatSidebar';
 
 const TABS = [
   { to: '/', label: 'Inicio', icon: Home, end: true },
-  { to: '/pacientes', label: 'Pacientes', icon: Users },
-  { to: '/agenda', label: 'Agenda', icon: CalendarDays }
+  { to: '/pacientes', label: 'Pacientes', icon: Users }
 ];
 
 const tabClass = (active) =>
