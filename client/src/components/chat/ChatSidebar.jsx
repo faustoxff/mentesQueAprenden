@@ -222,7 +222,7 @@ export default function ChatSidebar({ className = 'flex' }) {
         {messages.length === 0 && (
           <div className="text-center py-6">
             <Bot size={36} className="mx-auto mb-3 text-[#4a4258]" />
-            <p className="text-[#f2eef7] mb-1">Hola, {profesional?.nombre}.</p>
+            <p className="text-[#f2eef7] mb-1">Hola, {profesional?.nombre}. Soy Caco.</p>
             <p className="text-sm text-[#9891a8] mb-5">¿En qué te puedo ayudar hoy?</p>
             <div className="flex flex-wrap gap-2 justify-center">
               {SUGERENCIAS.map(s => (
