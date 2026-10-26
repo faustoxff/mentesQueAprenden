@@ -11,3 +11,7 @@ build/
 server/respaldo-usuarios.json
 
 coverage/
+
+# Resultados de Playwright
+client/test-results/
+client/playwright-report/
