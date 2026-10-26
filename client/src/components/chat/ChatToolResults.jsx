@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { motion } from 'motion/react';
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, AlertTriangle } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { toast } from 'sonner';
 import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
+import { getErrorMessage } from '../../utils/errores';
 
 export function PacienteFormCard({ prefill = {} }) {
   const queryClient = useQueryClient();
@@ -280,6 +281,68 @@ export function TurnoFormCard({ prefill = {} }) {
   );
 }
 
+// La IA no borra nada por su cuenta: pide confirmación y la baja se hace acá, con el
+// token firmado por el servidor, cuando la persona aprieta el botón.
+export function ConfirmCard({ result }) {
+  const queryClient = useQueryClient();
+  const [estado, setEstado] = useState('pendiente'); // pendiente | enviando | hecho | cancelado
+  const [resultado, setResultado] = useState(null);
+
+  const confirmar = async () => {
+    setEstado('enviando');
+    try {
+      const { data } = await api.post('/ia/confirmar', { token: result.token });
+      setResultado(data);
+      setEstado('hecho');
+      queryClient.invalidateQueries({
+        predicate: (q) => typeof q.queryKey[0] === 'string' && q.queryKey[0].startsWith('pacientes')
+      });
+    } catch (err) {
+      toast.error(getErrorMessage(err, 'No se pudo completar la acción'));
+      setEstado('pendiente');
+    }
+  };
+
+  if (estado === 'hecho') {
+    return (
+      <div className="mt-2 bg-red-50 border border-red-200 rounded-xl px-3 py-2 text-sm">
+        <p className="font-medium text-red-800">Listo</p>
+        <p className="text-red-700 text-xs">{resultado?.message || result.descripcion}</p>
+      </div>
+    );
+  }
+  if (estado === 'cancelado') {
+    return <div className="mt-2 text-xs text-[#9891a8]">Cancelado: no se hizo ningún cambio.</div>;
+  }
+
+  return (
+    <div className="mt-2 bg-amber-50 border border-amber-200 rounded-xl p-3 text-sm">
+      <p className="font-medium text-amber-900 flex items-center gap-1.5">
+        <AlertTriangle size={15} /> ¿Confirmás?
+      </p>
+      <p className="text-amber-800 text-xs mt-1">{result.descripcion}. Esta acción no se puede deshacer desde acá.</p>
+      <div className="flex gap-2 mt-3">
+        <button
+          type="button"
+          onClick={confirmar}
+          disabled={estado === 'enviando'}
+          className="flex-1 py-1.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white text-xs font-medium rounded-lg"
+        >
+          {estado === 'enviando' ? 'Procesando...' : 'Sí, confirmar'}
+        </button>
+        <button
+          type="button"
+          onClick={() => setEstado('cancelado')}
+          disabled={estado === 'enviando'}
+          className="flex-1 py-1.5 border border-amber-300 text-amber-900 text-xs font-medium rounded-lg hover:bg-amber-100 disabled:opacity-50"
+        >
+          Cancelar
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function ToolResultCard({ name, result }) {
   const queryClient = useQueryClient();
 
@@ -297,6 +360,10 @@ export function ToolResultCard({ name, result }) {
 
   if (result?.type === 'form' && result.form === 'crear_turno') {
     return <TurnoFormCard prefill={result.prefill || {}} />;
+  }
+
+  if (result?.type === 'confirm') {
+    return <ConfirmCard result={result} />;
   }
 
   if (result?.error) {

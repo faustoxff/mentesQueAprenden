@@ -75,7 +75,14 @@ INSTRUCCIONES DE REDACCIÓN:
     messages: [{ role: 'user', content: prompt }]
   });
 
-  return res.choices[0].message.content.trim();
+  const texto = res?.choices?.[0]?.message?.content;
+  if (typeof texto !== 'string' || !texto.trim()) {
+    // OpenRouter puede devolver 200 con un error embebido o con contenido vacío.
+    const err = new Error('La IA no devolvió un informe válido. Probá de nuevo.');
+    err.status = 502;
+    throw err;
+  }
+  return texto.trim();
 }
 
 module.exports = { generarInformeTexto };

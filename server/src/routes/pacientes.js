@@ -97,7 +97,7 @@ router.patch('/:id',
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
 
     try {
-      const data = await pacienteService.actualizar(getAuthenticatedClient(req), req.params.id, req.body);
+      const data = await pacienteService.actualizar(getAuthenticatedClient(req), req.params.id, req.body, req.profesional);
       res.json(data);
     } catch (err) {
       res.status(err.status || 500).json({ error: err.message });

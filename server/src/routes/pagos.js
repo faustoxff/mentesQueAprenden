@@ -43,7 +43,7 @@ router.post('/',
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
 
     try {
-      const pago = await pagoService.crear(getAuthenticatedClient(req), req.profesional.id, req.body);
+      const pago = await pagoService.crear(getAuthenticatedClient(req), req.profesional.id, req.body, req.profesional.rol);
       res.status(201).json(pago);
     } catch (err) {
       manejarError(res, err);

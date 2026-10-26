@@ -49,7 +49,7 @@ Superado el límite → `429`.
 
 > Los refresh tokens de Supabase rotan: cada uno sirve **una sola vez**. El cliente (`client/src/services/api.js`) serializa el refresh para que varias requests con `401` simultáneas compartan un único `POST /auth/refresh`.
 
-> **Solo desarrollo:** con `NODE_ENV=development`, el token `dev-token` autentica como el primer admin activo. En cualquier otro entorno se rechaza con `401`.
+> No existe ningún token de atajo: todo pedido autenticado lleva un JWT de Supabase. Si Supabase no responde, el servidor contesta `503` en vez de dejar el pedido colgado.
 
 ### Pacientes — `/api/pacientes`
 
@@ -153,7 +153,10 @@ Todas requieren auth. Errores del proveedor → `502`. El cliente usa **timeout 
 | POST | `/resumir-sesion` | `sesion_id`, `notas_libres` | `{ resumen }` (3 oraciones, máx. 200 tokens) |
 | POST | `/sugerir-derivacion` | `paciente_id` | `{ sugerencia }` |
 | POST | `/analizar-pdf` | `archivo_id`, `pregunta?` (≤500) | `{ analisis, texto_extraido, modelo }`. `404` archivo inexistente, `422` tipo no soportado |
-| POST | `/chat` | `messages` (array ≥1, formato OpenAI) | `{ message, tool_results }` |
+| POST | `/chat` | `messages` (array de 1 a 100, solo roles `user` y `assistant`; cualquier otro rol se descarta) | `{ message, tool_results }` |
+| POST | `/confirmar` | `token` (el que devolvió una `tool_result` de tipo `confirm`) | Ejecuta la baja pedida por el chat. `400` token inválido o vencido (dura 5 min), `403` token de otra persona, `404` sin acceso al paciente |
+
+Todas las rutas de IA verifican, con el cliente del usuario, que tenga acceso al paciente / sesión / archivo indicado; si no, responden `404` (no `403`, para no revelar si el id existe). `/ia/*` tiene un rate limit propio de 30 pedidos por minuto.
 
 #### Chat con function calling manual
 

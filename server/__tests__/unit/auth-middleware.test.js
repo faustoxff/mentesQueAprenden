@@ -12,7 +12,7 @@ jest.mock('../../src/config/supabase', () => {
   };
 });
 
-const { requireAuth, requireAdmin } = require('../../src/middleware/auth');
+const { requireAuth, requireAdmin, getAuthenticatedClient } = require('../../src/middleware/auth');
 
 const crearRes = () => {
   const res = {};
@@ -36,11 +36,23 @@ describe('requireAuth', () => {
     expect(next).not.toHaveBeenCalled();
   });
 
-  test('el token "dev-token" se rechaza fuera de development', async () => {
+  test('no existe ningún token de atajo: "dev-token" se trata como un token inválido, también en development', async () => {
+    process.env.NODE_ENV = 'development';
+    mockGetUser.mockResolvedValue({ data: { user: null }, error: { message: 'invalid' } });
     const res = crearRes();
     const next = jest.fn();
     await requireAuth({ headers: { authorization: 'Bearer dev-token' } }, res, next);
+    expect(mockGetUser).toHaveBeenCalledWith('dev-token');
     expect(res.status).toHaveBeenCalledWith(401);
+    expect(next).not.toHaveBeenCalled();
+  });
+
+  test('si Supabase falla por red responde 503 en vez de colgar el pedido', async () => {
+    mockGetUser.mockRejectedValue(new Error('fetch failed'));
+    const res = crearRes();
+    const next = jest.fn();
+    await requireAuth({ headers: { authorization: 'Bearer x' } }, res, next);
+    expect(res.status).toHaveBeenCalledWith(503);
     expect(next).not.toHaveBeenCalled();
   });
 
@@ -105,5 +117,11 @@ describe('requireAdmin', () => {
     const res = crearRes();
     requireAdmin({}, res, jest.fn());
     expect(res.status).toHaveBeenCalledWith(403);
+  });
+});
+
+describe('getAuthenticatedClient', () => {
+  test('sin token no devuelve el cliente admin: lanza un error', () => {
+    expect(() => getAuthenticatedClient({})).toThrow();
   });
 });

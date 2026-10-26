@@ -3,6 +3,8 @@ const { supabaseAdmin } = require('../config/supabase');
 const { extraerTextoDocumento } = require('./geminiExtractor');
 const pacienteService = require('./PacienteService');
 const turnoService = require('./TurnoService');
+const { sanitizarBusqueda } = require('../utils/busqueda');
+const { crearToken, verificarToken } = require('../utils/confirmacion');
 const sesionService = require('./SesionService');
 
 const MODELO_TEXTO = 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
@@ -53,7 +55,7 @@ Acciones disponibles:
 - crear_turno: NO usar directamente; solo se invoca desde el formulario.
 - registrar_sesion: NO usar para listar ni consultar sesiones; solo para CARGAR una sesión ya realizada. params: { paciente_id, fecha: "YYYY-MM-DDTHH:MM:00", tipo, duracion_minutos?, notas_libres?, monto? }
 - listar_profesionales: params: {}
-- eliminar_paciente: params: { paciente_id: string } — DA DE BAJA a un paciente (no borra su historial clínico, solo lo oculta de los listados). Es una acción DESTRUCTIVA e IRREVERSIBLE desde el chat: nunca la ejecutes directamente aunque el usuario diga el nombre. Primero usá buscar_pacientes para encontrar el paciente_id real (si no hay resultados, avisá que no existe, no inventes que preguntaste un ID). Después mostrale al usuario el nombre completo encontrado y preguntale explícitamente "¿Confirmás eliminar a [nombre]? Esta acción no se puede deshacer desde acá." Solo ejecutá eliminar_paciente en el mensaje siguiente si el usuario confirma claramente (sí, dale, confirmo, etc).
+- eliminar_paciente: params: { paciente_id: string } — Pide DAR DE BAJA a un paciente (no borra su historial clínico, solo lo oculta de los listados). Vos NO la ejecutás: genera una tarjeta con un botón de confirmación y la persona decide con ese botón. Primero usá buscar_pacientes para encontrar el paciente_id real (si no hay resultados, avisá que no existe, no inventes que preguntaste un ID). Después llamá a eliminar_paciente con ese id y no pidas confirmación por texto ni la vuelvas a llamar.
 
 Si no necesitás ejecutar ninguna acción, respondé solo con texto plano.
 Respondé siempre en español, conciso.
@@ -133,28 +135,29 @@ class IAService {
     return contenido;
   }
 
-  // El chatbot usa supabaseAdmin (bypasea RLS), así que hay que replicar acá
-  // la misma regla de acceso que la policy pacientes_select: dueño o derivación activa.
-  async tieneAccesoPorDerivacion(pacienteId, profesionalId) {
-    const { data } = await supabaseAdmin
-      .from('derivaciones')
+  // Todo lo que se lee o escribe en nombre de la persona va con SU cliente (`db`,
+  // autenticado con su JWT), así RLS aplica la regla de acceso: titular del paciente
+  // o derivación aceptada. Estos helpers dan un 404 (no un 403) para no revelar si el
+  // id existe.
+  async asegurarAccesoPaciente(db, pacienteId) {
+    const { data } = await db
+      .from('pacientes')
       .select('id')
-      .eq('paciente_id', pacienteId)
-      .eq('activa', true)
-      .eq('estado', 'aceptada')
-      .or(`profesional_origen_id.eq.${profesionalId},profesional_destino_id.eq.${profesionalId}`)
-      .limit(1);
-    return (data || []).length > 0;
+      .eq('id', pacienteId)
+      .is('deleted_at', null)
+      .maybeSingle();
+    if (!data) throw Object.assign(new Error('Paciente no encontrado'), { status: 404 });
   }
 
   // ─────────────────────────────────────────────────────────────
   // Sugerencias con IA de texto
   // ─────────────────────────────────────────────────────────────
 
-  async sugerirNotas({ notas_parciales, paciente_id, tipo_sesion, especialidad }) {
+  async sugerirNotas({ notas_parciales, paciente_id, tipo_sesion, especialidad }, db) {
+    await this.asegurarAccesoPaciente(db, paciente_id);
     const [{ data: paciente }, { data: anteriores }] = await Promise.all([
-      supabaseAdmin.from('pacientes').select('fecha_nacimiento, motivo_consulta').eq('id', paciente_id).single(),
-      supabaseAdmin.from('sesiones').select('fecha, tipo, resumen_ia, notas_libres').eq('paciente_id', paciente_id).order('fecha', { ascending: false }).limit(3)
+      db.from('pacientes').select('fecha_nacimiento, motivo_consulta').eq('id', paciente_id).single(),
+      db.from('sesiones').select('fecha, tipo, resumen_ia, notas_libres').eq('paciente_id', paciente_id).order('fecha', { ascending: false }).limit(3)
     ]);
 
     const edad = this.calcularEdad(paciente?.fecha_nacimiento);
@@ -186,12 +189,16 @@ Redactá en primera persona del profesional. Máximo 300 palabras, lenguaje clí
     return this.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }]);
   }
 
-  async resumirSesion({ sesion_id, notas_libres }) {
-    const { data: sesion } = await supabaseAdmin
+  async resumirSesion({ sesion_id, notas_libres }, db, profesional) {
+    const { data: sesion } = await db
       .from('sesiones')
-      .select('tipo, paciente:pacientes(fecha_nacimiento), profesional:profesionales!profesional_id(especialidad)')
+      .select('tipo, profesional_id, paciente:pacientes(fecha_nacimiento), profesional:profesionales!profesional_id(especialidad)')
       .eq('id', sesion_id)
-      .single();
+      .maybeSingle();
+    // Solo la autora de la sesión (o un admin) puede escribirle el resumen.
+    if (!sesion || (sesion.profesional_id !== profesional.id && profesional.rol !== 'admin')) {
+      throw Object.assign(new Error('Sesión no encontrada'), { status: 404 });
+    }
 
     const edad = this.calcularEdad(sesion?.paciente?.fecha_nacimiento);
     const especialidad = sesion?.profesional?.especialidad || 'salud';
@@ -201,14 +208,16 @@ Redactá en primera persona del profesional. Máximo 300 palabras, lenguaje clí
 Notas:\n${notas_libres}`;
 
     const resumen = await this.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }], 200);
-    await supabaseAdmin.from('sesiones').update({ resumen_ia: resumen, ia_utilizada: true }).eq('id', sesion_id);
+    const { error } = await db.from('sesiones').update({ resumen_ia: resumen, ia_utilizada: true }).eq('id', sesion_id);
+    if (error) throw new Error(error.message);
     return resumen;
   }
 
-  async sugerirDerivacion({ paciente_id, contexto_adicional }) {
+  async sugerirDerivacion({ paciente_id, contexto_adicional }, db) {
+    await this.asegurarAccesoPaciente(db, paciente_id);
     const [{ data: paciente }, { data: sesiones }] = await Promise.all([
-      supabaseAdmin.from('pacientes').select('motivo_consulta, fecha_nacimiento').eq('id', paciente_id).single(),
-      supabaseAdmin.from('sesiones').select('tipo, resumen_ia, notas_libres').eq('paciente_id', paciente_id).order('fecha', { ascending: false }).limit(5)
+      db.from('pacientes').select('motivo_consulta, fecha_nacimiento').eq('id', paciente_id).single(),
+      db.from('sesiones').select('tipo, resumen_ia, notas_libres').eq('paciente_id', paciente_id).order('fecha', { ascending: false }).limit(5)
     ]);
 
     const historial = sesiones?.map(s => s.resumen_ia || s.notas_libres?.slice(0, 200)).filter(Boolean).join('\n\n') || 'Sin historial.';
@@ -231,18 +240,19 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
     return this.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }], 300);
   }
 
-  async analizarPDF({ archivo_id, pregunta }) {
-    const { data: archivo, error: archErr } = await supabaseAdmin
+  async analizarPDF({ archivo_id, pregunta }, db) {
+    const { data: archivo, error: archErr } = await db
       .from('archivos_adjuntos')
       .select('storage_path, nombre_original, mime_type, paciente_id, tipo')
       .eq('id', archivo_id)
-      .single();
+      .maybeSingle();
 
     if (archErr || !archivo) {
       const notFound = new Error('Archivo no encontrado');
       notFound.status = 404;
       throw notFound;
     }
+    await this.asegurarAccesoPaciente(db, archivo.paciente_id);
 
     const mimesSoportados = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
     if (!mimesSoportados.includes(archivo.mime_type)) {
@@ -307,40 +317,28 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
       }
 
       case 'buscar_pacientes': {
-        const { data: derivados } = await supabaseAdmin
-          .from('derivaciones')
-          .select('paciente_id')
-          .eq('activa', true)
-          .eq('estado', 'aceptada')
-          .or(`profesional_origen_id.eq.${profesional.id},profesional_destino_id.eq.${profesional.id}`);
-        const idsDerivados = (derivados || []).map(d => d.paciente_id);
-
-        const filtroAcceso = idsDerivados.length
-          ? `profesional_principal_id.eq.${profesional.id},id.in.(${idsDerivados.join(',')})`
-          : `profesional_principal_id.eq.${profesional.id}`;
-
-        const { data: candidatos } = await supabaseAdmin
+        const busqueda = sanitizarBusqueda(args.busqueda);
+        if (!busqueda) return [];
+        // Con el cliente del usuario, RLS ya limita a sus pacientes y a los derivados.
+        const { data } = await db
           .from('pacientes')
-          .select('id, nombre, apellido, dni, fecha_nacimiento, estado, telefono, motivo_consulta, profesional_principal_id')
-          .or(`nombre.ilike.%${args.busqueda}%,apellido.ilike.%${args.busqueda}%,dni.ilike.%${args.busqueda}%`)
+          .select('id, nombre, apellido, dni, fecha_nacimiento, estado, telefono, motivo_consulta')
+          .or(`nombre.ilike.%${busqueda}%,apellido.ilike.%${busqueda}%,dni.ilike.%${busqueda}%`)
           .is('deleted_at', null)
-          .limit(50);
-
-        const idsAcceso = new Set(idsDerivados);
-        const data = (candidatos || [])
-          .filter(p => p.profesional_principal_id === profesional.id || idsAcceso.has(p.id))
-          .slice(0, 5);
-        return data.map(({ profesional_principal_id, ...p }) => p);
+          .limit(5);
+        return data || [];
       }
 
       case 'ver_paciente': {
-        const { data: pac } = await supabaseAdmin.from('pacientes').select('*').eq('id', args.paciente_id).single();
+        const { data: pac } = await db
+          .from('pacientes')
+          .select('id, nombre, apellido, dni, fecha_nacimiento, genero, telefono, email, motivo_consulta, estado, obra_social_id, profesional_principal_id')
+          .eq('id', args.paciente_id)
+          .is('deleted_at', null)
+          .maybeSingle();
         if (!pac) return { error: 'Paciente no encontrado' };
 
-        const tieneAcceso = pac.profesional_principal_id === profesional.id || await this.tieneAccesoPorDerivacion(args.paciente_id, profesional.id);
-        if (!tieneAcceso) return { error: 'No tenés acceso a este paciente' };
-
-        const { data: sesiones } = await supabaseAdmin.from('sesiones')
+        const { data: sesiones } = await db.from('sesiones')
           .select('id, fecha, tipo, resumen_ia, notas_libres, monto, pagado')
           .eq('paciente_id', args.paciente_id)
           .order('fecha', { ascending: false })
@@ -358,13 +356,17 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
         if (!args.fecha_nacimiento) throw new Error('fecha_nacimiento es obligatoria para crear un paciente');
         if (!args.dni || !/^\d{7,8}$/.test(args.dni)) throw new Error('dni inválido: debe tener 7 u 8 dígitos');
         const CAMPOS_PACIENTE = ['nombre', 'apellido', 'dni', 'fecha_nacimiento', 'telefono', 'email', 'motivo_consulta'];
+        // Solo un admin puede asignarlo a otro profesional.
+        const principal = (profesional.rol === 'admin' && args.profesional_principal_id) || profesional.id;
         const payload = {
           ...Object.fromEntries(Object.entries(args).filter(([k]) => CAMPOS_PACIENTE.includes(k))),
-          profesional_principal_id: args.profesional_principal_id || profesional.id,
+          profesional_principal_id: principal,
           created_by: profesional.id,
           estado: 'activo'
         };
-        const { data, error } = await supabaseAdmin.from('pacientes').insert(payload).select().single();
+        // Para otro titular, el insert pasa pero el select posterior no (RLS): va con el admin ya validado.
+        const cliente = principal === profesional.id ? db : supabaseAdmin;
+        const { data, error } = await cliente.from('pacientes').insert(payload).select().single();
         if (error) throw new Error(error.message);
         return data;
       }
@@ -438,7 +440,8 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
         const duracion = args.duracion_minutos || 50;
         const inicio = new Date(args.fecha_inicio);
         const fin = new Date(inicio.getTime() + duracion * 60000);
-        const { data, error } = await supabaseAdmin.from('turnos').insert({
+        if (args.paciente_id) await this.asegurarAccesoPaciente(db, args.paciente_id);
+        const { data, error } = await db.from('turnos').insert({
           paciente_id: args.paciente_id,
           profesional_id: profesional.id,
           created_by: profesional.id,
@@ -453,7 +456,7 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
       }
 
       case 'listar_profesionales': {
-        const { data } = await supabaseAdmin
+        const { data } = await db
           .from('profesionales')
           .select('id, nombre, apellido, especialidad, rol')
           .eq('activo', true);
@@ -464,7 +467,8 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
         if (args.tipo && !TIPOS_SESION.includes(args.tipo)) {
           throw new Error(`tipo inválido: debe ser uno de ${TIPOS_SESION.join(', ')}`);
         }
-        const { data, error } = await supabaseAdmin.from('sesiones').insert({
+        await this.asegurarAccesoPaciente(db, args.paciente_id);
+        const { data, error } = await db.from('sesiones').insert({
           paciente_id: args.paciente_id,
           profesional_id: profesional.id,
           created_by: profesional.id,
@@ -479,21 +483,46 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
       }
 
       case 'eliminar_paciente': {
+        // El modelo NO borra: solo genera una solicitud de confirmación firmada por el
+        // servidor. El borrado se hace cuando la persona aprieta el botón (confirmarEliminacion).
         if (!args.paciente_id) throw new Error('paciente_id es obligatorio');
-        const { data, error } = await supabaseAdmin
+        const { data: pac } = await db
           .from('pacientes')
-          .update({ deleted_at: new Date().toISOString() })
+          .select('id, nombre, apellido')
           .eq('id', args.paciente_id)
           .is('deleted_at', null)
-          .select('id, nombre, apellido')
-          .single();
-        if (error) throw new Error(error.code === 'PGRST116' ? 'Paciente no encontrado' : error.message);
-        return data;
+          .maybeSingle();
+        if (!pac) throw new Error('Paciente no encontrado');
+        return {
+          type: 'confirm',
+          accion: 'eliminar_paciente',
+          paciente_id: pac.id,
+          descripcion: `Dar de baja a ${pac.apellido}, ${pac.nombre}`,
+          token: crearToken({ accion: 'eliminar_paciente', profesionalId: profesional.id, recursoId: pac.id })
+        };
       }
 
       default:
         throw new Error(`Tool desconocida: ${nombre}`);
     }
+  }
+
+  // Ejecuta la baja que antes pidió el chat, solo con un token válido, vigente y de esta persona.
+  async confirmarEliminacion(token, profesional, db) {
+    const { recursoId } = verificarToken(token, { accion: 'eliminar_paciente', profesionalId: profesional.id });
+    return pacienteService.eliminar(db, recursoId);
+  }
+
+  // El cliente manda el historial completo: solo se aceptan mensajes de usuario y de
+  // asistente. Un { role: 'system' } enviado a mano se descarta (si no, se procesaba
+  // como instrucción del sistema).
+  filtrarMensajes(messages) {
+    const limpios = (Array.isArray(messages) ? messages : [])
+      .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.content === 'string' && m.content.trim())
+      .slice(-30)
+      .map(m => ({ role: m.role, content: m.content.slice(0, 8000) }));
+    if (!limpios.length) throw Object.assign(new Error('No hay mensajes válidos'), { status: 422 });
+    return limpios;
   }
 
   parsearAccion(texto) {
@@ -544,7 +573,7 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
   async chat({ messages, profesional, db }) {
     const chatMessages = [
       { role: 'system', content: this.construirSystemPrompt(profesional) },
-      ...messages
+      ...this.filtrarMensajes(messages)
     ];
 
     const historial = [...chatMessages];
@@ -580,7 +609,7 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
       // Formularios interactivos: el formulario ya explica qué datos pide,
       // así que no hace falta (ni conviene, por latencia) que el modelo
       // también lo describa en texto — se descarta el texto y se corta acá.
-      if (accion.action === 'mostrar_formulario_paciente' || accion.action === 'mostrar_formulario_turno') {
+      if (accion.action === 'mostrar_formulario_paciente' || accion.action === 'mostrar_formulario_turno' || toolResult.result?.type === 'confirm') {
         mensajeFinal = '';
         sinMensaje = true;
         break;

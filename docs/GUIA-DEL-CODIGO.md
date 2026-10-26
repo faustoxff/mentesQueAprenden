@@ -47,7 +47,7 @@ Definidos en [config/supabase.js](../server/src/config/supabase.js):
 
 ### Autenticación
 
-`requireAuth` ([middleware/auth.js](../server/src/middleware/auth.js)): lee `Authorization: Bearer`, valida el token con Supabase, carga el profesional (`req.profesional`) y rechaza cuentas desactivadas (403). Con `NODE_ENV=development` existe un `dev-token` de atajo; en cualquier otro entorno se rechaza.
+`requireAuth` ([middleware/auth.js](../server/src/middleware/auth.js)): lee `Authorization: Bearer`, valida el token con Supabase, carga el profesional (`req.profesional`) y rechaza cuentas desactivadas (403). No hay tokens de atajo: si Supabase falla, responde `503`.
 
 ### Privacidad: quién ve qué
 
@@ -57,14 +57,17 @@ Definido en `server/migrations/` (SQL, 001 → 007), en este orden de importanci
 2. Las derivaciones tienen estados (`pendiente → aceptada/rechazada → completada`). Completar o rechazar cierra el acceso.
 3. `registrarAcceso` (auditoría) deja un registro en `logs_acceso` cada vez que alguien abre una historia clínica (Ley 25.326).
 
-Trampa conocida: al crear con `insert(...).select()` la fila tiene que pasar la política de **insert y la de select**. Un admin que crea un paciente asignado a otro profesional pasa la primera y falla la segunda ("violates row-level security policy").
+Migración **008** (la más reciente): RLS en todas las tablas, `puede_acceder_paciente()` como condición de los INSERT, protección de rol/honorarios y de la titularidad con triggers, y dos funciones (`turnos_ocupacion`, `consultorio_libre`) para el calendario compartido, que devuelven solo ocupación y nunca `paciente_id` ni `notas`.
+
+Trampa conocida: al crear con `insert(...).select()` la fila tiene que pasar la política de **insert y la de select**. Un admin que crea un paciente asignado a otro profesional pasa la primera y falla la segunda ("violates row-level security policy"): por eso ese caso puntual se inserta con el cliente admin, ya autorizado.
 
 ## 3. El asistente de IA (Menta)
 
 Todo en [services/IAService.js](../server/src/services/IAService.js), expuesto por `routes/ia.js`.
 
 - **Chat** (`chat()`): manda a OpenRouter el `SYSTEM_PROMPT_BASE` más el historial. El modelo responde con texto y, si hace falta, un bloque JSON `{"action": "...", "params": {...}}`. El servidor lo detecta, ejecuta la herramienta con `ejecutarTool()` (por ejemplo `ver_agenda`, `buscar_pacientes`) y devuelve el texto más `tool_results`, que el front dibuja como tarjetas ([ChatToolResults.jsx](../client/src/components/chat/ChatToolResults.jsx)).
-- Las acciones que escriben datos (crear paciente o turno) **no se ejecutan directo**: el chat abre un formulario y el usuario confirma.
+- Las acciones que escriben datos (crear paciente o turno) **no se ejecutan directo**: el chat abre un formulario y el usuario confirma. La baja de un paciente funciona igual: la herramienta solo devuelve una solicitud con un **token firmado** ([utils/confirmacion.js](../server/src/utils/confirmacion.js), vence a los 5 minutos y es de esa persona) y la baja la ejecuta el botón de la tarjeta (`POST /ia/confirmar`). El modelo no puede borrar aunque alguien le inyecte instrucciones.
+- **Todo con el cliente del usuario:** las herramientas y los endpoints de IA leen y escriben con el `db` del profesional (RLS aplica). `supabaseAdmin` solo queda para pasos ya autorizados (firmar una URL, crear un paciente asignado a otro siendo admin). El historial que manda el navegador se filtra: solo roles `user` y `assistant`.
 - **Funciones sueltas**: sugerir notas, resumir una sesión, sugerir derivación, analizar PDF.
 - **Archivos**: [geminiExtractor.js](../server/src/services/geminiExtractor.js) saca el texto de PDFs e imágenes. `pdf-parse` se carga bajo demanda porque en Vercel no existe `DOMMatrix` y al cargarlo al inicio tiraba abajo toda la API; si no carga, se usa la IA.
 - **Informes**: [informeGenerator.js](../server/src/services/informeGenerator.js) redacta con IA a partir de datos provistos, sin inventar puntajes. El front los exporta a PDF ([exportarInformePdf.js](../client/src/utils/exportarInformePdf.js)).

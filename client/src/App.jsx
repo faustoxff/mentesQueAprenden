@@ -5,6 +5,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import { useAuthStore } from './store/authStore';
 import LoginPage from './components/auth/LoginPage';
 import RegisterPage from './components/auth/RegisterPage';
+import ResetPasswordPage from './components/auth/ResetPasswordPage';
 import MainShell from './components/layout/MainShell';
 import InicioPage from './pages/InicioPage';
 import PacientesPage from './pages/PacientesPage';
@@ -44,6 +45,7 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<PublicOnlyRoute><LoginPage /></PublicOnlyRoute>} />
           <Route path="/register" element={<PublicOnlyRoute><RegisterPage /></PublicOnlyRoute>} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
           <Route
             path="/*"
             element={

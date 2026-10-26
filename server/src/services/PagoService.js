@@ -46,7 +46,20 @@ class PagoService {
     return data;
   }
 
-  async crear(db, profesionalId, { sesion_id, monto_total, metodo_pago, numero_comprobante }) {
+  async crear(db, profesionalId, { sesion_id, monto_total, metodo_pago, numero_comprobante }, rol) {
+    // Antes de usar el cliente admin: la sesión tiene que ser visible para quien cobra
+    // (RLS) y ser suya, salvo que sea admin. Si no, 404 (no se revela si existe).
+    const { data: propia } = await db
+      .from('sesiones')
+      .select('id, profesional_id')
+      .eq('id', sesion_id)
+      .maybeSingle();
+    if (!propia || (propia.profesional_id !== profesionalId && rol !== 'admin')) {
+      const err = new Error('Sesión no encontrada');
+      err.status = 404;
+      throw err;
+    }
+
     const { data: sesion, error: sesErr } = await supabaseAdmin
       .from('sesiones')
       .select('*, profesional:profesionales!profesional_id(porcentaje_honorarios)')

@@ -13,6 +13,10 @@ function crearDb(resultados = {}) {
   };
 
   const db = {
+    rpc(nombre, args) {
+      llamadas.push(['rpc', nombre, [args]]);
+      return Promise.resolve(siguiente(`rpc:${nombre}`));
+    },
     from(tabla) {
       const q = {};
       ['select', 'insert', 'update', 'delete', 'eq', 'neq', 'is', 'in', 'or', 'order', 'range', 'gte', 'lte', 'lt', 'gt', 'limit']
@@ -23,8 +27,9 @@ function crearDb(resultados = {}) {
       return q;
     }
   };
+  const rpcs = (nombre) => llamadas.filter(([t, m]) => t === 'rpc' && m === nombre).map(([, , a]) => a[0]);
   const enTabla = (tabla, metodo) => llamadas.filter(([t, m]) => t === tabla && m === metodo).map(([, , a]) => a);
-  return { db, llamadas, enTabla };
+  return { db, llamadas, enTabla, rpcs };
 }
 
 module.exports = { crearDb };

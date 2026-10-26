@@ -1,4 +1,5 @@
 const { supabaseAdmin } = require('../config/supabase');
+const { sanitizarBusqueda } = require('../utils/busqueda');
 
 const CAMPOS_UUID = ['obra_social_id', 'profesional_principal_id'];
 
@@ -21,8 +22,9 @@ class PacienteService {
       .order('apellido', { ascending: true })
       .range((page - 1) * limit, page * limit - 1);
 
-    if (busqueda) {
-      query = query.or(`nombre.ilike.%${busqueda}%,apellido.ilike.%${busqueda}%,dni.ilike.%${busqueda}%`);
+    const termino = sanitizarBusqueda(busqueda);
+    if (termino) {
+      query = query.or(`nombre.ilike.%${termino}%,apellido.ilike.%${termino}%,dni.ilike.%${termino}%`);
     }
     if (estado) query = query.eq('estado', estado);
     if (profesional_id) query = query.eq('profesional_principal_id', profesional_id);
@@ -75,11 +77,23 @@ class PacienteService {
       Object.entries(body).filter(([k, v]) => CAMPOS_CREABLES.includes(k) && !(CAMPOS_UUID.includes(k) && v === ''))
     );
 
-    const { data, error } = await db
+    // Asignar el paciente a otro profesional es cosa de admin.
+    const principal = insertData.profesional_principal_id || profesional.id;
+    if (principal !== profesional.id && profesional.rol !== 'admin') {
+      const err = new Error('Solo un administrador puede asignar el paciente a otro profesional');
+      err.status = 403;
+      throw err;
+    }
+    // Con otro titular el insert pasa (es admin) pero el .select() posterior no, porque
+    // RLS no deja ver pacientes ajenos ("new row violates row-level security policy"):
+    // ese caso va con el cliente admin, ya autorizado arriba.
+    const cliente = principal === profesional.id ? db : supabaseAdmin;
+
+    const { data, error } = await cliente
       .from('pacientes')
       .insert({
         ...insertData,
-        profesional_principal_id: insertData.profesional_principal_id || profesional.id,
+        profesional_principal_id: principal,
         created_by: profesional.id
       })
       .select()
@@ -99,7 +113,7 @@ class PacienteService {
     return data;
   }
 
-  async actualizar(db, id, body) {
+  async actualizar(db, id, body, profesional) {
     // Allowlist explícita de campos editables
     const CAMPOS_EDITABLES = [
       'nombre', 'apellido', 'dni', 'fecha_nacimiento', 'genero', 'telefono',
@@ -114,6 +128,8 @@ class PacienteService {
     // "" en una columna UUID: sin obra social se guarda null; sin profesional se deja el actual.
     if (updateData.obra_social_id === '') updateData.obra_social_id = null;
     if (updateData.profesional_principal_id === '') delete updateData.profesional_principal_id;
+    // Reasignar la titularidad: solo admin (la base también lo impide con un trigger).
+    if (profesional?.rol !== 'admin') delete updateData.profesional_principal_id;
 
     const { data, error } = await db
       .from('pacientes')

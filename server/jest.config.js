@@ -4,9 +4,9 @@ module.exports = {
   testTimeout: 20000,
   // Cobertura de los tests unitarios (npm run test:coverage). Se mide solo sobre
   // la lógica de negocio y el middleware; las rutas se cubren con integración.
-  collectCoverageFrom: ['src/services/**/*.js', 'src/middleware/**/*.js'],
+  collectCoverageFrom: ['src/services/**/*.js', 'src/middleware/**/*.js', 'src/utils/**/*.js'],
   // Piso: si la cobertura baja de esto, el CI falla. Subirlo a medida que se agreguen tests.
-  coverageThreshold: { global: { statements: 14, branches: 12, functions: 9, lines: 15 } },
+  coverageThreshold: { global: { statements: 38, branches: 34, functions: 31, lines: 40 } },
   coverageReporters: ['text-summary', 'text', 'lcov'],
   projects: [
     {

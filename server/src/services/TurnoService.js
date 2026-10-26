@@ -38,10 +38,36 @@ class TurnoService {
       };
     });
 
+    // RLS ya no deja ver los turnos ajenos: la ocupación de los consultorios viene de
+    // una función de la base que devuelve solo fecha/hora, consultorio y profesional.
+    const ocupados = await this.ocupacionAjena(db, { fecha_inicio, fecha_fin, profesional_id }, new Set(turnos.map(t => t.id)));
+    turnos.push(...ocupados);
+    turnos.sort((a, b) => new Date(a.fecha_inicio) - new Date(b.fecha_inicio));
+
     if (!incluirSesiones || (profesional_id && profesional_id !== profesionalActualId)) return turnos;
 
     const sesiones = await this.sesionesSinTurno(db, profesionalActualId, fecha_inicio, fecha_fin);
     return [...turnos, ...sesiones].sort((a, b) => new Date(a.fecha_inicio) - new Date(b.fecha_inicio));
+  }
+
+  async ocupacionAjena(db, { fecha_inicio, fecha_fin, profesional_id }, idsYaIncluidos) {
+    const { data, error } = await db.rpc('turnos_ocupacion', {
+      p_desde: fecha_inicio || null,
+      p_hasta: fecha_fin || null
+    });
+    if (error) throw new Error(error.message);
+
+    return (data || [])
+      .filter(t => !idsYaIncluidos.has(t.id) && (!profesional_id || t.profesional_id === profesional_id))
+      .map(t => ({
+        id: t.id,
+        fecha_inicio: t.fecha_inicio,
+        fecha_fin: t.fecha_fin,
+        estado: t.estado,
+        consultorio: t.consultorio,
+        ocupado: true,
+        profesional: { id: t.profesional_id, nombre: t.profesional_nombre, apellido: t.profesional_apellido }
+      }));
   }
 
   // Una sesión cargada desde "Nueva sesión" (sin pasar por un turno) no tiene

@@ -98,7 +98,7 @@ MentesQueAprenden/
 │       ├── store/            # Estado de autenticación (Zustand)
 │       └── utils/            # Exportación de informes a PDF
 └── server/                   # Backend Express
-    ├── migrations/           # Esquema SQL y políticas RLS (001 → 007)
+    ├── migrations/           # Esquema SQL y políticas RLS (001 → 008)
     ├── __tests__/            # Tests de seguridad, validación, IA y end-to-end
     └── src/
         ├── server.js         # Punto de entrada (levanta el servidor)
@@ -134,7 +134,7 @@ cp client/.env.example client/.env
 # …y completar los valores (ver sección siguiente)
 
 # 4. Crear la base de datos: ejecutar en orden, en el SQL Editor de Supabase,
-#    los archivos server/migrations/001_*.sql a 007_*.sql
+#    los archivos server/migrations/001_*.sql a 008_*.sql
 
 # 5. Crear en Supabase Storage un bucket privado llamado "historias-clinicas"
 
@@ -197,6 +197,7 @@ El esquema vive en `server/migrations/` y se aplica en orden:
 | `005_derivacion_solo_aceptada.sql` | El acceso por derivación requiere que esté aceptada |
 | `006_fix_pacientes_update_check.sql` | Corrección de la política de actualización de pacientes |
 | `007_consultorios.sql` | Consultorios compartidos y trigger anti-superposición de turnos |
+| `008_endurecimiento_seguridad.sql` | RLS en `profesionales`, `obras_sociales` y `configuracion_espacio`; protección de rol/estado/honorarios; `turnos_select` restrictivo + funciones `turnos_ocupacion` y `consultorio_libre` para el calendario compartido; los INSERT exigen acceso al paciente; DELETE de archivos; titularidad de pacientes solo admin |
 
 ---
 
@@ -247,7 +248,10 @@ Como los modelos `:free` de OpenRouter comparten capacidad entre todos sus usuar
 - Helmet, CORS restringido al frontend, límite de tamaño de body y rate limiting (más estricto en `/auth`, contando solo intentos fallidos).
 - Auditoría de accesos a historias clínicas en `logs_acceso`.
 - Archivos clínicos en un bucket privado, accesibles solo por URLs firmadas que vencen a los 5 minutos.
-- En `NODE_ENV=development` existe un token `dev-token` que autentica como el primer admin activo, pensado solo para desarrollo local; está bloqueado en cualquier otro entorno.
+- No hay tokens de atajo ni usuarios de desarrollo: toda sesión pasa por Supabase Auth.
+- **El chat de IA no puede borrar nada por su cuenta:** pide una confirmación firmada por el servidor y la baja la ejecuta la persona con un botón (`POST /api/ia/confirmar`). Los endpoints y herramientas de IA usan el cliente del propio usuario, así que RLS aplica igual que en el resto de la app.
+- Los profesionales no pueden cambiarse el rol, el estado ni los honorarios (trigger en la base), y solo un admin reasigna la titularidad de un paciente.
+- Rate limit propio para `/api/ia` (30 pedidos por minuto por IP, configurable con `RATE_LIMIT_IA_MAX`).
 
 ---
 
@@ -266,4 +270,4 @@ Los tests (Jest + Supertest) corren contra un proyecto real de Supabase, por lo 
 | `__tests__/ia` | Que la IA no invente datos y que las tools del chat devuelvan lo correcto |
 | `__tests__/e2e` | Flujo completo de un paciente de punta a punta |
 
-GitHub Actions (`.github/workflows/tests.yml`) corre la suite en cada push y pull request a `master`. Las credenciales se configuran como *secrets* del repositorio: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `SUPABASE_JWT_SECRET`, `OPENROUTER_API_KEY`.
+GitHub Actions (`.github/workflows/ci.yml`) corre en cada push y pull request a `master` los tests unitarios del server y los del client (con cobertura y build). Los de integración (`npm run test:integration --workspace server`) solo corren si cargás secrets `TEST_*` apuntando a **una base de pruebas, nunca la de producción** (ver `server/__tests__/README.md`).

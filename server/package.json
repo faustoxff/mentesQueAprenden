@@ -7,10 +7,10 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "migrate": "node src/utils/runMigrations.js",
-    "test": "NODE_ENV=test jest --runInBand --selectProjects unit",
-    "test:integration": "NODE_ENV=test jest --runInBand --selectProjects integration",
-    "test:all": "NODE_ENV=test jest --runInBand",
-    "test:coverage": "NODE_ENV=test jest --runInBand --selectProjects unit --coverage"
+    "test": "cross-env NODE_ENV=test jest --runInBand --selectProjects unit",
+    "test:integration": "cross-env NODE_ENV=test jest --runInBand --selectProjects integration",
+    "test:all": "cross-env NODE_ENV=test jest --runInBand",
+    "test:coverage": "cross-env NODE_ENV=test jest --runInBand --selectProjects unit --coverage"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
@@ -31,6 +31,7 @@
     "uuid": "^10.0.0"
   },
   "devDependencies": {
+    "cross-env": "^10.1.0",
     "jest": "^30.5.1",
     "nodemon": "^3.1.14",
     "supertest": "^7.2.2"

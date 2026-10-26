@@ -52,6 +52,16 @@ const authLimiter = rateLimit({
   message: { error: 'Demasiados intentos de login. Esperá unos minutos e intentá de nuevo.' }
 });
 
+// Cada pedido a /api/ia consume cuota del proveedor de IA y tarda segundos: tiene
+// un límite propio, más estricto que el global.
+const iaLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: Number(process.env.RATE_LIMIT_IA_MAX) || 30,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Demasiados pedidos a la IA, esperá un minuto e intentá de nuevo.' }
+});
+
 // Parseo
 // Notas clínicas largas (o sugeridas por IA) superan fácil los 10 KB.
 app.use(express.json({ limit: '200kb' }));
@@ -77,7 +87,7 @@ app.use('/api/profesionales', profesionalesRoutes);
 app.use('/api/obras-sociales', obrasSocialesRoutes);
 app.use('/api/turnos', turnosRoutes);
 app.use('/api/pagos', pagosRoutes);
-app.use('/api/ia', iaRoutes);
+app.use('/api/ia', iaLimiter, iaRoutes);
 app.use('/api/evaluaciones', evaluacionesRoutes);
 
 // 404

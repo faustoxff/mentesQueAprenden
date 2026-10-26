@@ -5,6 +5,14 @@ const iaService = require('../services/IAService');
 
 const router = express.Router();
 
+// Errores con status < 500 (404 por falta de acceso, 422, etc.) se devuelven tal cual;
+// el resto se enmascara con el mensaje genérico de la ruta.
+const responderError = (res, err, mensajeGenerico, statusPorDefecto = 502) => {
+  if (err.status && err.status < 500) return res.status(err.status).json({ error: err.message });
+  console.error('IA error:', err.message, err.upstreamDetail || '');
+  return res.status(statusPorDefecto).json({ error: err.status ? err.message : mensajeGenerico });
+};
+
 // POST /ia/sugerir-notas — completa notas parciales del profesional con contexto del paciente
 router.post('/sugerir-notas',
   requireAuth,
@@ -19,11 +27,10 @@ router.post('/sugerir-notas',
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
 
     try {
-      const sugerencia = await iaService.sugerirNotas(req.body);
+      const sugerencia = await iaService.sugerirNotas(req.body, getAuthenticatedClient(req));
       res.json({ sugerencia });
     } catch (err) {
-      console.error('OpenRouter error:', err.message);
-      res.status(502).json({ error: 'Error al conectar con la IA de texto' });
+      responderError(res, err, 'Error al conectar con la IA de texto');
     }
   }
 );
@@ -40,7 +47,7 @@ router.post('/resumir-sesion',
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
 
     try {
-      const resumen = await iaService.resumirSesion(req.body);
+      const resumen = await iaService.resumirSesion(req.body, getAuthenticatedClient(req), req.profesional);
       res.json({ resumen });
     } catch (err) {
       console.error('OpenRouter error:', err.message);
@@ -58,11 +65,10 @@ router.post('/sugerir-derivacion',
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
 
     try {
-      const sugerencia = await iaService.sugerirDerivacion(req.body);
+      const sugerencia = await iaService.sugerirDerivacion(req.body, getAuthenticatedClient(req));
       res.json({ sugerencia });
     } catch (err) {
-      console.error('OpenRouter error:', err.message);
-      res.status(502).json({ error: 'Error al analizar el caso' });
+      responderError(res, err, 'Error al analizar el caso');
     }
   }
 );
@@ -79,11 +85,10 @@ router.post('/analizar-pdf',
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
 
     try {
-      const resultado = await iaService.analizarPDF(req.body);
+      const resultado = await iaService.analizarPDF(req.body, getAuthenticatedClient(req));
       res.json(resultado);
     } catch (err) {
-      console.error('Error al analizar PDF:', err.message);
-      res.status(err.status || 502).json({ error: err.status ? err.message : 'Error al analizar el archivo con IA' });
+      responderError(res, err, 'Error al analizar el archivo con IA');
     }
   }
 );
@@ -91,7 +96,7 @@ router.post('/analizar-pdf',
 // POST /ia/chat — chatbot con function calling manual
 router.post('/chat',
   requireAuth,
-  [body('messages').isArray({ min: 1 })],
+  [body('messages').isArray({ min: 1, max: 100 })],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
@@ -100,8 +105,26 @@ router.post('/chat',
       const resultado = await iaService.chat({ messages: req.body.messages, profesional: req.profesional, db: getAuthenticatedClient(req) });
       res.json(resultado);
     } catch (err) {
-      console.error('Chat IA error:', err.message, err.upstreamDetail || '', err.status);
-      res.status(502).json({ error: err.message || 'Error al conectar con la IA' });
+      responderError(res, err, 'Error al conectar con la IA');
+    }
+  }
+);
+
+// POST /ia/confirmar — ejecuta una acción destructiva que el chat solicitó, con el
+// token firmado que devolvió el servidor. La IA no puede llamar a esto: lo hace la
+// persona con el botón de confirmación.
+router.post('/confirmar',
+  requireAuth,
+  [body('token').isString().notEmpty()],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+
+    try {
+      const resultado = await iaService.confirmarEliminacion(req.body.token, req.profesional, getAuthenticatedClient(req));
+      res.json(resultado);
+    } catch (err) {
+      responderError(res, err, 'No se pudo completar la acción', 500);
     }
   }
 );

@@ -219,17 +219,16 @@ class SesionService {
   // Chequeo previo a crear la sesión, para no insertarla si el consultorio
   // está tomado. La base igual lo impide (trigger), esto solo da el aviso antes.
   async verificarConsultorioLibre(db, consultorio, inicio, fin, excluirTurnoId) {
-    let q = db
-      .from('turnos')
-      .select('id')
-      .eq('consultorio', consultorio)
-      .neq('estado', 'cancelado')
-      .lt('fecha_inicio', fin.toISOString())
-      .gt('fecha_fin', inicio.toISOString());
-    if (excluirTurnoId) q = q.neq('id', excluirTurnoId);
-
-    const { data } = await q.limit(1);
-    if (data?.length) {
+    // Función de la base: ve los turnos de todos (RLS no deja a un profesional ver los
+    // ajenos) pero solo responde si el consultorio está libre.
+    const { data: libre, error } = await db.rpc('consultorio_libre', {
+      p_consultorio: consultorio,
+      p_inicio: inicio.toISOString(),
+      p_fin: fin.toISOString(),
+      p_excluir: excluirTurnoId || null
+    });
+    if (error) throw new Error(error.message);
+    if (libre === false) {
       const err = new Error(`Consultorio ${consultorio} ocupado en ese horario. Elegí otro horario u otro consultorio.`);
       err.status = 409;
       throw err;

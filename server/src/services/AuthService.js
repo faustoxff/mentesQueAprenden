@@ -117,7 +117,7 @@ class AuthService {
 
   async forgotPassword(email) {
     await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/login`
+      redirectTo: `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password`
     });
     // Respuesta siempre genérica, no revela si el email existe — lo decide la ruta
   }

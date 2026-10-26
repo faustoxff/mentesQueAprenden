@@ -41,7 +41,7 @@ export default defineConfig({
       include: ['src/**/*.{js,jsx}'],
       exclude: ['src/**/*.test.{js,jsx}', 'src/test/**', 'src/main.jsx'],
       // Piso: si baja de esto, el CI falla. Subirlo a medida que se agreguen tests.
-      thresholds: { statements: 4, branches: 60, functions: 40, lines: 4 }
+      thresholds: { statements: 7, branches: 68, functions: 48, lines: 7 }
     }
   }
 });

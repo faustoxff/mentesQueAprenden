@@ -1,7 +1,9 @@
 // Tests unitarios de PacienteService con un "db" falso: sin red ni credenciales.
-jest.mock('../../src/config/supabase', () => ({ supabaseAdmin: {}, supabase: {} }));
+const mockAdmin = { from: jest.fn() };
+jest.mock('../../src/config/supabase', () => ({ supabaseAdmin: mockAdmin, supabase: {} }));
 
 const PacienteService = require('../../src/services/PacienteService');
+const { crearDb: crearDbCompartido } = require('./helpers/fakeDb');
 
 // Query builder falso: registra las llamadas y resuelve con `resultado` al hacer await.
 function crearDb(resultado) {
@@ -83,5 +85,56 @@ describe('PacienteService.listar', () => {
   test('un error de la base se propaga', async () => {
     const { db } = crearDb({ data: null, error: { message: 'boom' }, count: null });
     await expect(PacienteService.listar(db, {}, 'prof-1')).rejects.toThrow('boom');
+  });
+});
+
+describe('PacienteService: titularidad y búsqueda', () => {
+  beforeEach(() => mockAdmin.from.mockReset());
+
+  test('un profesional común no puede crear un paciente asignado a otro (403)', async () => {
+    const { db, enTabla } = crearDbCompartido({ pacientes: { data: {}, error: null } });
+    await expect(PacienteService.crear(db, { nombre: 'Ana', profesional_principal_id: 'otro' }, { id: 'prof-1', rol: 'profesional' }))
+      .rejects.toMatchObject({ status: 403 });
+    expect(enTabla('pacientes', 'insert')).toHaveLength(0);
+  });
+
+  test('un admin puede asignarlo a otro; se inserta con el cliente admin (RLS no le deja ver el resultado)', async () => {
+    const admin = crearDbCompartido({ pacientes: { data: { id: 'p1' }, error: null } });
+    mockAdmin.from.mockImplementation(admin.db.from);
+    const usuario = crearDbCompartido({ pacientes: { data: null, error: { message: 'no debería usarse' } } });
+
+    await PacienteService.crear(usuario.db, { nombre: 'Ana', profesional_principal_id: 'otro' }, { id: 'adm', rol: 'admin' });
+
+    expect(admin.enTabla('pacientes', 'insert')[0][0]).toMatchObject({ profesional_principal_id: 'otro', created_by: 'adm' });
+    expect(usuario.enTabla('pacientes', 'insert')).toHaveLength(0);
+  });
+
+  test('crear para uno mismo usa el cliente del usuario (RLS aplica)', async () => {
+    const usuario = crearDbCompartido({ pacientes: { data: { id: 'p1' }, error: null } });
+    await PacienteService.crear(usuario.db, { nombre: 'Ana' }, { id: 'prof-1', rol: 'profesional' });
+    expect(usuario.enTabla('pacientes', 'insert')).toHaveLength(1);
+    expect(mockAdmin.from).not.toHaveBeenCalled();
+  });
+
+  test('actualizar: un no-admin no puede cambiar el profesional principal', async () => {
+    const { db, enTabla } = crearDbCompartido({ pacientes: { data: { id: 'p1' }, error: null } });
+    await PacienteService.actualizar(db, 'p1', { telefono: '1155555555', profesional_principal_id: 'yo-mismo' }, { id: 'prof-1', rol: 'profesional' });
+    const cambios = enTabla('pacientes', 'update')[0][0];
+    expect(cambios).not.toHaveProperty('profesional_principal_id');
+    expect(cambios.telefono).toBe('1155555555');
+  });
+
+  test('actualizar: un admin sí puede reasignar la titularidad', async () => {
+    const { db, enTabla } = crearDbCompartido({ pacientes: { data: { id: 'p1' }, error: null } });
+    await PacienteService.actualizar(db, 'p1', { profesional_principal_id: 'otro' }, { id: 'adm', rol: 'admin' });
+    expect(enTabla('pacientes', 'update')[0][0].profesional_principal_id).toBe('otro');
+  });
+
+  test('listar: la búsqueda no puede inyectar filtros', async () => {
+    const { db, enTabla } = crearDbCompartido({ pacientes: { data: [], error: null, count: 0 } });
+    await PacienteService.listar(db, { busqueda: 'x,profesional_principal_id.neq.0)' }, 'prof-1');
+    const filtro = enTabla('pacientes', 'or')[0][0];
+    expect(filtro.split(',')).toHaveLength(3);
+    expect(filtro).not.toContain(')');
   });
 });

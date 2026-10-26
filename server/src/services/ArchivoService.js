@@ -119,11 +119,23 @@ class ArchivoService {
       throw err;
     }
 
-    // Eliminar del storage
-    await supabaseAdmin.storage.from(BUCKET).remove([archivo.storage_path]);
+    // Primero la metadata, confirmando que se borró (sin policy de DELETE, RLS devuelve
+    // 0 filas sin error). Recién después el archivo: si falla acá queda un archivo
+    // huérfano en el storage, que es mejor que metadata apuntando a un archivo perdido.
+    const { data: borradas, error } = await db
+      .from('archivos_adjuntos')
+      .delete()
+      .eq('id', id)
+      .select('id');
+    if (error) throw new Error(error.message);
+    if (!borradas?.length) {
+      const err = new Error('Sin permiso para eliminar este archivo');
+      err.status = 403;
+      throw err;
+    }
 
-    // Eliminar de la BD
-    await db.from('archivos_adjuntos').delete().eq('id', id);
+    const { error: storageError } = await supabaseAdmin.storage.from(BUCKET).remove([archivo.storage_path]);
+    if (storageError) console.error('No se pudo borrar el archivo del storage:', storageError.message);
   }
 }
 

@@ -47,3 +47,50 @@ describe('TurnoService.cancelar', () => {
     expect(enTabla('turnos', 'delete')).toHaveLength(0);
   });
 });
+
+describe('TurnoService.listar: calendario compartido sin filtrar datos clínicos', () => {
+  const propio = {
+    id: 't-propio', fecha_inicio: '2026-01-01T10:00:00Z', fecha_fin: '2026-01-01T10:50:00Z', estado: 'programado',
+    consultorio: 1, notas: 'nota clínica', paciente_id: 'pac', paciente: { id: 'pac' }, profesional: { id: 'yo' }
+  };
+  const ajeno = {
+    id: 't-ajeno', fecha_inicio: '2026-01-01T11:00:00Z', fecha_fin: '2026-01-01T11:50:00Z', estado: 'confirmado',
+    consultorio: 2, profesional_id: 'otro', profesional_nombre: 'Luis', profesional_apellido: 'Paz'
+  };
+
+  test('los turnos ajenos vienen de la función turnos_ocupacion y sin paciente ni notas', async () => {
+    const { db, rpcs } = crearDb({ turnos: { data: [propio], error: null }, 'rpc:turnos_ocupacion': { data: [ajeno], error: null } });
+    const r = await TurnoService.listar(db, { fecha_inicio: 'a', fecha_fin: 'b' }, 'yo');
+
+    expect(rpcs('turnos_ocupacion')[0]).toEqual({ p_desde: 'a', p_hasta: 'b' });
+    expect(r.map(t => t.id)).toEqual(['t-propio', 't-ajeno']);
+    const ocupado = r.find(t => t.id === 't-ajeno');
+    expect(ocupado).toMatchObject({ ocupado: true, consultorio: 2, profesional: { id: 'otro', nombre: 'Luis' } });
+    expect(ocupado).not.toHaveProperty('notas');
+    expect(ocupado).not.toHaveProperty('paciente_id');
+    expect(ocupado).not.toHaveProperty('paciente');
+  });
+
+  test('un turno propio que también figura en la ocupación no se duplica', async () => {
+    const { db } = crearDb({
+      turnos: { data: [propio], error: null },
+      'rpc:turnos_ocupacion': { data: [{ ...ajeno, id: 't-propio', profesional_id: 'yo' }, ajeno], error: null }
+    });
+    const r = await TurnoService.listar(db, {}, 'yo');
+    expect(r.filter(t => t.id === 't-propio')).toHaveLength(1);
+  });
+
+  test('con filtro por profesional solo trae la ocupación de ese profesional', async () => {
+    const { db } = crearDb({
+      turnos: { data: [], error: null },
+      'rpc:turnos_ocupacion': { data: [ajeno, { ...ajeno, id: 'otro-mas', profesional_id: 'tercero' }], error: null }
+    });
+    const r = await TurnoService.listar(db, { profesional_id: 'otro' }, 'yo');
+    expect(r.map(t => t.id)).toEqual(['t-ajeno']);
+  });
+
+  test('si la función falla, el error se propaga', async () => {
+    const { db } = crearDb({ turnos: { data: [], error: null }, 'rpc:turnos_ocupacion': { data: null, error: { message: 'boom' } } });
+    await expect(TurnoService.listar(db, {}, 'yo')).rejects.toThrow('boom');
+  });
+});
