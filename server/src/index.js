@@ -45,12 +45,18 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // Rate limiting estricto para auth (solo cuenta intentos fallidos)
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 20,
-  skipSuccessfulRequests: true,
-  message: { error: 'Demasiados intentos de login. Esperá unos minutos e intentá de nuevo.' }
-});
+// RATE_LIMIT_AUTH_MAX = intentos fallidos permitidos por IP cada 15 minutos (por defecto 100).
+// Con 0 se desactiva el límite (no recomendado en producción: es la única defensa contra
+// que prueben contraseñas hasta adivinarlas).
+const authMax = process.env.RATE_LIMIT_AUTH_MAX === undefined ? 100 : Number(process.env.RATE_LIMIT_AUTH_MAX);
+const authLimiter = authMax === 0
+  ? (req, res, next) => next()
+  : rateLimit({
+      windowMs: 15 * 60 * 1000,
+      max: authMax,
+      skipSuccessfulRequests: true,
+      message: { error: 'Demasiados intentos de login. Esperá unos minutos e intentá de nuevo.' }
+    });
 
 // Cada pedido a /api/ia consume cuota del proveedor de IA y tarda segundos: tiene
 // un límite propio, más estricto que el global.
