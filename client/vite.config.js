@@ -34,6 +34,14 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: './src/test/setup.js',
-    globals: true
+    globals: true,
+    coverage: {
+      provider: 'v8',
+      reporter: ['text-summary', 'lcov'],
+      include: ['src/**/*.{js,jsx}'],
+      exclude: ['src/**/*.test.{js,jsx}', 'src/test/**', 'src/main.jsx'],
+      // Piso: si baja de esto, el CI falla. Subirlo a medida que se agreguen tests.
+      thresholds: { statements: 4, branches: 60, functions: 40, lines: 4 }
+    }
   }
 });

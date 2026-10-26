@@ -9,7 +9,8 @@
     "migrate": "node src/utils/runMigrations.js",
     "test": "NODE_ENV=test jest --runInBand --selectProjects unit",
     "test:integration": "NODE_ENV=test jest --runInBand --selectProjects integration",
-    "test:all": "NODE_ENV=test jest --runInBand"
+    "test:all": "NODE_ENV=test jest --runInBand",
+    "test:coverage": "NODE_ENV=test jest --runInBand --selectProjects unit --coverage"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",

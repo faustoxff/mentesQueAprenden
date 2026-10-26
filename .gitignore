@@ -9,3 +9,5 @@ build/
 
 # Respaldo con datos de pacientes (no subir)
 server/respaldo-usuarios.json
+
+coverage/
