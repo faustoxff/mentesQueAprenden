@@ -1,4 +1,5 @@
 const { supabaseAdmin } = require('../config/supabase');
+const { funcionNoExiste } = require('../utils/rpc');
 
 // Un turno de una sesión futura todavía no ocurrió.
 const estadoSegunFecha = (fecha) => (new Date(fecha) > new Date() ? 'confirmado' : 'realizado');
@@ -227,8 +228,27 @@ class SesionService {
       p_fin: fin.toISOString(),
       p_excluir: excluirTurnoId || null
     });
+    if (funcionNoExiste(error)) return this.verificarConsultorioLibreSinFuncion(db, consultorio, inicio, fin, excluirTurnoId);
     if (error) throw new Error(error.message);
     if (libre === false) {
+      const err = new Error(`Consultorio ${consultorio} ocupado en ese horario. Elegí otro horario u otro consultorio.`);
+      err.status = 409;
+      throw err;
+    }
+  }
+
+  // Camino anterior a la migración 008 (backend desplegado antes que la migración).
+  async verificarConsultorioLibreSinFuncion(db, consultorio, inicio, fin, excluirTurnoId) {
+    let q = db
+      .from('turnos')
+      .select('id')
+      .eq('consultorio', consultorio)
+      .neq('estado', 'cancelado')
+      .lt('fecha_inicio', fin.toISOString())
+      .gt('fecha_fin', inicio.toISOString());
+    if (excluirTurnoId) q = q.neq('id', excluirTurnoId);
+    const { data } = await q.limit(1);
+    if (data?.length) {
       const err = new Error(`Consultorio ${consultorio} ocupado en ese horario. Elegí otro horario u otro consultorio.`);
       err.status = 409;
       throw err;

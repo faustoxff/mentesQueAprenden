@@ -94,3 +94,19 @@ describe('TurnoService.listar: calendario compartido sin filtrar datos clínicos
     await expect(TurnoService.listar(db, {}, 'yo')).rejects.toThrow('boom');
   });
 });
+
+describe('TurnoService.listar: backend desplegado antes que la migración 008', () => {
+  test('si la función turnos_ocupacion no existe, usa el camino anterior y no rompe el calendario', async () => {
+    const ajeno = { id: 't-ajeno', fecha_inicio: 'x', fecha_fin: 'y', estado: 'programado', consultorio: 2, profesional: { id: 'otro', nombre: 'Luis', apellido: 'Paz' } };
+    const { db, enTabla } = crearDb({
+      turnos: [{ data: [], error: null }, { data: [ajeno], error: null }],
+      'rpc:turnos_ocupacion': { data: null, error: { code: 'PGRST202', message: 'function not found' } }
+    });
+    const r = await TurnoService.listar(db, {}, 'yo');
+    expect(r).toEqual([expect.objectContaining({ id: 't-ajeno', ocupado: true, consultorio: 2 })]);
+    // solo columnas no clínicas
+    const columnas = enTabla('turnos', 'select').map(a => a[0]).join(' ');
+    expect(columnas).toContain('consultorio');
+    expect(enTabla('turnos', 'select').pop()[0]).not.toMatch(/notas|paciente/);
+  });
+});

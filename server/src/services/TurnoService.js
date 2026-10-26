@@ -1,3 +1,5 @@
+const { funcionNoExiste } = require('../utils/rpc');
+
 class TurnoService {
   // Trae los turnos propios (o accesibles por derivación) con todos los
   // datos, y los de otros profesionales reducidos a "consultorio ocupado"
@@ -55,6 +57,7 @@ class TurnoService {
       p_desde: fecha_inicio || null,
       p_hasta: fecha_fin || null
     });
+    if (funcionNoExiste(error)) return this.ocupacionAjenaSinFuncion(db, { fecha_inicio, fecha_fin, profesional_id }, idsYaIncluidos);
     if (error) throw new Error(error.message);
 
     return (data || [])
@@ -68,6 +71,24 @@ class TurnoService {
         ocupado: true,
         profesional: { id: t.profesional_id, nombre: t.profesional_nombre, apellido: t.profesional_apellido }
       }));
+  }
+
+  // Camino anterior a la migración 008 (la policy dejaba leer todos los turnos): solo
+  // se piden las columnas que no son datos clínicos.
+  async ocupacionAjenaSinFuncion(db, { fecha_inicio, fecha_fin, profesional_id }, idsYaIncluidos) {
+    let q = db
+      .from('turnos')
+      .select('id, fecha_inicio, fecha_fin, estado, consultorio, profesional:profesionales!profesional_id(id, nombre, apellido)')
+      .neq('estado', 'cancelado');
+    if (fecha_inicio) q = q.gte('fecha_inicio', fecha_inicio);
+    if (fecha_fin) q = q.lte('fecha_inicio', fecha_fin);
+    if (profesional_id) q = q.eq('profesional_id', profesional_id);
+
+    const { data, error } = await q;
+    if (error) throw new Error(error.message);
+    return (data || [])
+      .filter(t => !idsYaIncluidos.has(t.id))
+      .map(t => ({ ...t, ocupado: true }));
   }
 
   // Una sesión cargada desde "Nueva sesión" (sin pasar por un turno) no tiene

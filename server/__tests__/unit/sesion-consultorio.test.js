@@ -25,4 +25,20 @@ describe('SesionService.verificarConsultorioLibre', () => {
     const { db } = crearDb({ 'rpc:consultorio_libre': { data: null, error: { message: 'boom' } } });
     await expect(SesionService.verificarConsultorioLibre(db, 1, inicio, fin)).rejects.toThrow('boom');
   });
+
+  test('si la función no existe todavía (migración 008 sin aplicar), cae al chequeo anterior', async () => {
+    const { db } = crearDb({
+      'rpc:consultorio_libre': { data: null, error: { code: 'PGRST202', message: 'not found' } },
+      turnos: { data: [{ id: 'choque' }], error: null }
+    });
+    await expect(SesionService.verificarConsultorioLibre(db, 1, inicio, fin)).rejects.toMatchObject({ status: 409 });
+  });
+
+  test('con la función ausente y sin choque, deja pasar', async () => {
+    const { db } = crearDb({
+      'rpc:consultorio_libre': { data: null, error: { code: 'PGRST202', message: 'not found' } },
+      turnos: { data: [], error: null }
+    });
+    await expect(SesionService.verificarConsultorioLibre(db, 1, inicio, fin)).resolves.toBeUndefined();
+  });
 });
