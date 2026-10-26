@@ -7,7 +7,9 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "migrate": "node src/utils/runMigrations.js",
-    "test": "NODE_ENV=test jest --runInBand"
+    "test": "NODE_ENV=test jest --runInBand --selectProjects unit",
+    "test:integration": "NODE_ENV=test jest --runInBand --selectProjects integration",
+    "test:all": "NODE_ENV=test jest --runInBand"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
