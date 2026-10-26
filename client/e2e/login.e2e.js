@@ -16,8 +16,8 @@ test('con credenciales correctas entra a la app y ve su pantalla de inicio', asy
   // Entrar de verdad: llegar a la pantalla de inicio y que cargue con la sesión
   // (si la API devolviera 401 después de loguear, la app volvería al login).
   await expect(page).toHaveURL(/\/$/);
-  await expect(page.getByText('Agenda de hoy')).toBeVisible();
-  await expect(page.getByText('Tus pacientes')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Agenda de hoy' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tus pacientes' })).toBeVisible();
   await expect(page).toHaveURL(/\/$/); // sigue adentro: no la sacó de vuelta al login
 });
 
