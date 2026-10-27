@@ -355,14 +355,25 @@ describe('ProfesionalService', () => {
     expect(admin.enTabla('profesionales', 'delete')).toHaveLength(0);
   });
 
-  // DEF-A17: GET /profesionales (lo usa cualquier profesional) incluye el porcentaje de honorarios de todos.
-  test.failing('CP-U267 el listado general no expone el porcentaje de honorarios de los demás', async () => {
-    const admin = crearDb({ profesionales: ok([]) });
-    mockAdmin.from.mockImplementation(admin.db.from);
+  const PROFESIONALES = [
+    { id: 'yo', nombre: 'Ana', porcentaje_honorarios: 70 },
+    { id: 'otro', nombre: 'Luis', porcentaje_honorarios: 60 }
+  ];
 
-    await ProfesionalService.listar();
+  test('CP-U267 un profesional ve solo su propio porcentaje de honorarios', async () => {
+    mockAdmin.from.mockImplementation(crearDb({ profesionales: ok(PROFESIONALES) }).db.from);
 
-    expect(admin.enTabla('profesionales', 'select')[0][0]).not.toMatch(/porcentaje_honorarios/);
+    const lista = await ProfesionalService.listar({ id: 'yo', rol: 'profesional' });
+
+    expect(lista).toEqual([{ id: 'yo', nombre: 'Ana', porcentaje_honorarios: 70 }, { id: 'otro', nombre: 'Luis' }]);
+  });
+
+  test('CP-U299 el admin ve el porcentaje de honorarios de todos', async () => {
+    mockAdmin.from.mockImplementation(crearDb({ profesionales: ok(PROFESIONALES) }).db.from);
+
+    const lista = await ProfesionalService.listar({ id: 'adm', rol: 'admin' });
+
+    expect(lista).toEqual(PROFESIONALES);
   });
 
   test('CP-U155 listar devuelve solo profesionales activos', async () => {

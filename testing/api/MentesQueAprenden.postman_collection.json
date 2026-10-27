@@ -1664,7 +1664,6 @@
                   "    pm.expect(p).to.not.have.any.keys('email', 'password', 'telefono');",
                   "  });",
                   "});",
-                  "// DEF-A17: cualquier profesional ve el porcentaje de honorarios de los demás.",
                   "pm.test('CP-A34 un profesional no ve el porcentaje de honorarios de otros', () => {",
                   "  pm.response.json().filter((p) => p.id !== pm.environment.get('profesionalId'))",
                   "    .forEach((p) => pm.expect(p).to.not.have.property('porcentaje_honorarios'));",

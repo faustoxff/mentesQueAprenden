@@ -14,7 +14,7 @@ function manejarError(res, err, fallback = { status: 500, message: 'Error intern
 // GET /profesionales - Lista todos los profesionales activos
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const data = await profesionalService.listar();
+    const data = await profesionalService.listar(req.profesional);
     res.json(data);
   } catch (err) {
     manejarError(res, err);
