@@ -1,0 +1,81 @@
+(node:35159) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/eslint.config.js?mtime=1793139532621 is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/components/auth/LoginRegister.test.jsx
+  2:26  warning  'waitFor' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/components/chat/ChatSidebar.jsx
+  40:16  warning  Function 'ChatSidebar' has a complexity of 23. Maximum allowed is 10  complexity
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/components/chat/ChatToolResults.jsx
+   13:8   warning  Function 'PacienteFormCard' has a complexity of 11. Maximum allowed is 10  complexity
+   29:29  warning  Async arrow function has a complexity of 13. Maximum allowed is 10         complexity
+  122:8   warning  Function 'TurnoFormCard' has a complexity of 18. Maximum allowed is 10     complexity
+  346:8   warning  Function 'ToolResultCard' has a complexity of 26. Maximum allowed is 10    complexity
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/components/ui/Balatro.jsx
+  105:16  warning  Function 'Balatro' has a complexity of 15. Maximum allowed is 10  complexity
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/components/ui/FileUpload.jsx
+   5:7   warning  'TIPOS_MIME' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  69:16  warning  'err' is defined but never used                                                        no-unused-vars
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/pages/AdminPage.jsx
+  15:16  warning  Function 'AdminPage' has a complexity of 11. Maximum allowed is 10  complexity
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/pages/AgendaPage.jsx
+  52:16  warning  Function 'AgendaPage' has a complexity of 29. Maximum allowed is 10  complexity
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/pages/DerivacionesPage.jsx
+  19:16  warning  Function 'DerivacionesPage' has a complexity of 28. Maximum allowed is 10  complexity
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/pages/EditarPacientePage.jsx
+  32:16  warning  Arrow function has a complexity of 15. Maximum allowed is 10  complexity
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/pages/EvaluacionDetallePage.jsx
+  64:16  warning  Function 'EvaluacionDetallePage' has a complexity of 22. Maximum allowed is 10  complexity
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/pages/InicioPage.jsx
+  148:1   warning  Function 'AgendaCard' has a complexity of 11. Maximum allowed is 10  complexity
+  275:38  warning  Arrow function has a complexity of 13. Maximum allowed is 10         complexity
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/pages/NuevaEvaluacionPage.jsx
+  7:32  warning  'getErrorMessage' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/pages/NuevaSesionPage.jsx
+   7:10  warning  'toast' is defined but never used. Allowed unused vars must match /^_/u              no-unused-vars
+   9:32  warning  'getErrorMessage' is defined but never used. Allowed unused vars must match /^_/u    no-unused-vars
+  36:16  warning  Function 'NuevaSesionPage' has a complexity of 20. Maximum allowed is 10             complexity
+  89:17  warning  'paciente' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/pages/NuevoPacientePage.jsx
+  7:32  warning  'getErrorMessage' is defined but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/pages/PacienteDetallePage.jsx
+  41:16  warning  Function 'PacienteDetallePage' has a complexity of 52. Maximum allowed is 10  complexity
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/pages/PacientesPage.jsx
+  23:16  warning  Function 'PacientesPage' has a complexity of 12. Maximum allowed is 10  complexity
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/pages/PagosPage.jsx
+   4:10  warning  'es' is defined but never used. Allowed unused vars must match /^_/u                    no-unused-vars
+  16:16  warning  Function 'PagosPage' has a complexity of 27. Maximum allowed is 10                      complexity
+  17:11  warning  'profesional' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/pages/SesionDetallePage.jsx
+  21:16  warning  Function 'SesionDetallePage' has a complexity of 28. Maximum allowed is 10  complexity
+  59:29  warning  Arrow function has a complexity of 12. Maximum allowed is 10                complexity
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/services/api.js
+  69:17  warning  Async arrow function has a complexity of 12. Maximum allowed is 10  complexity
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/utils/errores.js
+  16:8  warning  Function 'getErrorMessage' has a complexity of 13. Maximum allowed is 10  complexity
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/utils/exportarInformePdf.js
+  11:8  warning  Function 'exportarInformePdf' has a complexity of 11. Maximum allowed is 10  complexity
+
+✖ 32 problems (0 errors, 32 warnings)
+

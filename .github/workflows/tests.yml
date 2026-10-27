@@ -1,0 +1,99 @@
+name: Tests
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: 'URL de la app para E2E (usá un entorno de TEST, no producción)'
+        required: true
+        default: 'http://localhost:5173'
+
+permissions:
+  contents: read
+
+jobs:
+  # En cada push y PR: sin credenciales ni red hacia Supabase/OpenRouter.
+  calidad:
+    if: github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Lint del client
+        run: npm run lint --prefix client
+      - name: Lint del server
+        run: npm run lint --prefix server
+      - name: Unitarios del server con cobertura
+        run: npm run test:coverage --prefix server
+      - name: Unitarios del client con cobertura
+        run: npm run test:coverage --prefix client
+      - name: Build del client
+        run: npm run build:client
+      - name: Guardar reportes de cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cobertura
+          path: |
+            server/coverage/lcov.info
+            client/coverage/lcov.info
+
+  # Solo a mano: pegan contra un proyecto de Supabase de TEST con datos ZZ-TEST que se limpian.
+  # Los valores salen de los secrets del repositorio; ninguno está en archivos.
+  api-y-e2e:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+      SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.TEST_SUPABASE_SERVICE_ROLE_KEY }}
+      OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+      FRONTEND_URL: http://localhost:5173
+      API_EMAIL: ${{ secrets.E2E_EMAIL }}
+      API_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+      API_EMAIL_2: ${{ secrets.E2E_EMAIL_2 }}
+      API_PASSWORD_2: ${{ secrets.E2E_PASSWORD_2 }}
+      API_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+      API_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+      API_UMBRAL_MS: '3000'
+      E2E_EMAIL: ${{ secrets.E2E_EMAIL }}
+      E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+      E2E_EMAIL_2: ${{ secrets.E2E_EMAIL_2 }}
+      E2E_PASSWORD_2: ${{ secrets.E2E_PASSWORD_2 }}
+      E2E_BASE_URL: ${{ inputs.base_url }}
+      VITE_API_URL: http://localhost:3001/api
+      VITE_SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - run: npm ci
+      - name: Levantar backend y frontend locales
+        run: |
+          npm start --prefix server &
+          npm run dev --prefix client &
+          npx wait-on http://localhost:3001/health http://localhost:5173
+      - name: API con Newman
+        run: npm run test:api
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+      - name: E2E con Playwright
+        run: npm run test:e2e --prefix client
+      - name: Guardar evidencias
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencias-api-e2e
+          path: |
+            testing/evidencias/
+            client/test-results/

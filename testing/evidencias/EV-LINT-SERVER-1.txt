@@ -1,0 +1,20 @@
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/server/src/services/IAService.js
+  314:3  warning  Async method 'ejecutarTool' has a complexity of 39. Maximum allowed is 10  complexity
+  585:3  warning  Async method 'chat' has a complexity of 11. Maximum allowed is 10          complexity
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/server/src/services/SesionService.js
+  151:3  warning  Async method 'sincronizarTurno' has a complexity of 26. Maximum allowed is 10  complexity
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/server/src/services/TurnoService.js
+  148:13  warning  'created_by' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+  148:25  warning  'created_at' is assigned a value but never used. Allowed unused vars must match /^_/u  no-unused-vars
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/server/src/services/informeGenerator.js
+  29:1  warning  Async function 'generarInformeTexto' has a complexity of 24. Maximum allowed is 10  complexity
+
+/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/server/src/utils/confirmacion.js
+  24:1  warning  Function 'verificarToken' has a complexity of 11. Maximum allowed is 10  complexity
+
+✖ 7 problems (0 errors, 7 warnings)
+
