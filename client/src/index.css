@@ -26,6 +26,17 @@
   }
 }
 
+/* En el celular, los campos de texto van con 16 px como mínimo: con menos, iOS hace
+   zoom solo al enfocarlos. Va con !important porque si no ganan las clases text-sm de
+   Tailwind. El zoom con dos dedos queda habilitado (index.html, DEF-A19). */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
 /* Agenda (FullCalendar) con la paleta de la app */
 .agenda-calendar .fc {
   --fc-border-color: #eee7f4;

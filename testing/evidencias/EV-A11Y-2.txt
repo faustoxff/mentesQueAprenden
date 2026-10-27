@@ -1,0 +1,11 @@
+
+Running 5 tests using 1 worker
+
+  ✓  1 [escritorio] › e2e/accesibilidad.e2e.js:20:5 › CP-E13 login sin violaciones serious/critical (1.4s)
+  -  2 [escritorio] › e2e/accesibilidad.e2e.js:30:9 › con sesión › CP-E14 inicio sin violaciones serious/critical
+  -  3 [escritorio] › e2e/accesibilidad.e2e.js:30:9 › con sesión › CP-E15 pacientes sin violaciones serious/critical
+  -  4 [escritorio] › e2e/accesibilidad.e2e.js:30:9 › con sesión › CP-E16 agenda sin violaciones serious/critical
+  -  5 [escritorio] › e2e/accesibilidad.e2e.js:30:9 › con sesión › CP-E18 historial sin violaciones serious/critical
+
+  4 skipped
+  1 passed (2.0s)
