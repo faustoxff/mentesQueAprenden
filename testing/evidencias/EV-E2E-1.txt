@@ -1,0 +1,114 @@
+
+Running 23 tests using 7 workers
+
+  -   3 [escritorio] › e2e/aislamiento.e2e.js:4:5 › CP-E05 el profesional 2 no ve el paciente del 1; con la derivación aceptada sí
+  -   5 [escritorio] › e2e/pacientes.e2e.js:4:5 › CP-E03 crear paciente → aparece en el listado → baja lógica
+  -   4 [escritorio] › e2e/turnos.e2e.js:20:5 › CP-E04 un turno en el consultorio 3 se crea; el mismo consultorio y horario se rechaza
+  -   6 [escritorio] › e2e/login.e2e.js:8:5 › con credenciales correctas entra a la app y ve su pantalla de inicio
+  ✓   2 [escritorio] › e2e/sesion.e2e.js:5:7 › sesión › CP-E01 sin sesión, una ruta protegida manda a /login (879ms)
+  -  10 [escritorio] › e2e/sesion.e2e.js:12:7 › sesión › CP-E02 cerrar sesión vuelve al login y Atrás no reabre la app
+  ✓   8 [pixel-5] › e2e/movil.e2e.js:6:5 › CP-E10 humo móvil: login sin desbordes horizontales (721ms)
+  ✓   1 [escritorio] › e2e/navegabilidad.e2e.js:18:9 › navegabilidad: rutas públicas › CP-E06 /login carga sin errores de consola ni pedidos fallidos (1.2s)
+  -  11 [pixel-5] › e2e/movil.e2e.js:14:5 › CP-E11 humo móvil: inicio y agenda cargan con la barra inferior
+  -  13 [pixel-5] › e2e/movil.e2e.js:25:5 › CP-E12 sin red: enviar el alta de paciente avisa, no pierde lo cargado y no duplica al reintentar
+  ✘   7 [escritorio] › e2e/accesibilidad.e2e.js:20:5 › CP-E13 login sin violaciones serious/critical (2.0s)
+  -  15 [escritorio] › e2e/accesibilidad.e2e.js:30:9 › con sesión › CP-E14 inicio sin violaciones serious/critical
+  -  16 [escritorio] › e2e/accesibilidad.e2e.js:30:9 › con sesión › CP-E15 pacientes sin violaciones serious/critical
+  -  17 [escritorio] › e2e/accesibilidad.e2e.js:30:9 › con sesión › CP-E16 agenda sin violaciones serious/critical
+  ✓  14 [iphone-13] › e2e/movil.e2e.js:6:5 › CP-E10 humo móvil: login sin desbordes horizontales (550ms)
+  -  18 [iphone-13] › e2e/movil.e2e.js:14:5 › CP-E11 humo móvil: inicio y agenda cargan con la barra inferior
+  -  19 [iphone-13] › e2e/movil.e2e.js:25:5 › CP-E12 sin red: enviar el alta de paciente avisa, no pierde lo cargado y no duplica al reintentar
+  ✓  12 [escritorio] › e2e/navegabilidad.e2e.js:18:9 › navegabilidad: rutas públicas › CP-E06 /register carga sin errores de consola ni pedidos fallidos (1.2s)
+  ✓  20 [escritorio] › e2e/navegabilidad.e2e.js:18:9 › navegabilidad: rutas públicas › CP-E06 /reset-password carga sin errores de consola ni pedidos fallidos (834ms)
+  -  21 [escritorio] › e2e/navegabilidad.e2e.js:36:7 › navegabilidad: rutas de App.jsx con sesión › CP-E07 todas las rutas cargan sin 404, sin errores de consola y sin pedidos fallidos
+  -  22 [escritorio] › e2e/navegabilidad.e2e.js:56:7 › navegabilidad: rutas de App.jsx con sesión › CP-E08 Atrás y F5 mantienen la ruta y la sesión
+  -  23 [escritorio] › e2e/navegabilidad.e2e.js:69:7 › navegabilidad: rutas de App.jsx con sesión › CP-E09 F5 después de crear un paciente no reenvía el formulario
+  ✘   9 [escritorio] › e2e/login.e2e.js:24:5 › con una contraseña incorrecta muestra el error y no entra (6.2s)
+
+
+  1) [escritorio] › e2e/accesibilidad.e2e.js:20:5 › CP-E13 login sin violaciones serious/critical ──
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  -  1
+    + Received  + 12
+
+    - Array []
+    + Array [
+    +   Object {
+    +     "ayuda": "https://dequeuniversity.com/rules/axe/4.10/meta-viewport?application=playwright",
+    +     "descripcion": "Zooming and scaling must not be disabled",
+    +     "ejemplo": Array [
+    +       "meta[name=\"viewport\"]",
+    +     ],
+    +     "id": "meta-viewport",
+    +     "impacto": "critical",
+    +     "nodos": 1,
+    +   },
+    + ]
+
+      21 |   await page.goto('/login');
+      22 |
+    > 23 |   expect(await auditar(page, 'login')).toEqual([]);
+         |                                        ^
+      24 | });
+      25 |
+      26 | test.describe('con sesión', () => {
+        at /Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/e2e/accesibilidad.e2e.js:23:40
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/accesibilidad.e2e.js-CP-E1-98c3d-iolaciones-serious-critical-escritorio/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/accesibilidad.e2e.js-CP-E1-98c3d-iolaciones-serious-critical-escritorio/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/accesibilidad.e2e.js-CP-E1-98c3d-iolaciones-serious-critical-escritorio/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/accesibilidad.e2e.js-CP-E1-98c3d-iolaciones-serious-critical-escritorio/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [escritorio] › e2e/login.e2e.js:24:5 › con una contraseña incorrecta muestra el error y no entra 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText(/credenciales inválidas/i)
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByText(/credenciales inválidas/i) with timeout 5000ms
+      - waiting for getByText(/credenciales inválidas/i)
+
+
+      28 |   await page.getByRole('button', { name: 'Ingresar' }).click();
+      29 |
+    > 30 |   await expect(page.getByText(/credenciales inválidas/i)).toBeVisible();
+         |                                                           ^
+      31 |   await expect(page).toHaveURL(/\/login/);
+      32 | });
+      33 |
+        at /Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/e2e/login.e2e.js:30:59
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/login.e2e.js-con-una-contr-02d94-muestra-el-error-y-no-entra-escritorio/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/login.e2e.js-con-una-contr-02d94-muestra-el-error-y-no-entra-escritorio/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/login.e2e.js-con-una-contr-02d94-muestra-el-error-y-no-entra-escritorio/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/login.e2e.js-con-una-contr-02d94-muestra-el-error-y-no-entra-escritorio/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [escritorio] › e2e/accesibilidad.e2e.js:20:5 › CP-E13 login sin violaciones serious/critical ───
+    [escritorio] › e2e/login.e2e.js:24:5 › con una contraseña incorrecta muestra el error y no entra 
+  15 skipped
+  6 passed (8.6s)

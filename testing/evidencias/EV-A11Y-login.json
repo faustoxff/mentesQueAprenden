@@ -1,0 +1,12 @@
+[
+  {
+    "id": "meta-viewport",
+    "impacto": "critical",
+    "descripcion": "Zooming and scaling must not be disabled",
+    "ayuda": "https://dequeuniversity.com/rules/axe/4.10/meta-viewport?application=playwright",
+    "nodos": 1,
+    "ejemplo": [
+      "meta[name=\"viewport\"]"
+    ]
+  }
+]
