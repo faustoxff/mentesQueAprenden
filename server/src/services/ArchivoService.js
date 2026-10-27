@@ -82,16 +82,22 @@ class ArchivoService {
       throw err;
     }
 
-    // Log descarga
-    supabaseAdmin.from('logs_acceso').insert({
-      profesional_id: profesionalId,
-      paciente_id: archivo.paciente_id,
-      accion: 'descargar_archivo',
-      recurso: 'archivo:' + id,
-      ip_address: ip,
-      user_agent: userAgent,
-      metadata: { nombre_original: archivo.nombre_original }
-    });
+    // Log de la descarga (Ley 25.326). Se espera el insert: el builder de Supabase solo
+    // manda la consulta con await/then. Si el log falla, la descarga sigue igual.
+    try {
+      const { error: logError } = await supabaseAdmin.from('logs_acceso').insert({
+        profesional_id: profesionalId,
+        paciente_id: archivo.paciente_id,
+        accion: 'descargar_archivo',
+        recurso: 'archivo:' + id,
+        ip_address: ip,
+        user_agent: userAgent,
+        metadata: { nombre_original: archivo.nombre_original }
+      });
+      if (logError) console.error('Error al registrar log de acceso:', logError);
+    } catch (err) {
+      console.error('Error al registrar log de acceso:', err.message);
+    }
 
     const { data: urlData, error: urlError } = await supabaseAdmin.storage
       .from(BUCKET)

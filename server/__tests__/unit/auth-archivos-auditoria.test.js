@@ -233,6 +233,19 @@ describe('ArchivoService: URLs firmadas', () => {
     expect(res).toEqual({ url: 'https://d', nombre_original: 'x.pdf' });
   });
 
+  test('CP-U298 si falla el log de la descarga, la descarga sigue y queda el error en consola', async () => {
+    mockAdmin.from.mockImplementation(() => ({ insert: () => Promise.resolve({ error: { message: 'insert denegado' } }) }));
+    const consola = jest.spyOn(console, 'error').mockImplementation(() => {});
+    firmador.createSignedUrl.mockResolvedValue({ data: { signedUrl: 'https://d' }, error: null });
+    const { db } = crearDb({ archivos_adjuntos: ok({ id: 'a1', paciente_id: 'p1', storage_path: 'p1/x.pdf', nombre_original: 'x.pdf' }) });
+
+    const res = await ArchivoService.obtenerUrlDescarga(db, 'a1', 'prof', { ip: '1.1.1.1', userAgent: 'jest' });
+
+    expect(res).toEqual({ url: 'https://d', nombre_original: 'x.pdf' });
+    expect(consola).toHaveBeenCalledWith('Error al registrar log de acceso:', { message: 'insert denegado' });
+    consola.mockRestore();
+  });
+
   test('CP-U144 descargar un archivo que RLS no deja ver → 404 sin firmar URL', async () => {
     const { db } = crearDb({ archivos_adjuntos: { data: null, error: { code: 'PGRST116' } } });
 
@@ -240,9 +253,7 @@ describe('ArchivoService: URLs firmadas', () => {
     expect(firmador.createSignedUrl).not.toHaveBeenCalled();
   });
 
-  // DEF-A02: el insert en logs_acceso no se espera ni se encadena; el builder de Supabase
-  // es perezoso, así que la consulta nunca se envía y la descarga no queda auditada.
-  test.failing('CP-U145 descargar un archivo deja registro en logs_acceso', async () => {
+  test('CP-U145 descargar un archivo deja registro en logs_acceso', async () => {
     const admin = adminConAuditoria();
     firmador.createSignedUrl.mockResolvedValue({ data: { signedUrl: 'https://d' }, error: null });
     const { db } = crearDb({ archivos_adjuntos: ok({ id: 'a1', paciente_id: 'p1', storage_path: 'p1/x.pdf' }) });
@@ -289,8 +300,7 @@ describe('auditoría de accesos a historias clínicas', () => {
     expect(next).toHaveBeenCalled();
   });
 
-  // DEF-A02: mismo problema que la descarga: ver una sesión no queda auditado.
-  test.failing('CP-U149 ver el detalle de una sesión deja registro en logs_acceso', async () => {
+  test('CP-U149 ver el detalle de una sesión deja registro en logs_acceso', async () => {
     const admin = adminConAuditoria();
     const { db } = crearDb({ sesiones: ok({ id: 's1', paciente_id: 'p1', turnos: [] }) });
 

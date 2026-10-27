@@ -40,15 +40,22 @@ class SesionService {
     data.turno_id = turno?.id ?? null;
     delete data.turnos;
 
+    // Log del acceso (Ley 25.326). Se espera el insert: el builder de Supabase solo manda
+    // la consulta con await/then. Si el log falla, la sesión se devuelve igual.
     if (data?.paciente_id) {
-      supabaseAdmin.from('logs_acceso').insert({
-        profesional_id: profesionalId,
-        paciente_id: data.paciente_id,
-        accion: 'ver',
-        recurso: 'sesion',
-        ip_address: req.ip,
-        user_agent: req.get('User-Agent')
-      });
+      try {
+        const { error: logError } = await supabaseAdmin.from('logs_acceso').insert({
+          profesional_id: profesionalId,
+          paciente_id: data.paciente_id,
+          accion: 'ver',
+          recurso: 'sesion',
+          ip_address: req.ip,
+          user_agent: req.get('User-Agent')
+        });
+        if (logError) console.error('Error al registrar log de acceso:', logError);
+      } catch (err) {
+        console.error('Error al registrar log de acceso:', err.message);
+      }
     }
 
     return data;
