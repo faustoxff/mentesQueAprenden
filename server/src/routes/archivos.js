@@ -1,5 +1,6 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const { erroresDeValidacion } = require('../utils/validacion');
 const { requireAuth, getAuthenticatedClient } = require('../middleware/auth');
 const archivoService = require('../services/ArchivoService');
 
@@ -30,7 +31,7 @@ router.post('/upload-url',
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const data = await archivoService.generarUrlSubida(getAuthenticatedClient(req), req.profesional.id, req.body);

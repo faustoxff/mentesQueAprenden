@@ -1,5 +1,6 @@
 const express = require('express');
 const { body, param, query, validationResult } = require('express-validator');
+const { erroresDeValidacion } = require('../utils/validacion');
 const { requireAuth, getAuthenticatedClient } = require('../middleware/auth');
 const turnoService = require('../services/TurnoService');
 
@@ -15,7 +16,7 @@ router.get('/', requireAuth, [
   query('incluir_cancelados').optional().isIn(['true', 'false']).withMessage('incluir_cancelados debe ser true o false')
 ], async (req, res) => {
   const errors = validationResult(req);
-  if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+  if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
   try {
     const incluirCancelados = req.query.incluir_cancelados === 'true';
@@ -39,7 +40,7 @@ router.post('/',
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const data = await turnoService.crear(getAuthenticatedClient(req), req.profesional.id, req.body);
@@ -65,7 +66,7 @@ router.patch('/:id',
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const data = await turnoService.actualizar(getAuthenticatedClient(req), req.params.id, req.body);

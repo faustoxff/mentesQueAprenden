@@ -1,5 +1,6 @@
 const express = require('express');
 const { body, param, validationResult } = require('express-validator');
+const { erroresDeValidacion } = require('../utils/validacion');
 const { requireAuth, getAuthenticatedClient } = require('../middleware/auth');
 const evaluacionService = require('../services/EvaluacionService');
 
@@ -16,7 +17,7 @@ router.get('/:id',
   [param('id').isUUID()],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const data = await evaluacionService.obtener(getAuthenticatedClient(req), req.params.id);
@@ -41,7 +42,7 @@ router.post('/',
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const data = await evaluacionService.crear(getAuthenticatedClient(req), req.profesional.id, req.body);
@@ -67,7 +68,7 @@ router.patch('/:id',
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const data = await evaluacionService.actualizar(getAuthenticatedClient(req), req.params.id, req.body);
@@ -84,7 +85,7 @@ router.get('/paciente/:pacienteId',
   [param('pacienteId').isUUID()],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const data = await evaluacionService.listarPorPaciente(getAuthenticatedClient(req), req.params.pacienteId);
@@ -106,7 +107,7 @@ router.post('/:id/pruebas',
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const data = await evaluacionService.agregarPrueba(getAuthenticatedClient(req), req.params.id, req.body);
@@ -128,7 +129,7 @@ router.patch('/pruebas/:pruebaId',
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const data = await evaluacionService.actualizarPrueba(getAuthenticatedClient(req), req.params.pruebaId, req.body);
@@ -145,7 +146,7 @@ router.delete('/pruebas/:pruebaId',
   [param('pruebaId').isUUID()],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       await evaluacionService.eliminarPrueba(getAuthenticatedClient(req), req.params.pruebaId);
@@ -162,7 +163,7 @@ router.post('/:id/generar-informe',
   [param('id').isUUID()],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const data = await evaluacionService.generarInforme(getAuthenticatedClient(req), req.params.id);

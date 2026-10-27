@@ -1,5 +1,6 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const { erroresDeValidacion } = require('../utils/validacion');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const authService = require('../services/AuthService');
 
@@ -26,7 +27,7 @@ router.post('/register',
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const resultado = await authService.registrar(req.body);
@@ -50,7 +51,7 @@ router.post('/signup',
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const resultado = await authService.signup(req.body);
@@ -69,7 +70,7 @@ router.post('/login',
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const resultado = await authService.login(req.body);
@@ -91,7 +92,7 @@ router.post('/forgot-password',
   [body('email').isEmail().withMessage('El email no es válido').normalizeEmail()],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     await authService.forgotPassword(req.body.email);
     // Respuesta genérica siempre, para no revelar si el email existe
@@ -123,7 +124,7 @@ router.patch('/change-password',
   [body('password').isLength({ min: 8 })],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       await authService.changePassword(req.user.id, req.body.password);

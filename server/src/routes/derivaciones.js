@@ -1,5 +1,6 @@
 const express = require('express');
 const { body, param, validationResult } = require('express-validator');
+const { erroresDeValidacion } = require('../utils/validacion');
 const { requireAuth, getAuthenticatedClient } = require('../middleware/auth');
 const derivacionService = require('../services/DerivacionService');
 
@@ -20,7 +21,7 @@ router.post('/',
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const data = await derivacionService.crear(getAuthenticatedClient(req), req.profesional.id, req.body);
@@ -41,7 +42,7 @@ router.patch('/:id/responder',
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const data = await derivacionService.responder(getAuthenticatedClient(req), req.params.id, req.profesional.id, req.body);
@@ -58,7 +59,7 @@ router.patch('/:id/completar',
   [param('id').isUUID()],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const data = await derivacionService.completar(getAuthenticatedClient(req), req.params.id, req.profesional.id);

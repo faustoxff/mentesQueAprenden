@@ -1,5 +1,6 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
+const { erroresDeValidacion } = require('../utils/validacion');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
 const profesionalService = require('../services/ProfesionalService');
 
@@ -29,7 +30,7 @@ router.patch('/:id',
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const data = await profesionalService.actualizar(req.params.id, req.profesional, req.body);

@@ -342,7 +342,6 @@
                   "  pm.response.to.have.status(422);",
                   "  pm.expect(pm.response.json().errors.map((e) => e.path)).to.include('password');",
                   "});",
-                  "// DEF-A18: express-validator incluye el \"value\" enviado en cada error, contraseña incluida.",
                   "pm.test('CP-A42 el error no repite la contraseña enviada', () => pm.expect(pm.response.text()).to.not.include('ZZclave'));"
                 ]
               }

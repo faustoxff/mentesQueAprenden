@@ -1,5 +1,6 @@
 const express = require('express');
 const { body, param, validationResult } = require('express-validator');
+const { erroresDeValidacion } = require('../utils/validacion');
 const { requireAuth } = require('../middleware/auth');
 const { registrarAcceso } = require('../middleware/auditLog');
 const { getAuthenticatedClient } = require('../middleware/auth');
@@ -64,7 +65,7 @@ router.post('/',
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const data = await pacienteService.crear(getAuthenticatedClient(req), req.body, req.profesional);
@@ -94,7 +95,7 @@ router.patch('/:id',
   ],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const data = await pacienteService.actualizar(getAuthenticatedClient(req), req.params.id, req.body, req.profesional);
@@ -112,7 +113,7 @@ router.delete('/:id',
   [param('id').isUUID()],
   async (req, res) => {
     const errors = validationResult(req);
-    if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+    if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
       const resultado = await pacienteService.eliminar(getAuthenticatedClient(req), req.params.id);

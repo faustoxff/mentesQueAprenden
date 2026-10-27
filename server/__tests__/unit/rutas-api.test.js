@@ -568,11 +568,24 @@ describe('formato de error y robustez', () => {
     expect(authService.refresh).not.toHaveBeenCalled();
   });
 
-  // DEF-A18: los 422 de express-validator incluyen el "value" enviado, también la contraseña.
-  test.failing('CP-U266 un 422 de registro no devuelve la contraseña enviada', async () => {
+  test('CP-U266 un 422 de registro no devuelve la contraseña enviada', async () => {
     const res = await request(app).post('/api/auth/signup').send({ email: 'zz@test.com', password: 'ZZclave', nombre: 'ZZ-TEST', apellido: 'X', especialidad: 'otro' });
 
     expect(res.status).toBe(422);
+    expect(JSON.stringify(res.body)).not.toContain('ZZclave');
+  });
+
+  test.each([
+    ['POST /auth/signup', (r) => r.post('/api/auth/signup').send({ email: 'zz@test.com', password: 'ZZclave', nombre: '', apellido: 'X', especialidad: 'otro' })],
+    ['POST /auth/register (admin)', (r) => comoAdmin(r.post('/api/auth/register')).send({ email: 'mal', password: 'ZZclave', nombre: 'A', apellido: 'B', especialidad: 'otro' })],
+    ['PATCH /auth/change-password', (r) => comoProf(r.patch('/api/auth/change-password')).send({ password: 'ZZclave' })],
+    ['POST /pacientes', (r) => comoProf(r.post('/api/pacientes')).send({ nombre: 'ZZclave', apellido: '', dni: 'ZZclave' })],
+    ['POST /turnos', (r) => comoProf(r.post('/api/turnos')).send({ fecha_inicio: 'ZZclave', fecha_fin: 'x', profesional_id: 'ZZclave' })]
+  ])('CP-U296 %s → 422 solo con campo y mensaje, sin el valor enviado', async (_ruta, pedir) => {
+    const res = await pedir(request(app));
+
+    expect(res.status).toBe(422);
+    res.body.errors.forEach((e) => expect(Object.keys(e).sort()).toEqual(['msg', 'path']));
     expect(JSON.stringify(res.body)).not.toContain('ZZclave');
   });
 
