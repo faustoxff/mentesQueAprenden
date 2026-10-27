@@ -247,9 +247,9 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U242 | con credenciales incorrectas muestra el mensaje del servidor | Login y registro | Unitaria (componente) | `client/src/components/auth/LoginRegister.test.jsx` |  |
 | CP-U243 | recuperar contraseña muestra la misma respuesta genérica (no revela si el email existe) | Login y registro | Unitaria (componente) | `client/src/components/auth/LoginRegister.test.jsx` |  |
 | CP-U244 | si falla el envío del link, avisa con un mensaje entendible | Login y registro | Unitaria (componente) | `client/src/components/auth/LoginRegister.test.jsx` |  |
-| CP-U245 | nombre, apellido, email y contraseña son obligatorios | Login y registro | Unitaria (componente) | `client/src/components/auth/LoginRegister.test.jsx` |  |
+| CP-U245 | nombre, apellido, email, contraseña y su repetición son obligatorios | Login y registro | Unitaria (componente) | `client/src/components/auth/LoginRegister.test.jsx` |  |
 | CP-U246 | la contraseña exige un mínimo de 8 caracteres (mismo límite que el backend) | Login y registro | Unitaria (componente) | `client/src/components/auth/LoginRegister.test.jsx` |  |
-| CP-U247 | durante el envío el botón dice  | Login y registro | Unitaria (componente) | `client/src/components/auth/LoginRegister.test.jsx` |  |
+| CP-U247 | durante el envío el botón dice "Creando cuenta..." y está deshabilitado | Login y registro | Unitaria (componente) | `client/src/components/auth/LoginRegister.test.jsx` |  |
 | CP-U248 | un email repetido muestra el mensaje del servidor | Login y registro | Unitaria (componente) | `client/src/components/auth/LoginRegister.test.jsx` |  |
 | CP-U249 | con el formulario vacío marca los obligatorios y no llama al servidor | Formulario de paciente | Unitaria (componente) | `client/src/pages/NuevoPacientePage.test.jsx` |  |
 | CP-U250 | DNI con %s muestra el formato esperado y no se envía | Formulario de paciente | Unitaria (componente) | `client/src/pages/NuevoPacientePage.test.jsx` |  |
@@ -269,6 +269,34 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U265 | la tarjeta advierte que la acción no se puede deshacer | Confirmación de baja desde el chat | Unitaria (componente) | `client/src/components/chat/ConfirmCard.casos.test.jsx` |  |
 | CP-U266 | un 422 de registro no devuelve la contraseña enviada | Capa HTTP: auth, roles, validación y formato de error | Unitaria | `server/__tests__/unit/rutas-api.test.js` | DEF-A18 |
 | CP-U267 | el listado general no expone el porcentaje de honorarios de los demás | Auth, archivos, auditoría, profesionales y evaluaciones | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` | DEF-A17 |
+| CP-U268 | con contraseñas distintas no llama al servidor y explica el motivo | Registro: confirmación de contraseña | Unitaria (componente) | `client/src/components/auth/LoginRegister.test.jsx` |  |
+| CP-U269 | el aviso aparece mientras no coinciden y se va cuando se corrige | Registro: confirmación de contraseña | Unitaria (componente) | `client/src/components/auth/LoginRegister.test.jsx` |  |
+| CP-U270 | corregir cualquiera de los dos campos borra el aviso del envío | Registro: confirmación de contraseña | Unitaria (componente) | `client/src/components/auth/LoginRegister.test.jsx` |  |
+| CP-U271 | con contraseñas iguales registra y la repetición no viaja en el body | Registro: confirmación de contraseña | Unitaria (componente) | `client/src/components/auth/LoginRegister.test.jsx` |  |
+| CP-U272 | el botón de mostrar contraseña muestra los dos campos | Registro: confirmación de contraseña | Unitaria (componente) | `client/src/components/auth/LoginRegister.test.jsx` |  |
+| CP-U273 | la repetición tiene la misma restricción de largo y autocompletado que la contraseña | Registro: confirmación de contraseña | Unitaria (componente) | `client/src/components/auth/LoginRegister.test.jsx` |  |
+| CP-U274 | por defecto (agenda) excluye los turnos cancelados | Historial: turnos cancelados | Unitaria | `server/__tests__/unit/turnos-consultorios.test.js` |  |
+| CP-U275 | con incluirCancelados los propios cancelados también vienen | Historial: turnos cancelados | Unitaria | `server/__tests__/unit/turnos-consultorios.test.js` |  |
+| CP-U276 | GET /turnos: incluir_cancelados acepta true/false y rechaza otro valor | Historial: turnos cancelados | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
+| CP-U277 | urlRegistrarSesion arma el link a Nueva sesión con el turno vinculado y su duración | Registrar sesión desde un turno | Unitaria | `client/src/utils/turnos.test.js` |  |
+| CP-U278 | sin tipo ni consultorio usa tratamiento y consultorio 1 | Registrar sesión desde un turno | Unitaria | `client/src/utils/turnos.test.js` |  |
+| CP-U279 | cada estado de turno tiene color y nombre | Colores de estado compartidos | Unitaria | `client/src/utils/turnos.test.js` |  |
+| CP-U280 | descarta la ocupación ajena y lista de lo más reciente a lo más viejo, agrupado por mes | Historial de turnos | Unitaria (componente) | `client/src/pages/HistorialPage.test.jsx` |  |
+| CP-U281 | el período por defecto es el último mes hasta ahora, con cancelados | Historial de turnos | Unitaria (componente) | `client/src/pages/HistorialPage.test.jsx` |  |
+| CP-U282 | con 3 y 12 meses pide desde la fecha correcta | Historial de turnos | Unitaria (componente) | `client/src/pages/HistorialPage.test.jsx` |  |
+| CP-U283 | el período no ofrece más de 12 meses | Historial de turnos | Unitaria (componente) | `client/src/pages/HistorialPage.test.jsx` |  |
+| CP-U284 | el filtro de estado (realizado, ausente, cancelado, sin cerrar) muestra solo esos | Historial de turnos | Unitaria (componente) | `client/src/pages/HistorialPage.test.jsx` |  |
+| CP-U285 | el filtro de tipo muestra solo ese tipo | Historial de turnos | Unitaria (componente) | `client/src/pages/HistorialPage.test.jsx` |  |
+| CP-U286 | la búsqueda por paciente ignora mayúsculas y tildes | Historial de turnos | Unitaria (componente) | `client/src/pages/HistorialPage.test.jsx` |  |
+| CP-U287 | "solo sin sesión registrada" saca los que ya tienen sesión | Historial de turnos | Unitaria (componente) | `client/src/pages/HistorialPage.test.jsx` |  |
+| CP-U288 | sin turnos en el período muestra el estado vacío | Historial de turnos | Unitaria (componente) | `client/src/pages/HistorialPage.test.jsx` |  |
+| CP-U289 | si los filtros no dejan nada, también muestra el estado vacío | Historial de turnos | Unitaria (componente) | `client/src/pages/HistorialPage.test.jsx` |  |
+| CP-U290 | si falla el pedido muestra un error entendible | Historial de turnos | Unitaria (componente) | `client/src/pages/HistorialPage.test.jsx` |  |
+| CP-U291 | cada acción lleva a la ruta correcta | Historial de turnos | Unitaria (componente) | `client/src/pages/HistorialPage.test.jsx` |  |
+| CP-U292 | el paciente enlaza a su ficha y se ven tipo, consultorio y estado | Historial de turnos | Unitaria (componente) | `client/src/pages/HistorialPage.test.jsx` |  |
+| CP-U293 | mientras carga muestra el esqueleto | Historial de turnos | Unitaria (componente) | `client/src/pages/HistorialPage.test.jsx` |  |
+| CP-U294 | un profesional ve "Historial" en el menú y lo lleva a /historial | Historial: acceso desde el menú | Unitaria (componente) | `client/src/components/chat/ChatSidebar.test.jsx` |  |
+| CP-U295 | para un admin, "Historial" queda antes de "Administración" | Historial: acceso desde el menú | Unitaria (componente) | `client/src/components/chat/ChatSidebar.test.jsx` |  |
 | CP-A01 | GET /health responde ok | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A02 | POST /auth/login como profesional | Autenticación (necesita credenciales de un proyecto de test) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A03 | POST /auth/login con email inválido → 422 | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
@@ -327,5 +355,7 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-E14 | inicio sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
 | CP-E15 | pacientes sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
 | CP-E16 | agenda sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
+| CP-E17 | el historial se abre desde el menú y no muestra la ocupación de otros profesionales | Historial de turnos | E2E | `client/e2e/navegabilidad.e2e.js` |  |
+| CP-E18 | historial sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
 
-Totales: 265 IDs unitarios, 42 de API y 16 E2E.
+Totales: 293 IDs unitarios, 42 de API y 18 E2E.

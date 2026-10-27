@@ -36,6 +36,7 @@ Aplicación web para un centro de salud interdisciplinario (psicopedagogía, psi
 - Calendario (día / semana / mes / lista) con FullCalendar.
 - **Consultorios compartidos:** cada turno reserva uno de los 3 consultorios físicos. Todos los profesionales ven la ocupación de cada consultorio (sin datos del paciente ajeno) y la base de datos impide reservar dos turnos superpuestos en el mismo consultorio.
 - Creación, edición, cancelación y eliminación de turnos.
+- **Historial** (menú del chat → Historial, ruta `/historial`): turnos y sesiones propios ya pasados del último mes, o de 3, 6 o 12 meses, con los cancelados. Se filtra por estado (incluye los que quedaron sin cerrar), tipo, paciente y "solo sin sesión registrada", y desde cada turno se puede ver o registrar la sesión. Los turnos con fecha pasada se permiten justamente para poder registrar sesiones ya hechas.
 
 ### Sesiones
 - Registro de sesiones (evaluación, tratamiento, seguimiento, devolución, reunión interdisciplinaria) con notas clínicas, duración y monto.

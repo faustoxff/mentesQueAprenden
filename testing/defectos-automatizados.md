@@ -209,7 +209,7 @@ Totales: 21 defectos (5 alta, 3 media, 13 baja), 6 con impacto en seguridad.
 ---
 
 ## Observaciones (no son defectos, quedan para decidir)
-- **Turnos con fecha pasada:** se aceptan. No hay una regla escrita y `SesionService` los usa para registrar sesiones ya hechas, así que no lo marqué como defecto. Si el centro quiere prohibirlo para turnos nuevos, hay que definir la regla.
+- **Turnos con fecha pasada — decisión tomada: se permiten y se consultan en `/historial`.** `SesionService` los usa para registrar sesiones ya hechas. El historial los muestra con los cancelados (`GET /turnos?incluir_cancelados=true`) y permite registrar la sesión de los que quedaron sin cerrar (CP-U274…CP-U276, CP-U280…CP-U295).
 - **Confirmación de contraseña en el registro — resuelta:** el registro ahora tiene el campo "Repetir contraseña", que avisa en vivo si no coincide y no deja enviar el formulario. El caso "confirmación distinta" ya aplica y lo cubren CP-U268…CP-U273.
 - **Duración de la URL firmada de subida:** el comentario de `ArchivoService` dice 5 minutos, pero `createSignedUploadUrl` no recibe duración y usa la de Supabase (2 h según su documentación). Conviene confirmarlo en el proyecto real; la de descarga sí es de 300 s (CP-U143).
 - **Formulario de turno en jsdom:** la agenda usa FullCalendar y no se probó con Testing Library; se cubre en el server (CP-U18…CP-U25) y en E2E (CP-E04).
