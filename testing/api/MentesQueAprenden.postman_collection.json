@@ -1,0 +1,2170 @@
+{
+  "info": {
+    "name": "Mentes que Aprenden - API",
+    "description": "Pruebas de la API REST (Unidades 5 y 6). Datos con prefijo ZZ-TEST que la carpeta 6 limpia. Sin secretos: las credenciales llegan por --env-var.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Chequeos comunes a TODAS las respuestas: tiempo, nunca 500, nada sensible y formato de error.",
+          "const nombre = pm.info.requestName.split(' ')[0];",
+          "const umbral = Number(pm.environment.get('umbralMs') || pm.collectionVariables.get('umbralMs') || 1000);",
+          "pm.test(`${nombre} tiempo de respuesta < ${umbral} ms`, () => pm.expect(pm.response.responseTime).to.be.below(umbral));",
+          "pm.test(`${nombre} un 500 nunca es un resultado esperado`, () => pm.expect(pm.response.code).to.not.be.oneOf([500, 502, 503, 504]));",
+          "pm.test(`${nombre} la respuesta no expone contraseñas ni claves`, () => {",
+          "  pm.expect(pm.response.text()).to.not.match(/\"password\"\\s*:|service_role|SUPABASE_[A-Z_]*KEY|OPENROUTER|sk-or-/i);",
+          "});",
+          "if (pm.response.code >= 400) {",
+          "  pm.test(`${nombre} error con formato { error } o { errors: [...] }`, () => {",
+          "    const b = pm.response.json();",
+          "    pm.expect(typeof b.error === 'string' || Array.isArray(b.errors)).to.eql(true);",
+          "  });",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "umbralMs",
+      "value": "1000"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Sin credenciales (no llegan a Supabase)",
+      "description": "Se cortan antes de cualquier consulta a Supabase u OpenRouter: se pueden correr contra un server local con claves falsas.",
+      "item": [
+        {
+          "name": "CP-A01 GET /health responde ok",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A01 200 con status ok y timestamp ISO', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const b = pm.response.json();",
+                  "  pm.expect(b.status).to.eql('ok');",
+                  "  pm.expect(new Date(b.timestamp).toISOString()).to.eql(b.timestamp);",
+                  "  pm.expect(Object.keys(b).sort()).to.eql(['status', 'timestamp']);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{serverUrl}}/health",
+              "host": [
+                "{{serverUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A03 POST /auth/login con email inválido → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A03 422 con el campo y un mensaje legible', () => {",
+                  "  pm.response.to.have.status(422);",
+                  "  const e = pm.response.json().errors;",
+                  "  pm.expect(e).to.be.an('array').that.is.not.empty;",
+                  "  pm.expect(e[0].path).to.eql('email');",
+                  "  pm.expect(e[0].msg).to.eql('El email no es válido');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"sin-arroba\",\n  \"password\": \"x\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A04 POST /auth/login con JSON mal formado → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// DEF-A06: hoy responde 500 \"Error interno del servidor\".",
+                  "pm.test('CP-A04 400 (no 500) ante un JSON mal formado', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"a@b.com\", \"password\": ",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A06 POST /auth/signup vacío → 422 con todos los obligatorios",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A06 422 marcando email, password, nombre, apellido y especialidad', () => {",
+                  "  pm.response.to.have.status(422);",
+                  "  const campos = pm.response.json().errors.map((e) => e.path);",
+                  "  ['email', 'password', 'nombre', 'apellido', 'especialidad'].forEach((c) => pm.expect(campos).to.include(c));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/signup",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "signup"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A07 POST /auth/forgot-password con email inválido → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A07 422 por email inválido', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/forgot-password",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "forgot-password"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"no-es-email\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A09 GET /auth/me sin token → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A09 401 { error: \"Token requerido\" }', () => {",
+                  "  pm.response.to.have.status(401);",
+                  "  pm.expect(pm.response.json()).to.eql({ error: 'Token requerido' });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A10 GET /pacientes con esquema Basic → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A10 401 con un header que no es Bearer', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Basic dXNlcjpwYXNz"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pacientes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A42 POST /auth/signup con contraseña corta → 422 sin devolverla",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A42 422 en password', () => {",
+                  "  pm.response.to.have.status(422);",
+                  "  pm.expect(pm.response.json().errors.map((e) => e.path)).to.include('password');",
+                  "});",
+                  "// DEF-A21: express-validator incluye el \"value\" enviado en cada error, contraseña incluida.",
+                  "pm.test('CP-A42 el error no repite la contraseña enviada', () => pm.expect(pm.response.text()).to.not.include('ZZclave'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/signup",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "signup"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"zz-test@ejemplo.com\",\n  \"password\": \"ZZclave\",\n  \"nombre\": \"ZZ-TEST\",\n  \"apellido\": \"Newman\",\n  \"especialidad\": \"otro\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A37 GET ruta inexistente → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A37 404 { error: \"Ruta no encontrada\" }', () => {",
+                  "  pm.response.to.have.status(404);",
+                  "  pm.expect(pm.response.json()).to.eql({ error: 'Ruta no encontrada' });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/no-existe",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "no-existe"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Autenticación (necesita credenciales de un proyecto de test)",
+      "description": "Logins con variables de entorno (--env-var). Guardan los tokens en el environment.",
+      "item": [
+        {
+          "name": "CP-A02 POST /auth/login como profesional",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A02 200 con tokens y perfil, sin campos de más', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const b = pm.response.json();",
+                  "  pm.expect(Object.keys(b.session).sort()).to.eql(['access_token', 'expires_at', 'refresh_token']);",
+                  "  pm.expect(b.session.access_token).to.be.a('string').and.match(/^[\\w-]+\\.[\\w-]+\\.[\\w-]+$/);",
+                  "  pm.expect(b.session.expires_at).to.be.a('number');",
+                  "  pm.expect(Object.keys(b.profesional).sort()).to.eql(['activo', 'apellido', 'email', 'especialidad', 'id', 'matricula', 'nombre', 'rol']);",
+                  "  pm.expect(['admin', 'profesional']).to.include(b.profesional.rol);",
+                  "  pm.environment.set('tokenProfesional', b.session.access_token);",
+                  "  pm.environment.set('profesionalId', b.profesional.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailProfesional}}\",\n  \"password\": \"{{passwordProfesional}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A38 POST /auth/login como admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A38 200 con tokens y perfil, sin campos de más', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const b = pm.response.json();",
+                  "  pm.expect(Object.keys(b.session).sort()).to.eql(['access_token', 'expires_at', 'refresh_token']);",
+                  "  pm.expect(b.session.access_token).to.be.a('string').and.match(/^[\\w-]+\\.[\\w-]+\\.[\\w-]+$/);",
+                  "  pm.expect(b.session.expires_at).to.be.a('number');",
+                  "  pm.expect(Object.keys(b.profesional).sort()).to.eql(['activo', 'apellido', 'email', 'especialidad', 'id', 'matricula', 'nombre', 'rol']);",
+                  "  pm.expect(['admin', 'profesional']).to.include(b.profesional.rol);",
+                  "  pm.environment.set('tokenAdmin', b.session.access_token);",
+                  "  pm.environment.set('adminId', b.profesional.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailAdmin}}\",\n  \"password\": \"{{passwordAdmin}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A39 POST /auth/login como segundo profesional",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A39 200 con tokens y perfil, sin campos de más', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const b = pm.response.json();",
+                  "  pm.expect(Object.keys(b.session).sort()).to.eql(['access_token', 'expires_at', 'refresh_token']);",
+                  "  pm.expect(b.session.access_token).to.be.a('string').and.match(/^[\\w-]+\\.[\\w-]+\\.[\\w-]+$/);",
+                  "  pm.expect(b.session.expires_at).to.be.a('number');",
+                  "  pm.expect(Object.keys(b.profesional).sort()).to.eql(['activo', 'apellido', 'email', 'especialidad', 'id', 'matricula', 'nombre', 'rol']);",
+                  "  pm.expect(['admin', 'profesional']).to.include(b.profesional.rol);",
+                  "  pm.environment.set('tokenProfesional2', b.session.access_token);",
+                  "  pm.environment.set('profesionalId2', b.profesional.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailProfesional2}}\",\n  \"password\": \"{{passwordProfesional2}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A05 POST /auth/login con contraseña incorrecta → 401 genérico",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A05 401 \"Credenciales inválidas\" sin revelar si el email existe', () => {",
+                  "  pm.response.to.have.status(401);",
+                  "  pm.expect(pm.response.json()).to.eql({ error: 'Credenciales inválidas' });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{emailProfesional}}\",\n  \"password\": \"ZZ-TEST-contraseña-incorrecta\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A08 POST /auth/refresh con token inválido → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A08 401 con refresh token inválido', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"ZZ-TEST-no-es-un-token\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A11 GET /auth/me con token inválido → 401",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A11 401 \"Token inválido o expirado\"', () => {",
+                  "  pm.response.to.have.status(401);",
+                  "  pm.expect(pm.response.json().error).to.eql('Token inválido o expirado');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJIUzI1NiJ9.e30.ZZ-TEST"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Pacientes y aislamiento",
+      "description": "Crea un paciente ZZ-TEST que se da de baja en la carpeta 6.",
+      "item": [
+        {
+          "name": "CP-A12 GET /pacientes (contrato del listado)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A12 200 con data y pagination con tipos correctos', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const b = pm.response.json();",
+                  "  pm.expect(b.data).to.be.an('array');",
+                  "  pm.expect(b.data.length).to.be.at.most(5);",
+                  "  pm.expect(b.pagination).to.include.keys('total', 'page', 'limit', 'pages');",
+                  "  pm.expect(b.pagination.page).to.eql(1);",
+                  "  b.data.forEach((p) => {",
+                  "    pm.expect(p).to.include.keys('id', 'nombre', 'apellido', 'dni', 'estado', 'derivado');",
+                  "    pm.expect(['activo', 'derivado', 'alta', 'inactivo']).to.include(p.estado);",
+                  "    pm.expect(p).to.not.have.any.keys('deleted_at', 'notas', 'motivo_consulta');",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes?page=1&limit=5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pacientes"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A13 POST /pacientes crea ZZ-TEST",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!pm.environment.get('dniTest')) {",
+                  "  pm.environment.set('dniTest', String(Math.floor(90000000 + Math.random() * 9999999)));",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A13 201 con el paciente creado a nombre de quien lo crea', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  const p = pm.response.json();",
+                  "  pm.expect(p.id).to.match(/^[0-9a-f-]{36}$/);",
+                  "  pm.expect(p.nombre).to.eql('ZZ-TEST');",
+                  "  pm.expect(p.profesional_principal_id).to.eql(pm.environment.get('profesionalId'));",
+                  "  pm.expect(p.deleted_at).to.eql(null);",
+                  "  pm.environment.set('pacienteZZ', p.id);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pacientes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"ZZ-TEST\",\n  \"apellido\": \"Newman\",\n  \"dni\": \"{{dniTest}}\",\n  \"fecha_nacimiento\": \"2015-03-10\",\n  \"motivo_consulta\": \"Dato de prueba automatizada\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A14 POST /pacientes con el mismo DNI → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A14 409 \"Ya existe un paciente con ese DNI\"', () => {",
+                  "  pm.response.to.have.status(409);",
+                  "  pm.expect(pm.response.json()).to.eql({ error: 'Ya existe un paciente con ese DNI' });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pacientes"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"ZZ-TEST\",\n  \"apellido\": \"Duplicado\",\n  \"dni\": \"{{dniTest}}\",\n  \"fecha_nacimiento\": \"2015-03-10\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A18 GET /pacientes?busqueda=DNI → el duplicado no se creó",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A18 hay exactamente un paciente con ese DNI', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().pagination.total).to.eql(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes?busqueda={{dniTest}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pacientes"
+              ],
+              "query": [
+                {
+                  "key": "busqueda",
+                  "value": "{{dniTest}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A15 GET paciente de A pedido por el profesional B → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A15 404 (no revela que existe) y sin datos del paciente', () => {",
+                  "  pm.expect([403, 404]).to.include(pm.response.code);",
+                  "  pm.expect(pm.response.text()).to.not.include('ZZ-TEST');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes/{{pacienteZZ}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pacientes",
+                "{{pacienteZZ}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A16 GET paciente de un profesional pedido por un admin → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Migración 004: el admin tampoco ve pacientes ajenos en SELECT.",
+                  "pm.test('CP-A16 el admin tampoco ve el paciente ajeno', () => {",
+                  "  pm.expect([403, 404]).to.include(pm.response.code);",
+                  "  pm.expect(pm.response.text()).to.not.include('ZZ-TEST');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes/{{pacienteZZ}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pacientes",
+                "{{pacienteZZ}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A17 GET /pacientes/abc (id no UUID) → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// DEF-A05: hoy responde 500 con el error crudo de Postgres.",
+                  "pm.test('CP-A17 422 ante un id que no es UUID', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes/abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pacientes",
+                "abc"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A19 PATCH /pacientes/:id con estado inválido → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A19 422 \"El estado no es válido\"', () => {",
+                  "  pm.response.to.have.status(422);",
+                  "  pm.expect(pm.response.json().errors[0].msg).to.eql('El estado no es válido');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes/{{pacienteZZ}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pacientes",
+                "{{pacienteZZ}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"borrado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Turnos y consultorios",
+      "description": "Reservas en el consultorio 3 en 2031; se cancelan en la carpeta 6.",
+      "item": [
+        {
+          "name": "CP-A21 POST /turnos reserva el consultorio 3",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Horario lejano y al azar para no chocar con datos reales: un día de 2031 a las 10:00 (UTC-3), consultorio 3.",
+                  "if (!pm.environment.get('turnoInicio')) {",
+                  "  const dia = new Date(Date.UTC(2031, 0, 1) + Math.floor(Math.random() * 300) * 86400000);",
+                  "  const inicio = new Date(dia.getTime() + 13 * 3600000);",
+                  "  pm.environment.set('turnoInicio', inicio.toISOString());",
+                  "  pm.environment.set('turnoFin', new Date(inicio.getTime() + 50 * 60000).toISOString());",
+                  "  pm.environment.set('turnoFinMas50', new Date(inicio.getTime() + 100 * 60000).toISOString());",
+                  "  pm.environment.set('turnoInicioMas49', new Date(inicio.getTime() + 49 * 60000).toISOString());",
+                  "  pm.environment.set('turnoAntes', new Date(inicio.getTime() - 60 * 60000).toISOString());",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A21 201 con consultorio, estado programado y fechas', () => {",
+                  "  pm.response.to.have.status(201);",
+                  "  const t = pm.response.json();",
+                  "  pm.expect(t.consultorio).to.eql(3);",
+                  "  pm.expect(t.estado).to.eql('programado');",
+                  "  pm.expect(new Date(t.fecha_inicio).toISOString()).to.eql(pm.environment.get('turnoInicio'));",
+                  "});",
+                  "if (pm.response.code === 201) pm.environment.set('turnoZZ', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fecha_inicio\": \"{{turnoInicio}}\",\n  \"fecha_fin\": \"{{turnoFin}}\",\n  \"profesional_id\": \"{{profesionalId}}\",\n  \"paciente_id\": \"{{pacienteZZ}}\",\n  \"consultorio\": 3,\n  \"tipo\": \"evaluacion\",\n  \"notas\": \"ZZ-TEST\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A22 POST /turnos mismo consultorio y horario → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A22 409 con un mensaje que nombra el consultorio', () => {",
+                  "  pm.response.to.have.status(409);",
+                  "  pm.expect(pm.response.json().error).to.match(/Consultorio 3 ocupado/);",
+                  "});",
+                  "if (pm.response.code === 201) pm.environment.set('turnoZZDuplicado', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fecha_inicio\": \"{{turnoInicio}}\",\n  \"fecha_fin\": \"{{turnoFin}}\",\n  \"profesional_id\": \"{{profesionalId}}\",\n  \"consultorio\": 3,\n  \"notas\": \"ZZ-TEST\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A31 POST /turnos con 1 minuto de solape → 409",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A31 409: empieza 1 minuto antes de que termine el otro', () => pm.response.to.have.status(409));",
+                  "if (pm.response.code === 201) pm.environment.set('turnoZZSolape', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fecha_inicio\": \"{{turnoInicioMas49}}\",\n  \"fecha_fin\": \"{{turnoFinMas50}}\",\n  \"profesional_id\": \"{{profesionalId}}\",\n  \"consultorio\": 3,\n  \"notas\": \"ZZ-TEST\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A25 POST /turnos que empieza justo cuando termina el otro → 201",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A25 201: el borde fin = inicio no es superposición', () => pm.response.to.have.status(201));",
+                  "if (pm.response.code === 201) pm.environment.set('turnoZZBorde', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fecha_inicio\": \"{{turnoFin}}\",\n  \"fecha_fin\": \"{{turnoFinMas50}}\",\n  \"profesional_id\": \"{{profesionalId}}\",\n  \"consultorio\": 3,\n  \"notas\": \"ZZ-TEST\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A23 POST /turnos con consultorio 4 → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A23 422 en consultorio', () => {",
+                  "  pm.response.to.have.status(422);",
+                  "  pm.expect(pm.response.json().errors[0].path).to.eql('consultorio');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fecha_inicio\": \"{{turnoInicio}}\",\n  \"fecha_fin\": \"{{turnoFin}}\",\n  \"profesional_id\": \"{{profesionalId}}\",\n  \"consultorio\": 4\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A24 POST /turnos con fin anterior al inicio → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// DEF-A03: hoy se acepta y crea un turno con duración negativa (se cancela en la carpeta 6).",
+                  "pm.test('CP-A24 422 si el fin es anterior al inicio', () => pm.response.to.have.status(422));",
+                  "if (pm.response.code === 201) pm.environment.set('turnoZZInvertido', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fecha_inicio\": \"{{turnoInicio}}\",\n  \"fecha_fin\": \"{{turnoAntes}}\",\n  \"profesional_id\": \"{{profesionalId}}\",\n  \"consultorio\": 1,\n  \"notas\": \"ZZ-TEST\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A20 GET /turnos: los turnos ajenos no traen datos clínicos",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A20 el profesional B ve el consultorio ocupado pero no el paciente ni las notas', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const ajenos = pm.response.json().filter((t) => t.ocupado);",
+                  "  pm.expect(ajenos.length).to.be.above(0);",
+                  "  ajenos.forEach((t) => pm.expect(t).to.not.have.any.keys('paciente', 'paciente_id', 'notas'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional2}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos?fecha_inicio={{turnoAntes}}&fecha_fin={{turnoFinMas50}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos"
+              ],
+              "query": [
+                {
+                  "key": "fecha_inicio",
+                  "value": "{{turnoAntes}}"
+                },
+                {
+                  "key": "fecha_fin",
+                  "value": "{{turnoFinMas50}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Permisos, pagos y archivos",
+      "description": "No escriben datos (los casos que escribirían se cortan en la validación o en el permiso).",
+      "item": [
+        {
+          "name": "CP-A29 GET /pagos/liquidacion como profesional → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A29 403 \"Se requiere rol admin\"', () => {",
+                  "  pm.response.to.have.status(403);",
+                  "  pm.expect(pm.response.json()).to.eql({ error: 'Se requiere rol admin' });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos/liquidacion?mes=2026-10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "liquidacion"
+              ],
+              "query": [
+                {
+                  "key": "mes",
+                  "value": "2026-10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A32 GET /pagos/liquidacion como admin (contrato)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A32 200 con totales numéricos y un resumen por profesional', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const b = pm.response.json();",
+                  "  pm.expect(b.mes).to.eql('2026-10');",
+                  "  pm.expect(b.total_facturado).to.be.a('number');",
+                  "  pm.expect(b.total_espacio).to.be.a('number');",
+                  "  b.profesionales.forEach((p) => {",
+                  "    pm.expect(p).to.include.keys('profesional', 'total_facturado', 'total_profesional', 'total_espacio', 'cantidad_sesiones');",
+                  "    pm.expect(p.total_profesional + p.total_espacio).to.be.closeTo(p.total_facturado, 0.01);",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos/liquidacion?mes=2026-10",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "liquidacion"
+              ],
+              "query": [
+                {
+                  "key": "mes",
+                  "value": "2026-10"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A33 GET /pagos/liquidacion con mes inválido → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// DEF-A10: hoy responde 500.",
+                  "pm.test('CP-A33 422 si el mes no es AAAA-MM', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenAdmin}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos/liquidacion?mes=2026-13",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos",
+                "liquidacion"
+              ],
+              "query": [
+                {
+                  "key": "mes",
+                  "value": "2026-13"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A28 POST /pagos con monto 0 → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A28 422 en monto_total (límite: mínimo 0,01)', () => {",
+                  "  pm.response.to.have.status(422);",
+                  "  pm.expect(pm.response.json().errors.map((e) => e.path)).to.include('monto_total');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pagos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pagos"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sesion_id\": \"00000000-0000-4000-8000-000000000000\",\n  \"monto_total\": 0,\n  \"metodo_pago\": \"efectivo\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A34 GET /profesionales (contrato, sin datos sensibles)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A34 200 con una lista de activos sin email ni contraseña', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.response.json().forEach((p) => {",
+                  "    pm.expect(p.activo).to.eql(true);",
+                  "    pm.expect(p).to.not.have.any.keys('email', 'password', 'telefono');",
+                  "  });",
+                  "});",
+                  "// DEF-A20: cualquier profesional ve el porcentaje de honorarios de los demás.",
+                  "pm.test('CP-A34 un profesional no ve el porcentaje de honorarios de otros', () => {",
+                  "  pm.response.json().filter((p) => p.id !== pm.environment.get('profesionalId'))",
+                  "    .forEach((p) => pm.expect(p).to.not.have.property('porcentaje_honorarios'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/profesionales",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profesionales"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A35 DELETE /profesionales/:id como profesional → 403",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A35 403: un profesional no puede desactivar a otro', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/profesionales/{{profesionalId2}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "profesionales",
+                "{{profesionalId2}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A26 GET /derivaciones (contrato)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A26 200 con derivaciones propias en estados válidos', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  const yo = pm.environment.get('profesionalId');",
+                  "  pm.response.json().forEach((d) => {",
+                  "    pm.expect(['pendiente', 'aceptada', 'rechazada', 'completada']).to.include(d.estado);",
+                  "    pm.expect([d.profesional_origen_id, d.profesional_destino_id]).to.include(yo);",
+                  "  });",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/derivaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "derivaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A27 POST /archivos/upload-url de 10 MB + 1 byte → 422",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A27 422 en tamanio_bytes (límite: 10 MB)', () => {",
+                  "  pm.response.to.have.status(422);",
+                  "  pm.expect(pm.response.json().errors.map((e) => e.path)).to.include('tamanio_bytes');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/archivos/upload-url",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "archivos",
+                "upload-url"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"paciente_id\": \"{{pacienteZZ}}\",\n  \"nombre_original\": \"ZZ-TEST.pdf\",\n  \"mime_type\": \"application/pdf\",\n  \"tamanio_bytes\": 10485761,\n  \"tipo\": \"informe\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "CP-A36 POST /ia/confirmar con un token inventado → 400",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A36 400 \"Confirmación inválida\": la baja no se ejecuta sin el token firmado', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().error).to.eql('Confirmación inválida');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ia/confirmar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ia",
+                "confirmar"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"ZZ-TEST.inventado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Limpieza",
+      "description": "Deja la base como estaba: cancela los turnos ZZ-TEST y da de baja el paciente ZZ-TEST.",
+      "item": [
+        {
+          "name": "CP-A41 Limpieza: cancelar turnoZZ",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A41 turnoZZ cancelado (o no se había creado)', () => {",
+                  "  if (!pm.environment.get('turnoZZ')) return;",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.environment.unset('turnoZZ');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos/{{turnoZZ}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos",
+                "{{turnoZZ}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A41 Limpieza: cancelar turnoZZBorde",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A41 turnoZZBorde cancelado (o no se había creado)', () => {",
+                  "  if (!pm.environment.get('turnoZZBorde')) return;",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.environment.unset('turnoZZBorde');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos/{{turnoZZBorde}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos",
+                "{{turnoZZBorde}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A41 Limpieza: cancelar turnoZZDuplicado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A41 turnoZZDuplicado cancelado (o no se había creado)', () => {",
+                  "  if (!pm.environment.get('turnoZZDuplicado')) return;",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.environment.unset('turnoZZDuplicado');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos/{{turnoZZDuplicado}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos",
+                "{{turnoZZDuplicado}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A41 Limpieza: cancelar turnoZZSolape",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A41 turnoZZSolape cancelado (o no se había creado)', () => {",
+                  "  if (!pm.environment.get('turnoZZSolape')) return;",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.environment.unset('turnoZZSolape');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos/{{turnoZZSolape}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos",
+                "{{turnoZZSolape}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A41 Limpieza: cancelar turnoZZInvertido",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A41 turnoZZInvertido cancelado (o no se había creado)', () => {",
+                  "  if (!pm.environment.get('turnoZZInvertido')) return;",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.environment.unset('turnoZZInvertido');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/turnos/{{turnoZZInvertido}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "turnos",
+                "{{turnoZZInvertido}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A30 DELETE /pacientes/:id hace la baja lógica",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A30 200 con mensaje e id', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json().id).to.eql(pm.environment.get('pacienteZZ'));",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes/{{pacienteZZ}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pacientes",
+                "{{pacienteZZ}}"
+              ]
+            }
+          }
+        },
+        {
+          "name": "CP-A40 GET del paciente dado de baja → 404",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CP-A40 después de la baja ya no se ve (pero no se borró: deleted_at)', () => pm.response.to.have.status(404));",
+                  "['pacienteZZ', 'dniTest', 'turnoInicio', 'turnoFin', 'turnoFinMas50', 'turnoInicioMas49', 'turnoAntes'].forEach((v) => pm.environment.unset(v));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{tokenProfesional}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/pacientes/{{pacienteZZ}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "pacientes",
+                "{{pacienteZZ}}"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
