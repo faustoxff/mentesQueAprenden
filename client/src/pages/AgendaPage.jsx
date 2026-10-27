@@ -14,14 +14,7 @@ import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import Modal from '../components/ui/Modal';
 import { getErrorMessage } from '../utils/errores';
-
-const COLORES_ESTADO = {
-  programado: '#6366f1',
-  confirmado: '#10b981',
-  cancelado: '#ef4444',
-  ausente: '#f59e0b',
-  realizado: '#6b7280'
-};
+import { COLORES_ESTADO, TIPO_OPTIONS, urlRegistrarSesion } from '../utils/turnos';
 
 const COLOR_SESION = '#8b5cf6';
 const COLOR_OCUPADO = '#9ca3af';
@@ -41,13 +34,6 @@ const TITLE_MOBILE = { day: 'numeric', month: 'short' };
 const TOOLBAR_MOBILE = { left: 'title', center: '', right: 'prev,today,next' };
 const FOOTER_MOBILE = { center: 'timeGridDay,listWeek,dayGridMonth' };
 
-const TIPO_OPTIONS = [
-  { value: 'tratamiento', label: 'Tratamiento' },
-  { value: 'evaluacion', label: 'Evaluación' },
-  { value: 'seguimiento', label: 'Seguimiento' },
-  { value: 'devolucion', label: 'Devolución' },
-  { value: 'reunion_interdisciplinaria', label: 'Reunión interdisciplinaria' }
-];
 
 export default function AgendaPage() {
   const { profesional, isAdmin } = useAuthStore();
@@ -440,14 +426,7 @@ export default function AgendaPage() {
                       </a>
                     ) : (
                       <a
-                        href={`/sesiones/nueva?${new URLSearchParams({
-                          paciente_id: modalDetalle.paciente_id,
-                          turno_id: modalDetalle.id,
-                          fecha: modalDetalle.fecha_inicio,
-                          tipo: modalDetalle.tipo || 'tratamiento',
-                          consultorio: String(modalDetalle.consultorio || 1),
-                          duracion: String(Math.round((new Date(modalDetalle.fecha_fin) - new Date(modalDetalle.fecha_inicio)) / 60000))
-                        })}`}
+                        href={urlRegistrarSesion(modalDetalle)}
                         className="flex-1 text-center py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-xl text-sm font-medium"
                       >
                         Registrar sesión
