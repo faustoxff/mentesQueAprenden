@@ -211,7 +211,7 @@ describe('calcularEdad (valores límite del cumpleaños, hora de Argentina)', ()
     expect(iaService.calcularEdad(nacimiento)).toBe(edad);
   });
 
-  // DEF-A16: la fecha 'AAAA-MM-DD' se interpreta en UTC y se compara con getDate() local:
+  // DEF-A15: la fecha 'AAAA-MM-DD' se interpreta en UTC y se compara con getDate() local:
   // en Argentina el día anterior al cumpleaños ya suma el año.
   test.failing('CP-U194 el día anterior al cumpleaños todavía no los cumplió', () => {
     expect(iaService.calcularEdad('2016-10-28')).toBe(9);

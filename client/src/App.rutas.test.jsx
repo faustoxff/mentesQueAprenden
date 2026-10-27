@@ -71,7 +71,7 @@ describe('ProtectedRoute y PublicOnlyRoute', () => {
     await waitFor(() => expect(window.location.pathname).toBe('/admin'));
   });
 
-  // DEF-A17: /admin no tiene guarda de rol en el cliente: un profesional ve el panel de administración
+  // DEF-A16: /admin no tiene guarda de rol en el cliente: un profesional ve el panel de administración
   // (el backend sí rechaza las acciones con 403).
   it.fails('CP-U238 un profesional que entra a /admin es redirigido al inicio', async () => {
     entrarComo(PROF);

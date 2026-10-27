@@ -1,0 +1,47 @@
+
+> clinica-client@1.0.0 test:coverage
+> vitest run --coverage
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+(node:30867) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/postcss.config.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ RUN  v2.1.9 /Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client
+      Coverage enabled with v8
+
+ ✓ src/utils/errores.test.js (8 tests) 2ms
+ ✓ src/components/ui/MiniMarkdown.test.jsx (4 tests) 72ms
+stderr | src/components/auth/ResetPasswordPage.test.jsx > ResetPasswordPage > sin token válido avisa que el link venció y no muestra el formulario
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ src/services/api.test.js (5 tests) 82ms
+ ✓ src/store/authStore.test.js (6 tests) 3ms
+stderr | src/components/layout/MainShell.test.jsx > MainShell (barra inferior mobile) > tiene Inicio, Pacientes y Menta; no tiene Agenda
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ src/components/layout/MainShell.test.jsx (4 tests) 138ms
+ ✓ src/components/auth/ResetPasswordPage.test.jsx (5 tests) 377ms
+ ✓ src/components/chat/ConfirmCard.test.jsx (5 tests) 123ms
+stderr | src/App.smoke.test.jsx > humo: login → inicio (render real de la app) > con credenciales correctas entra a la pantalla de inicio sin romperse
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ src/App.smoke.test.jsx (2 tests) 338ms
+
+ Test Files  8 passed (8)
+      Tests  39 passed (39)
+   Start at  18:50:29
+   Duration  2.27s (transform 454ms, setup 1.00s, collect 1.83s, tests 1.13s, environment 6.29s, prepare 482ms)
+
+ % Coverage report from v8
+
+=============================== Coverage summary ===============================
+Statements   : 20.04% ( 1066/5319 )
+Branches     : 77.06% ( 168/218 )
+Functions    : 42.2% ( 46/109 )
+Lines        : 20.04% ( 1066/5319 )
+================================================================================

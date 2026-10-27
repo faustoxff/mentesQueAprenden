@@ -553,7 +553,7 @@ describe('formato de error y robustez', () => {
     expect(authService.refresh).not.toHaveBeenCalled();
   });
 
-  // DEF-A21: los 422 de express-validator incluyen el "value" enviado, también la contraseña.
+  // DEF-A18: los 422 de express-validator incluyen el "value" enviado, también la contraseña.
   test.failing('CP-U266 un 422 de registro no devuelve la contraseña enviada', async () => {
     const res = await request(app).post('/api/auth/signup').send({ email: 'zz@test.com', password: 'ZZclave', nombre: 'ZZ-TEST', apellido: 'X', especialidad: 'otro' });
 

@@ -1,0 +1,69 @@
+
+> clinica-client@1.0.0 test:coverage
+> vitest run --coverage
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+(node:35455) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/postcss.config.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ RUN  v2.1.9 /Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client
+      Coverage enabled with v8
+
+ ✓ src/utils/errores.casos.test.js (10 tests) 3ms
+ ✓ src/utils/errores.test.js (8 tests) 3ms
+ ✓ src/services/api.casos.test.js (8 tests) 14ms
+ ✓ src/store/authStore.casos.test.js (7 tests) 3ms
+ ✓ src/services/api.test.js (5 tests) 81ms
+stderr | src/components/auth/ResetPasswordPage.test.jsx > ResetPasswordPage > sin token válido avisa que el link venció y no muestra el formulario
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ src/store/authStore.test.js (6 tests) 3ms
+ ✓ src/utils/exportarInformePdf.test.js (6 tests) 4ms
+stderr | src/pages/NuevoPacientePage.test.jsx > formulario de nuevo paciente > CP-U249 con el formulario vacío marca los obligatorios y no llama al servidor
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | src/components/auth/LoginRegister.test.jsx > LoginPage > CP-U239 email y contraseña son obligatorios: con el form vacío no es válido
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ src/components/chat/ConfirmCard.test.jsx (5 tests) 136ms
+ ✓ src/components/auth/ResetPasswordPage.test.jsx (5 tests) 453ms
+stderr | src/App.smoke.test.jsx > humo: login → inicio (render real de la app) > con credenciales correctas entra a la pantalla de inicio sin romperse
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ src/hooks/useDebounce.test.js (5 tests) 12ms
+stderr | src/App.rutas.test.jsx > ProtectedRoute y PublicOnlyRoute > CP-U232 sin sesión, / redirige a /login
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ src/components/ui/MiniMarkdown.test.jsx (4 tests) 72ms
+stderr | src/components/layout/MainShell.test.jsx > MainShell (barra inferior mobile) > tiene Inicio, Pacientes y Menta; no tiene Agenda
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ src/components/layout/MainShell.test.jsx (4 tests) 135ms
+ ✓ src/components/chat/ConfirmCard.casos.test.jsx (3 tests) 93ms
+ ✓ src/App.smoke.test.jsx (2 tests) 390ms
+ ✓ src/components/auth/LoginRegister.test.jsx (12 tests) 982ms
+ ✓ src/pages/NuevoPacientePage.test.jsx (12 tests) 2065ms
+ ✓ src/App.rutas.test.jsx (13 tests) 1722ms
+   ✓ ProtectedRoute y PublicOnlyRoute > CP-U238 un profesional que entra a /admin es redirigido al inicio 1515ms
+
+ Test Files  17 passed (17)
+      Tests  115 passed (115)
+   Start at  19:20:51
+   Duration  3.95s (transform 613ms, setup 1.88s, collect 4.27s, tests 6.17s, environment 13.83s, prepare 1.15s)
+
+ % Coverage report from v8
+
+=============================== Coverage summary ===============================
+Statements   : 31.49% ( 1675/5319 )
+Branches     : 83.93% ( 277/330 )
+Functions    : 42.94% ( 67/156 )
+Lines        : 31.49% ( 1675/5319 )
+================================================================================

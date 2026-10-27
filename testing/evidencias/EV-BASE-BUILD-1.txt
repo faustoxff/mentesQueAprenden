@@ -1,0 +1,39 @@
+
+> clinica-interdisciplinaria@1.0.0 build:client
+> npm run build --prefix client
+
+
+> clinica-client@1.0.0 build
+> vite build
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+vite v5.4.21 building for production...
+transforming...
+(node:30970) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/postcss.config.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+✓ 3375 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/registerSW.js                           0.13 kB
+dist/manifest.webmanifest                    0.36 kB
+dist/index.html                              1.12 kB │ gzip:   0.54 kB
+dist/assets/index-B2bzzkSI.css              34.49 kB │ gzip:   6.69 kB
+dist/assets/purify.es-BwoZCkIS.js           22.03 kB │ gzip:   8.77 kB
+dist/assets/index.es-C9-CRT-3.js           150.69 kB │ gzip:  51.55 kB
+dist/assets/html2canvas.esm-CBrSDip1.js    201.42 kB │ gzip:  48.03 kB
+dist/assets/index-BLVQbrzu.js            1,355.65 kB │ gzip: 411.67 kB
+
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rollupOptions.output.manualChunks to improve chunking: https://rollupjs.org/configuration-options/#output-manualchunks
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+✓ built in 2.30s
+
+PWA v0.20.5
+mode      generateSW
+precache  9 entries (1725.55 KiB)
+files generated
+  dist/sw.js
+  dist/workbox-9c191d2f.js

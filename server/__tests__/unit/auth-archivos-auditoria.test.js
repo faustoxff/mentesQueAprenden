@@ -345,7 +345,7 @@ describe('ProfesionalService', () => {
     expect(admin.enTabla('profesionales', 'delete')).toHaveLength(0);
   });
 
-  // DEF-A20: GET /profesionales (lo usa cualquier profesional) incluye el porcentaje de honorarios de todos.
+  // DEF-A17: GET /profesionales (lo usa cualquier profesional) incluye el porcentaje de honorarios de todos.
   test.failing('CP-U267 el listado general no expone el porcentaje de honorarios de los demás', async () => {
     const admin = crearDb({ profesionales: ok([]) });
     mockAdmin.from.mockImplementation(admin.db.from);

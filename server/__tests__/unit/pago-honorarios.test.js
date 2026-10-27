@@ -56,7 +56,7 @@ describe('PagoService.crear: división de honorarios', () => {
     expect(pago.monto_profesional + pago.monto_espacio).toBeCloseTo(monto, 10);
   });
 
-  // DEF-A15: el reparto no se redondea a centavos; 70 % de $100,01 da 70,007 y queda a cargo de la base.
+  // DEF-A14: el reparto no se redondea a centavos; 70 % de $100,01 da 70,007 y queda a cargo de la base.
   test.failing('CP-U56 los montos repartidos se guardan redondeados a centavos', async () => {
     const pago = await cobrar(100.01, 70);
 
