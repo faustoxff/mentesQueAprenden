@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { Send, Bot, Loader2, MoreVertical, Settings, LogOut, RotateCcw, Paperclip, ArrowLeftRight } from 'lucide-react';
+import { Send, Bot, Loader2, MoreVertical, Settings, LogOut, RotateCcw, Paperclip, ArrowLeftRight, History } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
@@ -189,6 +189,9 @@ export default function ChatSidebar({ className = 'flex' }) {
                     {cantidadPendientes}
                   </span>
                 )}
+              </Link>
+              <Link to="/historial" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-gray-700 hover:bg-primary-50">
+                <History size={16} /> Historial
               </Link>
               {isAdmin() && (
                 <Link to="/admin" onClick={() => setMenuOpen(false)} className="flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-gray-700 hover:bg-primary-50">

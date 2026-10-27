@@ -13,6 +13,7 @@ import NuevoPacientePage from './pages/NuevoPacientePage';
 import EditarPacientePage from './pages/EditarPacientePage';
 import PacienteDetallePage from './pages/PacienteDetallePage';
 import AgendaPage from './pages/AgendaPage';
+import HistorialPage from './pages/HistorialPage';
 import NuevaSesionPage from './pages/NuevaSesionPage';
 import SesionDetallePage from './pages/SesionDetallePage';
 import DerivacionesPage from './pages/DerivacionesPage';
@@ -58,6 +59,7 @@ export default function App() {
                     <Route path="/pacientes/:id" element={<PacienteDetallePage />} />
                     <Route path="/pacientes/:id/editar" element={<EditarPacientePage />} />
                     <Route path="/agenda" element={<AgendaPage />} />
+                    <Route path="/historial" element={<HistorialPage />} />
                     <Route path="/sesiones/nueva" element={<NuevaSesionPage />} />
                     <Route path="/sesiones/:id" element={<SesionDetallePage />} />
                     <Route path="/evaluaciones/nueva" element={<NuevaEvaluacionPage />} />

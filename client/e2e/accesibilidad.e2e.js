@@ -26,7 +26,7 @@ test('CP-E13 login sin violaciones serious/critical', async ({ page }) => {
 test.describe('con sesión', () => {
   test.skip(!tieneCuenta(cuentas.uno), SIN_UNO);
 
-  for (const [cp, ruta, nombre] of [['CP-E14', '/', 'inicio'], ['CP-E15', '/pacientes', 'pacientes'], ['CP-E16', '/agenda', 'agenda']]) {
+  for (const [cp, ruta, nombre] of [['CP-E14', '/', 'inicio'], ['CP-E15', '/pacientes', 'pacientes'], ['CP-E16', '/agenda', 'agenda'], ['CP-E18', '/historial', 'historial']]) {
     test(`${cp} ${nombre} sin violaciones serious/critical`, async ({ page }) => {
       await ingresar(page, cuentas.uno);
       await page.goto(ruta);

@@ -31,7 +31,7 @@ test.describe('navegabilidad: rutas públicas', () => {
 test.describe('navegabilidad: rutas de App.jsx con sesión', () => {
   test.skip(!tieneCuenta(cuentas.uno), SIN_UNO);
 
-  const estaticas = ['/', '/pacientes', '/pacientes/nuevo', '/agenda', '/sesiones/nueva', '/evaluaciones/nueva', '/derivaciones', '/pagos'];
+  const estaticas = ['/', '/pacientes', '/pacientes/nuevo', '/agenda', '/historial', '/sesiones/nueva', '/evaluaciones/nueva', '/derivaciones', '/pagos'];
 
   test('CP-E07 todas las rutas cargan sin 404, sin errores de consola y sin pedidos fallidos', async ({ page, request, baseURL }) => {
     await ingresar(page, cuentas.uno);
@@ -51,6 +51,20 @@ test.describe('navegabilidad: rutas de App.jsx con sesión', () => {
     } finally {
       await darDeBaja(request, apiUrl(baseURL), await tokenDe(page), paciente.id);
     }
+  });
+
+  test('CP-E17 el historial se abre desde el menú y no muestra la ocupación de otros profesionales', async ({ page }) => {
+    await ingresar(page, cuentas.uno);
+    const problemas = vigilar(page);
+
+    await page.getByRole('button', { name: 'Más opciones' }).first().click();
+    await page.getByRole('link', { name: 'Historial' }).click();
+
+    await expect(page).toHaveURL(/\/historial$/);
+    await expect(page.getByRole('heading', { name: 'Historial de turnos', level: 1 })).toBeVisible();
+    await page.waitForLoadState('networkidle');
+    await expect(page.getByText(/Ocupado por otro profesional/)).toHaveCount(0);
+    expect(problemas).toEqual([]);
   });
 
   test('CP-E08 Atrás y F5 mantienen la ruta y la sesión', async ({ page }) => {
