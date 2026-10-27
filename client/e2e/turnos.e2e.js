@@ -9,12 +9,12 @@ const fecha = () => {
 
 async function pedirTurno(page, dia) {
   await page.getByRole('button', { name: 'Nuevo turno' }).click();
-  const form = page.locator('form').filter({ has: page.getByRole('button', { name: /crear turno/i }) });
-  await form.locator('input[type="date"]').fill(dia);
-  await form.locator('input[type="time"]').fill('10:00');
-  await form.locator('select').first().selectOption('3'); // consultorio 3
-  await form.locator('textarea').fill('ZZ-TEST');
-  await form.getByRole('button', { name: /crear turno/i }).click();
+  const dialogo = page.getByRole('dialog', { name: 'Nuevo turno' });
+  await dialogo.getByLabel('Fecha *').fill(dia);
+  await dialogo.getByLabel('Hora *').fill('10:00');
+  await dialogo.getByLabel('Consultorio *').selectOption('3');
+  await dialogo.getByLabel('Notas').fill('ZZ-TEST');
+  await dialogo.getByRole('button', { name: /crear turno/i }).click();
 }
 
 test('CP-E04 un turno en el consultorio 3 se crea; el mismo consultorio y horario se rechaza', async ({ page, request, baseURL }) => {

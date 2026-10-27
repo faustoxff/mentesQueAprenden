@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo } from 'react';
+import { useState, useRef, useMemo, useId } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import FullCalendar from '@fullcalendar/react';
@@ -36,6 +36,7 @@ const FOOTER_MOBILE = { center: 'timeGridDay,listWeek,dayGridMonth' };
 
 
 export default function AgendaPage() {
+  const uid = useId();
   const { profesional, isAdmin } = useAuthStore();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -262,8 +263,9 @@ export default function AgendaPage() {
         <form onSubmit={handleSubmitNuevo} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Fecha *</label>
+              <label htmlFor={`${uid}-fecha`} className="text-sm font-medium text-gray-700 block mb-1">Fecha *</label>
               <input
+                id={`${uid}-fecha`}
                 type="date"
                 value={nuevaFecha}
                 onChange={(e) => setNuevaFecha(e.target.value)}
@@ -272,8 +274,9 @@ export default function AgendaPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Hora *</label>
+              <label htmlFor={`${uid}-hora`} className="text-sm font-medium text-gray-700 block mb-1">Hora *</label>
               <input
+                id={`${uid}-hora`}
                 type="time"
                 value={nuevaHora}
                 onChange={(e) => setNuevaHora(e.target.value)}
@@ -285,8 +288,9 @@ export default function AgendaPage() {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Duración (minutos)</label>
+              <label htmlFor={`${uid}-duracion`} className="text-sm font-medium text-gray-700 block mb-1">Duración (minutos)</label>
               <input
+                id={`${uid}-duracion`}
                 type="number"
                 value={formData.duracion}
                 onChange={(e) => setFormData(p => ({ ...p, duracion: e.target.value }))}
@@ -295,8 +299,9 @@ export default function AgendaPage() {
               />
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Consultorio *</label>
+              <label htmlFor={`${uid}-consultorio`} className="text-sm font-medium text-gray-700 block mb-1">Consultorio *</label>
               <select
+                id={`${uid}-consultorio`}
                 value={formData.consultorio}
                 onChange={(e) => setFormData(p => ({ ...p, consultorio: e.target.value }))}
                 required
@@ -309,8 +314,9 @@ export default function AgendaPage() {
 
           {isAdmin() && (
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Profesional *</label>
+              <label htmlFor={`${uid}-profesional`} className="text-sm font-medium text-gray-700 block mb-1">Profesional *</label>
               <select
+                id={`${uid}-profesional`}
                 value={formData.profesional_id}
                 onChange={(e) => setFormData(p => ({ ...p, profesional_id: e.target.value }))}
                 required
@@ -325,8 +331,9 @@ export default function AgendaPage() {
           )}
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Paciente</label>
+            <label htmlFor={`${uid}-paciente`} className="text-sm font-medium text-gray-700 block mb-1">Paciente</label>
             <select
+              id={`${uid}-paciente`}
               value={formData.paciente_id}
               onChange={(e) => setFormData(p => ({ ...p, paciente_id: e.target.value }))}
               className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -339,8 +346,9 @@ export default function AgendaPage() {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Tipo de sesión</label>
+            <label htmlFor={`${uid}-tipo`} className="text-sm font-medium text-gray-700 block mb-1">Tipo de sesión</label>
             <select
+              id={`${uid}-tipo`}
               value={formData.tipo}
               onChange={(e) => setFormData(p => ({ ...p, tipo: e.target.value }))}
               className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
@@ -350,8 +358,9 @@ export default function AgendaPage() {
           </div>
 
           <div>
-            <label className="text-sm font-medium text-gray-700 block mb-1">Notas</label>
+            <label htmlFor={`${uid}-notas`} className="text-sm font-medium text-gray-700 block mb-1">Notas</label>
             <textarea
+              id={`${uid}-notas`}
               value={formData.notas}
               onChange={(e) => setFormData(p => ({ ...p, notas: e.target.value }))}
               rows={2}
@@ -395,8 +404,8 @@ export default function AgendaPage() {
               <>
                 {/* Cambiar estado */}
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-2">Estado</label>
-                  <div className="flex flex-wrap gap-2">
+                  <p id={`${uid}-estado`} className="text-sm font-medium text-gray-700 block mb-2">Estado</p>
+                  <div role="group" aria-labelledby={`${uid}-estado`} className="flex flex-wrap gap-2">
                     {['programado', 'confirmado', 'cancelado', 'ausente', 'realizado'].map(estado => (
                       <button
                         key={estado}
