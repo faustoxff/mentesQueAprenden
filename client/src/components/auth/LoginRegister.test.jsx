@@ -87,10 +87,10 @@ describe('LoginPage', () => {
 });
 
 describe('RegisterPage', () => {
-  it('CP-U245 nombre, apellido, email y contraseña son obligatorios', () => {
+  it('CP-U245 nombre, apellido, email, contraseña y su repetición son obligatorios', () => {
     conRouter(<RegisterPage />);
 
-    ['Nombre', 'Apellido', 'Email', 'Contraseña'].forEach((n) => expect(campo(n)).toBeRequired());
+    ['Nombre', 'Apellido', 'Email', 'Contraseña', 'Repetir contraseña'].forEach((n) => expect(campo(n)).toBeRequired());
     expect(campo('Email').closest('form').checkValidity()).toBe(false);
   });
 
@@ -108,6 +108,7 @@ describe('RegisterPage', () => {
     await userEvent.type(campo('Apellido'), 'Prueba');
     await userEvent.type(campo('Email'), 'zz@test.com');
     await userEvent.type(campo('Contraseña'), '12345678');
+    await userEvent.type(campo('Repetir contraseña'), '12345678');
 
     await userEvent.click(screen.getByRole('button', { name: /crear cuenta/i }));
 
@@ -121,9 +122,87 @@ describe('RegisterPage', () => {
     await userEvent.type(campo('Apellido'), 'Prueba');
     await userEvent.type(campo('Email'), 'zz@test.com');
     await userEvent.type(campo('Contraseña'), '12345678');
+    await userEvent.type(campo('Repetir contraseña'), '12345678');
 
     await userEvent.click(screen.getByRole('button', { name: /crear cuenta/i }));
 
     expect(await screen.findByText('Ya existe una cuenta con ese email')).toBeInTheDocument();
+  });
+
+  const completarRegistro = async (password, repeticion) => {
+    await userEvent.type(campo('Nombre'), 'ZZ-TEST');
+    await userEvent.type(campo('Apellido'), 'Prueba');
+    await userEvent.type(campo('Email'), 'zz@test.com');
+    await userEvent.type(campo('Contraseña'), password);
+    await userEvent.type(campo('Repetir contraseña'), repeticion);
+  };
+
+  it('CP-U268 con contraseñas distintas no llama al servidor y explica el motivo', async () => {
+    conRouter(<RegisterPage />);
+    await completarRegistro('12345678', '12345679');
+
+    await userEvent.click(screen.getByRole('button', { name: /crear cuenta/i }));
+
+    expect(api.post).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert')).toHaveTextContent('Las contraseñas no coinciden. Revisalas antes de crear la cuenta.');
+  });
+
+  it('CP-U269 el aviso aparece mientras no coinciden y se va cuando se corrige', async () => {
+    conRouter(<RegisterPage />);
+    await userEvent.type(campo('Contraseña'), '12345678');
+
+    await userEvent.type(campo('Repetir contraseña'), '1234');
+    const repetir = campo('Repetir contraseña');
+    expect(screen.getByRole('alert')).toHaveTextContent('Las contraseñas no coinciden');
+    expect(repetir).toHaveAttribute('aria-invalid', 'true');
+    expect(repetir).toHaveAttribute('aria-describedby', screen.getByRole('alert').id);
+    await userEvent.type(repetir, '5678');
+
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(repetir).toHaveAttribute('aria-invalid', 'false');
+    expect(repetir).not.toHaveAttribute('aria-describedby');
+  });
+
+  it('CP-U270 corregir cualquiera de los dos campos borra el aviso del envío', async () => {
+    conRouter(<RegisterPage />);
+    await completarRegistro('12345678', '12345679');
+    await userEvent.click(screen.getByRole('button', { name: /crear cuenta/i }));
+
+    await userEvent.clear(campo('Contraseña'));
+    await userEvent.type(campo('Contraseña'), '12345679');
+
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('CP-U271 con contraseñas iguales registra y la repetición no viaja en el body', async () => {
+    api.post.mockResolvedValue({ data: { profesional: { id: 'u9' }, session: null } });
+    conRouter(<RegisterPage />);
+    await completarRegistro('12345678', '12345678');
+
+    await userEvent.click(screen.getByRole('button', { name: /crear cuenta/i }));
+
+    await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
+    const [ruta, body] = api.post.mock.calls[0];
+    expect(ruta).toBe('/auth/signup');
+    expect(Object.keys(body).sort()).toEqual(['apellido', 'email', 'especialidad', 'matricula', 'nombre', 'password']);
+    expect(JSON.stringify(body)).not.toMatch(/repetir/i);
+  });
+
+  it('CP-U272 el botón de mostrar contraseña muestra los dos campos', async () => {
+    conRouter(<RegisterPage />);
+    expect(campo('Contraseña')).toHaveAttribute('type', 'password');
+    expect(campo('Repetir contraseña')).toHaveAttribute('type', 'password');
+
+    await userEvent.click(screen.getByRole('button', { name: 'Mostrar contraseña' }));
+
+    expect(campo('Contraseña')).toHaveAttribute('type', 'text');
+    expect(campo('Repetir contraseña')).toHaveAttribute('type', 'text');
+  });
+
+  it('CP-U273 la repetición tiene la misma restricción de largo y autocompletado que la contraseña', () => {
+    conRouter(<RegisterPage />);
+
+    expect(campo('Repetir contraseña')).toHaveAttribute('minLength', '8');
+    expect(campo('Repetir contraseña')).toHaveAttribute('autoComplete', 'new-password');
   });
 });

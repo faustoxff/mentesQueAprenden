@@ -17,14 +17,34 @@ export default function RegisterPage() {
     nombre: '', apellido: '', email: '', password: '',
     especialidad: 'psicopedagogia', matricula: ''
   });
+  // La repetición vive aparte: el backend no la espera y no viaja en el POST.
+  const [repetir, setRepetir] = useState('');
+  const [avisoEnvio, setAvisoEnvio] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { signup, isLoading, error } = useAuthStore();
   const navigate = useNavigate();
 
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
+  const noCoinciden = repetir !== '' && repetir !== form.password;
+  const mostrarAviso = noCoinciden || avisoEnvio;
+
+  const cambiarPassword = (e) => {
+    setAvisoEnvio(false);
+    set('password')(e);
+  };
+
+  const cambiarRepetir = (e) => {
+    setAvisoEnvio(false);
+    setRepetir(e.target.value);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (repetir !== form.password) {
+      setAvisoEnvio(true);
+      return;
+    }
     const result = await signup(form);
     if (result.success) navigate('/');
   };
@@ -84,7 +104,7 @@ export default function RegisterPage() {
                 id={`${uid}-password`}
                 type={showPassword ? 'text' : 'password'}
                 value={form.password}
-                onChange={set('password')}
+                onChange={cambiarPassword}
                 required
                 minLength={8}
                 autoComplete="new-password"
@@ -100,6 +120,33 @@ export default function RegisterPage() {
                 {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
               </button>
             </div>
+          </div>
+
+          <div>
+            <label htmlFor={`${uid}-repetir`} className="block text-sm font-medium text-gray-700 mb-1.5">Repetir contraseña</label>
+            <div className="relative">
+              <Lock size={17} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                id={`${uid}-repetir`}
+                type={showPassword ? 'text' : 'password'}
+                value={repetir}
+                onChange={cambiarRepetir}
+                required
+                minLength={8}
+                autoComplete="new-password"
+                aria-invalid={mostrarAviso}
+                aria-describedby={mostrarAviso ? `${uid}-repetir-aviso` : undefined}
+                className={`${inputClass} ${mostrarAviso ? 'border-red-400' : ''}`}
+                placeholder="Volvé a escribirla"
+              />
+            </div>
+            {mostrarAviso && (
+              <p id={`${uid}-repetir-aviso`} role="alert" className="text-red-600 text-xs mt-1.5">
+                {avisoEnvio
+                  ? 'Las contraseñas no coinciden. Revisalas antes de crear la cuenta.'
+                  : 'Las contraseñas no coinciden'}
+              </p>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
