@@ -6,7 +6,7 @@ module.exports = {
   // la lógica de negocio y el middleware; las rutas se cubren con integración.
   collectCoverageFrom: ['src/services/**/*.js', 'src/middleware/**/*.js', 'src/utils/**/*.js'],
   // Piso: si la cobertura baja de esto, el CI falla. Subirlo a medida que se agreguen tests.
-  coverageThreshold: { global: { statements: 38, branches: 34, functions: 31, lines: 40 } },
+  coverageThreshold: { global: { statements: 80, branches: 70, functions: 84, lines: 84 } },
   coverageReporters: ['text-summary', 'text', 'lcov'],
   projects: [
     {

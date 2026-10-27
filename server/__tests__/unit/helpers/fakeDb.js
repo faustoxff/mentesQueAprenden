@@ -19,7 +19,7 @@ function crearDb(resultados = {}) {
     },
     from(tabla) {
       const q = {};
-      ['select', 'insert', 'update', 'delete', 'eq', 'neq', 'is', 'in', 'or', 'order', 'range', 'gte', 'lte', 'lt', 'gt', 'limit']
+      ['select', 'insert', 'update', 'delete', 'eq', 'neq', 'is', 'in', 'or', 'order', 'range', 'gte', 'lte', 'lt', 'gt', 'limit', 'not', 'match']
         .forEach((m) => { q[m] = (...args) => { llamadas.push([tabla, m, args]); return q; }; });
       q.single = () => Promise.resolve(siguiente(tabla));
       q.maybeSingle = q.single;
