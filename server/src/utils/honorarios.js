@@ -13,4 +13,17 @@ function porcentajeHonorarios(valor) {
   return porcentaje;
 }
 
-module.exports = { porcentajeHonorarios, PORCENTAJE_POR_DEFECTO };
+// Reparte el monto entre profesional y espacio en centavos enteros: el honorario se
+// redondea y el espacio es la diferencia, así las dos partes suman siempre el total.
+// (Antes se redondeaba cada parte por separado en la base: $10,05 al 70 % daba 7,04 + 3,02.)
+function repartirHonorarios(montoTotal, porcentaje) {
+  const centavos = Math.round(Number(montoTotal) * 100);
+  const centavosProfesional = Math.round((centavos * porcentaje) / 100);
+  return {
+    monto_total: centavos / 100,
+    monto_profesional: centavosProfesional / 100,
+    monto_espacio: (centavos - centavosProfesional) / 100
+  };
+}
+
+module.exports = { porcentajeHonorarios, repartirHonorarios, PORCENTAJE_POR_DEFECTO };

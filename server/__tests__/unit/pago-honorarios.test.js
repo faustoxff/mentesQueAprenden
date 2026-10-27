@@ -55,12 +55,25 @@ describe('PagoService.crear: división de honorarios', () => {
     expect(pago.monto_profesional + pago.monto_espacio).toBeCloseTo(monto, 10);
   });
 
-  // DEF-A14: el reparto no se redondea a centavos; 70 % de $100,01 da 70,007 y queda a cargo de la base.
-  test.failing('CP-U56 los montos repartidos se guardan redondeados a centavos', async () => {
+  test('CP-U56 los montos repartidos se guardan redondeados a centavos', async () => {
     const pago = await cobrar(100.01, 70);
 
     expect(pago.monto_profesional).toBe(70.01);
     expect(pago.monto_espacio).toBe(30);
+  });
+
+  test.each([
+    [10.05, 70, 7.04, 3.01],
+    [0.01, 70, 0.01, 0],
+    [100.01, 70, 70.01, 30],
+    [10.05, 0, 0, 10.05],
+    [10.05, 100, 10.05, 0],
+    [99999.99, 33.33, 33330, 66669.99]
+  ])('CP-U301 $%p al %p %% → profesional %p + espacio %p, que suman exactamente el total', async (monto, porcentaje, profesional, espacio) => {
+    const pago = await cobrar(monto, porcentaje);
+
+    expect(pago).toMatchObject({ monto_total: monto, monto_profesional: profesional, monto_espacio: espacio });
+    expect(Math.round(pago.monto_profesional * 100) + Math.round(pago.monto_espacio * 100)).toBe(Math.round(monto * 100));
   });
 
   test('CP-U57 sin porcentaje cargado (undefined) usa el 70 % por defecto', async () => {
