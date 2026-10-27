@@ -6,6 +6,29 @@ Corrida del 2026-10-27 en la máquina de desarrollo (macOS, Node 20+). Sin crede
 - **Ejecutados** = Pasa + Falla. **% de ejecución** = ejecutados ÷ aplicables. **% de aprobación** = pasan ÷ ejecutados.
 - **Falla** incluye las fallas conocidas: tests que describen el comportamiento correcto y hoy no se cumple (`test.failing` / `it.fails` / aserción de Newman). Cada una apunta a un `DEF-A..` de `defectos-automatizados.md`. En la salida de Jest y Vitest aparecen en verde porque la falla es la esperada.
 
+## Estado actual (después de corregir 7 defectos)
+
+Se corrigieron DEF-A01, DEF-A02, DEF-A14, DEF-A17, DEF-A18, DEF-A19 y DEF-A20 (detalle y commits en `defectos-automatizados.md`). Sus tests dejaron de ser fallas conocidas y quedan como regresión. También se sumaron el historial de turnos y la confirmación de contraseña del registro. Las secciones que siguen a esta son la corrida inicial.
+
+| Suite | Aplicables | Pasa | Falla (conocida) | Bloqueado | % ejecución | % aprobación | Evidencia |
+|---|---|---|---|---|---|---|---|
+| Unitarias del server | 411 | 392 | 19 | 0 | 100 % | 95,4 % | `EV-UNIT-SERVER-2.txt` |
+| Unitarias del client | 152 | 151 | 1 | 0 | 100 % | 99,3 % | `EV-UNIT-CLIENT-2.txt` |
+| API (Newman), 46 requests | 46 | 8 | 1 | 37 | 19,6 % | 88,9 % | `EV-RUN-2026-10-27-sin-credenciales.json` |
+| E2E funcionales | 20 | — | — | — | — | — | no se volvieron a correr; necesitan credenciales |
+| Accesibilidad (axe) | 5 | 1 | 0 | 4 | 20 % | 100 % | `EV-A11Y-login.json`, `EV-A11Y-2.txt` |
+
+- **Newman:** se volvió a correr la carpeta sin credenciales: 9 requests, 45 aserciones y 2 fallas, las dos de CP-A04 (DEF-A06, sigue abierto). CP-A42 ya no devuelve la contraseña.
+- **Accesibilidad:** CP-E13 (login) pasa sin violaciones serious ni critical; ya no aparece `meta-viewport`. Inicio, pacientes, agenda e historial siguen bloqueados por credenciales.
+- **Fallas conocidas abiertas: 20 tests** (19 del server y 1 del client), de 12 defectos: DEF-A03, A04, A05, A06, A07, A09, A10, A11, A12, A13, A15 y A16. Los otros 2 abiertos, DEF-A08 y DEF-A21, no tienen test automatizado.
+
+| Cobertura | Statements | Branches | Functions | Lines |
+|---|---|---|---|---|
+| Server (piso 80/70/84/84) | 82,93 % | 73,63 % | 86,75 % | 86,93 % |
+| Client (piso global 30/80/42/30) | 39,67 % | 86,17 % | 45,72 % | 39,67 % |
+
+Lint: 0 errores; 33 avisos en el client y 9 en el server. Los avisos nuevos son de complejidad: `SesionService.obtener` (12, por el manejo de error del log), `RegisterPage` (14) y `TurnoService.listar` (12). Build: ok.
+
 ## Resultados por suite
 
 ### Unitarias del server (Jest, proyecto `unit`)

@@ -1,0 +1,103 @@
+
+> clinica-client@1.0.0 test:coverage
+> vitest run --coverage
+
+[33mThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.[39m
+(node:39227) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/postcss.config.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+ RUN  v2.1.9 /Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client
+      Coverage enabled with v8
+
+ ✓ src/utils/errores.casos.test.js (10 tests) 3ms
+ ✓ src/utils/errores.test.js (8 tests) 3ms
+ ✓ src/store/authStore.casos.test.js (7 tests) 6ms
+ ✓ src/services/api.casos.test.js (8 tests) 11ms
+stderr | src/components/auth/ResetPasswordPage.test.jsx > ResetPasswordPage > sin token válido avisa que el link venció y no muestra el formulario
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ src/store/authStore.test.js (6 tests) 3ms
+ ✓ src/services/api.test.js (5 tests) 87ms
+stderr | src/pages/NuevoPacientePage.test.jsx > formulario de nuevo paciente > CP-U249 con el formulario vacío marca los obligatorios y no llama al servidor
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | src/components/auth/LoginRegister.test.jsx > LoginPage > CP-U239 email y contraseña son obligatorios: con el form vacío no es válido
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | src/pages/HistorialPage.test.jsx > HistorialPage > CP-U280 descarta la ocupación ajena y lista de lo más reciente a lo más viejo, agrupado por mes
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ src/components/auth/ResetPasswordPage.test.jsx (5 tests) 534ms
+   ✓ ResetPasswordPage > valida el largo y que coincidan antes de llamar al servidor 306ms
+ ✓ src/components/chat/ConfirmCard.test.jsx (5 tests) 163ms
+stderr | src/App.rutas.test.jsx > ProtectedRoute y PublicOnlyRoute > CP-U232 sin sesión, / redirige a /login
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | src/App.smoke.test.jsx > humo: login → inicio (render real de la app) > con credenciales correctas entra a la pantalla de inicio sin romperse
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+stderr | src/components/auth/LoginRegister.test.jsx > LoginPage > CP-U242 con credenciales incorrectas muestra el mensaje del servidor
+Not implemented: Window's scrollTo() method
+
+ ✓ src/utils/exportarInformePdf.test.js (6 tests) 4ms
+stderr | src/components/layout/MainShell.test.jsx > MainShell (barra inferior mobile) > tiene Inicio, Pacientes y Menta; no tiene Agenda
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ src/components/ui/Modal.test.jsx (4 tests) 177ms
+ ✓ src/pages/HistorialPage.test.jsx (18 tests) 923ms
+ ✓ src/components/layout/MainShell.test.jsx (4 tests) 195ms
+ ✓ src/hooks/useDebounce.test.js (5 tests) 20ms
+ ✓ src/App.smoke.test.jsx (2 tests) 536ms
+   ✓ humo: login → inicio (render real de la app) > con credenciales correctas entra a la pantalla de inicio sin romperse 386ms
+stderr | src/pages/AgendaPage.test.jsx > AgendaPage: formulario de turno accesible > CP-U308 como profesional, "Nuevo turno" abre un diálogo y cada campo se encuentra por su label
+Warning: Function components cannot be given refs. Attempts to access this ref will fail. Did you mean to use React.forwardRef()?
+
+Check the render method of `AgendaPage`.
+    at default
+    at div
+    at div
+    at AgendaPage (/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/client/src/pages/AgendaPage.jsx:47:37)
+    at Router (/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/node_modules/react-router/dist/umd/react-router.development.js:1203:17)
+    at MemoryRouter (/Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/node_modules/react-router/dist/umd/react-router.development.js:1097:7)
+    at QueryClientProvider (file:///Users/juancruzrodriguez/Documents/IDRATDS/MentesQueAprenden/node_modules/@tanstack/react-query/build/modern/QueryClientProvider.js:20:3)
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ src/utils/turnos.test.js (3 tests) 2ms
+stderr | src/components/chat/ChatSidebar.test.jsx > ChatSidebar: menú > CP-U294 un profesional ve "Historial" entre Derivaciones y Cerrar sesión, y lo lleva a /historial
+⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition.
+⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath.
+
+ ✓ src/pages/AgendaPage.test.jsx (2 tests) 216ms
+ ✓ src/components/chat/ConfirmCard.casos.test.jsx (3 tests) 126ms
+ ✓ src/components/chat/ChatSidebar.test.jsx (2 tests) 212ms
+ ✓ src/components/ui/MiniMarkdown.test.jsx (4 tests) 67ms
+ ✓ src/viewport.test.js (2 tests) 2ms
+ ✓ src/components/auth/LoginRegister.test.jsx (18 tests) 2080ms
+ ✓ src/pages/NuevoPacientePage.test.jsx (12 tests) 2522ms
+   ✓ formulario de nuevo paciente > CP-U250 DNI con 6 dígitos muestra el formato esperado y no se envía 318ms
+ ✓ src/App.rutas.test.jsx (13 tests) 1764ms
+   ✓ ProtectedRoute y PublicOnlyRoute > CP-U238 un profesional que entra a /admin es redirigido al inicio 1513ms
+
+ Test Files  23 passed (23)
+      Tests  152 passed (152)
+   Start at  20:26:50
+   Duration  4.24s (transform 658ms, setup 2.55s, collect 6.37s, tests 9.66s, environment 18.15s, prepare 1.56s)
+
+ % Coverage report from v8
+
+=============================== Coverage summary ===============================
+Statements   : 39.67% ( 2207/5563 )
+Branches     : 86.17% ( 405/470 )
+Functions    : 45.72% ( 91/199 )
+Lines        : 39.67% ( 2207/5563 )
+================================================================================

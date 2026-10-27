@@ -1,6 +1,6 @@
 # Defectos encontrados por las pruebas automatizadas
 
-Relevamiento del 2026-10-27 sobre `master` (commit `a6d110b` más los tests de esta entrega). Ningún defecto se corrigió: cada uno tiene un test que describe el comportamiento correcto y está marcado como falla conocida (`test.failing` en Jest, `it.fails` en Vitest, aserción que falla en Newman) con su `DEF-A..`. Cuando se arregle el código, ese test va a empezar a "fallar" y hay que sacarle la marca.
+Relevamiento del 2026-10-27 sobre `master` (commit `a6d110b` más los tests de esta entrega). Cada defecto tiene un test que describe el comportamiento correcto y está marcado como falla conocida (`test.failing` en Jest, `it.fails` en Vitest, aserción que falla en Newman) con su `DEF-A..`. Cuando se arregla el código, se le saca la marca y queda como test de regresión. El 2026-10-28 se corrigieron 7 (ver la columna Estado).
 
 **Matriz de prioridad (probabilidad × impacto)**
 
@@ -12,35 +12,36 @@ Relevamiento del 2026-10-27 sobre `master` (commit `a6d110b` más los tests de e
 
 ## Resumen
 
-| ID | Título | Prioridad | Seguridad |
-|---|---|---|---|
-| DEF-A01 | Un 0 % de honorarios se guarda como 70 % | **Alta** | No |
-| DEF-A02 | La descarga de archivos y la vista de sesiones no quedan en el log de accesos | **Alta** | **Sí** |
-| DEF-A17 | Cualquier profesional ve el porcentaje de honorarios de todos | **Alta** | **Sí** |
-| DEF-A19 | El zoom está bloqueado en móvil (`maximum-scale=1.0`) | **Alta** | No (accesibilidad) |
-| DEF-A20 | Formulario de turno sin labels asociados y modales sin `role="dialog"` | **Alta** | No (accesibilidad) |
-| DEF-A03 | Se acepta un turno que termina antes de empezar | Media | No |
-| DEF-A14 | El reparto de honorarios no se redondea: se crean o pierden centavos | Media | No |
-| DEF-A18 | Los errores 422 devuelven la contraseña enviada | Media | **Sí** |
-| DEF-A04 | Cancelar un turno ajeno responde "Turno cancelado" sin cancelar nada | Baja | No |
-| DEF-A05 | Un id que no es UUID termina en 500 | Baja | No |
-| DEF-A06 | JSON mal formado o body > 200 kb devuelven 500 | Baja | No |
-| DEF-A07 | `/pacientes` expone el mensaje interno de la base en los 500 | Baja | **Sí** |
-| DEF-A08 | `/auth/logout` y `/auth/forgot-password` quedan colgados si Supabase falla | Baja | No |
-| DEF-A09 | `/auth/refresh` ignora su propia validación | Baja | No |
-| DEF-A10 | Un `mes` mal formado en pagos/liquidación da 500 | Baja | No |
-| DEF-A11 | Paginado de pacientes sin normalizar `page` ni tope para `limit` | Baja | Sí (bajo) |
-| DEF-A12 | Si el modelo devuelve `content: null`, la IA falla con TypeError | Baja | No |
-| DEF-A13 | Una fecha inexistente (30/02) pasa la validación y da 500 | Baja | No |
-| DEF-A15 | La edad del paciente suma el año un día antes (zona horaria) | Baja | No |
-| DEF-A16 | `/admin` no tiene guarda de rol en el cliente | Baja | No (el backend bloquea) |
-| DEF-A21 | `docs/API.md` no coincide con el código | Baja | No |
+| ID | Título | Prioridad | Seguridad | Estado |
+|---|---|---|---|---|
+| DEF-A01 | Un 0 % de honorarios se guarda como 70 % | **Alta** | No | **Corregido** (`b0f0c5f`) |
+| DEF-A02 | La descarga de archivos y la vista de sesiones no quedan en el log de accesos | **Alta** | **Sí** | **Corregido** (`4cdc62f`) |
+| DEF-A17 | Cualquier profesional ve el porcentaje de honorarios de todos | **Alta** | **Sí** | **Corregido** (`6d9047f`) |
+| DEF-A19 | El zoom está bloqueado en móvil (`maximum-scale=1.0`) | **Alta** | No (accesibilidad) | **Corregido** (`70600f0`) |
+| DEF-A20 | Formulario de turno sin labels asociados y modales sin `role="dialog"` | **Alta** | No (accesibilidad) | **Corregido** (`bbea9f1`) |
+| DEF-A03 | Se acepta un turno que termina antes de empezar | Media | No | Abierto |
+| DEF-A14 | El reparto de honorarios no se redondea: se crean o pierden centavos | Media | No | **Corregido** (`fb6adda`) |
+| DEF-A18 | Los errores 422 devuelven la contraseña enviada | Media | **Sí** | **Corregido** (`cb82e1d`) |
+| DEF-A04 | Cancelar un turno ajeno responde "Turno cancelado" sin cancelar nada | Baja | No | Abierto |
+| DEF-A05 | Un id que no es UUID termina en 500 | Baja | No | Abierto |
+| DEF-A06 | JSON mal formado o body > 200 kb devuelven 500 | Baja | No | Abierto |
+| DEF-A07 | `/pacientes` expone el mensaje interno de la base en los 500 | Baja | **Sí** | Abierto |
+| DEF-A08 | `/auth/logout` y `/auth/forgot-password` quedan colgados si Supabase falla | Baja | No | Abierto |
+| DEF-A09 | `/auth/refresh` ignora su propia validación | Baja | No | Abierto |
+| DEF-A10 | Un `mes` mal formado en pagos/liquidación da 500 | Baja | No | Abierto |
+| DEF-A11 | Paginado de pacientes sin normalizar `page` ni tope para `limit` | Baja | Sí (bajo) | Abierto |
+| DEF-A12 | Si el modelo devuelve `content: null`, la IA falla con TypeError | Baja | No | Abierto |
+| DEF-A13 | Una fecha inexistente (30/02) pasa la validación y da 500 | Baja | No | Abierto |
+| DEF-A15 | La edad del paciente suma el año un día antes (zona horaria) | Baja | No | Abierto |
+| DEF-A16 | `/admin` no tiene guarda de rol en el cliente | Baja | No (el backend bloquea) | Abierto |
+| DEF-A21 | `docs/API.md` no coincide con el código | Baja | No | Abierto |
 
-Totales: 21 defectos (5 alta, 3 media, 13 baja), 6 con impacto en seguridad.
+Totales: 21 defectos (5 alta, 3 media, 13 baja), 6 con impacto en seguridad. **Corregidos: 7** (las 5 de prioridad alta, DEF-A14 y DEF-A18). **Abiertos: 14** (DEF-A03 de prioridad media y 13 de prioridad baja).
 
 ---
 
 ## DEF-A01 — Un 0 % de honorarios se guarda como 70 %
+- **Estado:** **Corregido** en `b0f0c5f`: `porcentajeHonorarios` (`server/src/utils/honorarios.js`): 70 solo si no viene el dato, `"0"` cuenta como 0 y fuera de 0–100 da 422. Tests de regresión: CP-U53, CP-U131, CP-U300.
 - **Dónde:** `server/src/services/PagoService.js:80` (`porcentaje_honorarios || 70`) y `server/src/services/AuthService.js:57` (`porcentaje_honorarios || 70.00`).
 - **Pasos:** 1) Un admin registra un profesional con `porcentaje_honorarios: 0` (la ruta acepta 0–100). 2) Se cobra una sesión de ese profesional.
 - **Esperado:** el profesional cobra $0 y el espacio el 100 %; el alta guarda 0 %.
@@ -49,6 +50,7 @@ Totales: 21 defectos (5 alta, 3 media, 13 baja), 6 con impacto en seguridad.
 - **Probabilidad:** media · **Impacto:** alto (liquidaciones incorrectas) · **Prioridad:** alta · **Seguridad:** no.
 
 ## DEF-A02 — La descarga de archivos y la vista de sesiones no quedan en el log de accesos
+- **Estado:** **Corregido** en `4cdc62f`: el insert en `logs_acceso` se espera; si falla, la descarga o la sesión se devuelven igual y queda un `console.error`. No había otros logs sin esperar. Tests de regresión: CP-U145, CP-U149, CP-U298.
 - **Dónde:** `server/src/services/ArchivoService.js:86` y `server/src/services/SesionService.js:44`.
 - **Pasos:** descargar un adjunto (`GET /archivos/:id/download-url`) o abrir una sesión (`GET /sesiones/:id`) y mirar `logs_acceso`.
 - **Esperado:** una fila `descargar_archivo` / `ver sesion` por cada acceso (Ley 25.326; así lo dice `docs/API.md`).
@@ -145,6 +147,19 @@ Totales: 21 defectos (5 alta, 3 media, 13 baja), 6 con impacto en seguridad.
 - **Probabilidad:** baja · **Impacto:** medio · **Prioridad:** baja · **Seguridad:** no.
 
 ## DEF-A14 — El reparto de honorarios no se redondea: se crean o pierden centavos
+- **Estado:** **Corregido** en `fb6adda`: el reparto se calcula en centavos enteros (`repartirHonorarios`): se redondea el honorario y el espacio se queda con la diferencia. $10,05 al 70 % ahora da 7,04 + 3,01. Tests de regresión: CP-U56, CP-U301.
+- **Pagos ya guardados:** el arreglo no corrige los registros viejos. Para detectarlos, con consultas de solo lectura:
+  ```sql
+  -- Pagos cuyas partes no suman el total (DEF-A14)
+  SELECT id, fecha_pago, monto_total, monto_profesional, monto_espacio
+  FROM pagos WHERE monto_profesional + monto_espacio <> monto_total;
+
+  -- Pagos cobrados con un porcentaje distinto del que tiene hoy el profesional (incluye DEF-A01;
+  -- puede dar falsos positivos si el porcentaje del profesional cambió con el tiempo)
+  SELECT pg.id, pg.fecha_pago, pg.porcentaje_profesional, pr.porcentaje_honorarios
+  FROM pagos pg JOIN profesionales pr ON pr.id = pg.profesional_id
+  WHERE pg.porcentaje_profesional <> pr.porcentaje_honorarios;
+  ```
 - **Dónde:** `server/src/services/PagoService.js:81`.
 - **Pasos:** cobrar $10,05 a un profesional con 70 %.
 - **Esperado:** profesional + espacio = $10,05 exactos (redondear una parte y calcular la otra por diferencia).
@@ -169,6 +184,7 @@ Totales: 21 defectos (5 alta, 3 media, 13 baja), 6 con impacto en seguridad.
 - **Probabilidad:** media · **Impacto:** bajo · **Prioridad:** baja · **Seguridad:** no (defensa en profundidad).
 
 ## DEF-A17 — Cualquier profesional ve el porcentaje de honorarios de todos
+- **Estado:** **Corregido** en `6d9047f`: `GET /profesionales` devuelve el porcentaje de todos solo al admin; un profesional ve únicamente el propio. Las otras pantallas que usan la lista solo leen nombre e id. Tests de regresión: CP-U267, CP-U299.
 - **Dónde:** `server/src/services/ProfesionalService.js:9`; `GET /api/profesionales` lo usa cualquier profesional (por ejemplo, el alta de paciente y la agenda).
 - **Pasos:** iniciar sesión como profesional y mirar la respuesta de `GET /api/profesionales`.
 - **Esperado:** el porcentaje solo para admin (o solo el propio).
@@ -177,6 +193,7 @@ Totales: 21 defectos (5 alta, 3 media, 13 baja), 6 con impacto en seguridad.
 - **Probabilidad:** alta · **Impacto:** medio (dato económico confidencial) · **Prioridad:** alta · **Seguridad:** sí.
 
 ## DEF-A18 — Los errores 422 devuelven la contraseña enviada
+- **Estado:** **Corregido** en `cb82e1d`: helper `erroresDeValidacion` (`server/src/utils/validacion.js`) en las 33 respuestas 422 de todas las rutas: cada error trae solo `path` y `msg`. Tests de regresión: CP-U266, CP-U296, CP-U297; CP-A42 en Newman.
 - **Dónde:** `server/src/routes/auth.js:19`, `:44` y `:123`: `errors.array()` de express-validator incluye `value`.
 - **Pasos:** `POST /api/auth/signup` con `password: "1234567"`.
 - **Esperado:** el error indica el campo y el motivo, sin repetir el valor.
@@ -185,6 +202,7 @@ Totales: 21 defectos (5 alta, 3 media, 13 baja), 6 con impacto en seguridad.
 - **Probabilidad:** alta · **Impacto:** bajo (es la propia contraseña, sobre HTTPS, pero puede quedar en logs o herramientas de monitoreo) · **Prioridad:** media · **Seguridad:** sí.
 
 ## DEF-A19 — El zoom está bloqueado en móvil (`maximum-scale=1.0`)
+- **Estado:** **Corregido** en `70600f0`: el viewport ya no tiene `maximum-scale`, y en pantallas de hasta 767 px los campos van con 16 px para que iOS no haga zoom al enfocarlos. Tests de regresión: CP-U302, CP-U303, CP-E13 (pasa: `EV-A11Y-login.json` sin violaciones).
 - **Dónde:** `client/index.html:5`.
 - **Pasos:** abrir la app en un celular e intentar ampliar con dos dedos.
 - **Esperado:** se puede ampliar hasta 200 % (WCAG 1.4.4).
@@ -193,6 +211,7 @@ Totales: 21 defectos (5 alta, 3 media, 13 baja), 6 con impacto en seguridad.
 - **Probabilidad:** alta · **Impacto:** medio (personas con baja visión) · **Prioridad:** alta · **Seguridad:** no.
 
 ## DEF-A20 — Formulario de turno sin labels asociados y modales sin `role="dialog"`
+- **Estado:** **Corregido** en `bbea9f1`: los 8 labels del modal "Nuevo turno" quedan asociados con `useId`; el "Estado" del detalle es un grupo con nombre. `Modal` es `role="dialog"` con `aria-modal` y `aria-labelledby`, y devuelve el foco al cerrarse. Tests de regresión: CP-U304…CP-U308; CP-E04 ubica los campos por nombre.
 - **Dónde:** `client/src/pages/AgendaPage.jsx` (9 `<label>` sin `htmlFor` ni input anidado en el modal "Nuevo turno") y `client/src/components/ui/Modal.jsx` (sin `role="dialog"`, `aria-modal` ni `aria-labelledby`).
 - **Pasos:** recorrer el formulario de turno con un lector de pantalla.
 - **Esperado:** cada campo anuncia su nombre ("Fecha", "Consultorio"…) y el modal se anuncia como diálogo.

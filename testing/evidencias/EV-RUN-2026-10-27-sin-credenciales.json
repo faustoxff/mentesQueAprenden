@@ -2,7 +2,7 @@
   "collection": {
     "item": [
       {
-        "id": "cc0d38fc-e8c6-430d-aac0-0a2f2fad6043",
+        "id": "52ae45d4-0652-4a91-b924-d26aeb3f5750",
         "name": "1. Sin credenciales (no llegan a Supabase)",
         "description": {
           "content": "Se cortan antes de cualquier consulta a Supabase u OpenRouter: se pueden correr contra un server local con claves falsas.",
@@ -10,7 +10,7 @@
         },
         "item": [
           {
-            "id": "2956ded6-d44a-4864-a600-6c176a1ea7cb",
+            "id": "c76408ad-e115-4319-8498-d0273634ca32",
             "name": "CP-A01 GET /health responde ok",
             "request": {
               "url": {
@@ -36,7 +36,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "d116497d-6142-4327-9a64-7832660d41b9",
+                  "id": "d530b073-d1d6-4dcb-b2dc-0540bbe5d850",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A01 200 con status ok y timestamp ISO', () => {",
@@ -47,13 +47,13 @@
                     "  pm.expect(Object.keys(b).sort()).to.eql(['status', 'timestamp']);",
                     "});"
                   ],
-                  "_lastExecutionId": "6f31dc3c-51c8-484e-a950-0b61c5b34fc5"
+                  "_lastExecutionId": "160b4db4-f3d0-45d6-907c-eaf81ebb2de6"
                 }
               }
             ]
           },
           {
-            "id": "e75a5de9-12cf-4dc8-b33b-b6eb969f93f7",
+            "id": "3f01d841-e611-4f59-be5f-f64c32446272",
             "name": "CP-A03 POST /auth/login con email inválido → 422",
             "request": {
               "url": {
@@ -89,7 +89,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "9fd78c1d-e81e-4127-9c8a-4ad135377bb4",
+                  "id": "79c8112f-3246-4f4d-82d9-9e9ffd124d6c",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A03 422 con el campo y un mensaje legible', () => {",
@@ -100,13 +100,13 @@
                     "  pm.expect(e[0].msg).to.eql('El email no es válido');",
                     "});"
                   ],
-                  "_lastExecutionId": "1c5e59f2-df53-4089-abab-13c96dff5af3"
+                  "_lastExecutionId": "5136ad8b-908c-480d-8154-c1ec5f1d9f84"
                 }
               }
             ]
           },
           {
-            "id": "05d597a0-3ccc-49d8-b8a5-8255a470ec1a",
+            "id": "760afb61-07ee-4885-bdbb-83bdf73577e4",
             "name": "CP-A04 POST /auth/login con JSON mal formado → 400",
             "request": {
               "url": {
@@ -142,7 +142,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "090016ff-b69b-43a8-ada9-623afc1528fa",
+                  "id": "792bd069-084e-4952-97ab-50263df47b33",
                   "type": "text/javascript",
                   "exec": [
                     "// DEF-A06: hoy responde 500 \"Error interno del servidor\".",
@@ -150,13 +150,13 @@
                     "  pm.response.to.have.status(400);",
                     "});"
                   ],
-                  "_lastExecutionId": "fb34d111-10c0-47d2-9813-4d11cc668b6f"
+                  "_lastExecutionId": "86235e98-19da-4fe5-baec-7bf62d96e9a4"
                 }
               }
             ]
           },
           {
-            "id": "3a5466b4-20ba-4d52-9085-60940a98849b",
+            "id": "d322b506-12da-4886-8e53-8e07e35e2aa8",
             "name": "CP-A06 POST /auth/signup vacío → 422 con todos los obligatorios",
             "request": {
               "url": {
@@ -192,7 +192,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "c41c1ecd-ccc5-472b-af65-6dde8cbf66b8",
+                  "id": "7a62a4e3-468c-4bb0-aef0-a90928fd4b16",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A06 422 marcando email, password, nombre, apellido y especialidad', () => {",
@@ -201,13 +201,13 @@
                     "  ['email', 'password', 'nombre', 'apellido', 'especialidad'].forEach((c) => pm.expect(campos).to.include(c));",
                     "});"
                   ],
-                  "_lastExecutionId": "289d6ca3-0f86-4f73-bdbf-df8a3b856763"
+                  "_lastExecutionId": "e54bc4d7-f842-4599-b390-1f136d1aed57"
                 }
               }
             ]
           },
           {
-            "id": "558715a2-072b-4c57-81ee-3f0fcf459391",
+            "id": "96d26988-9329-43f6-b4bf-65e0ca78ccfc",
             "name": "CP-A07 POST /auth/forgot-password con email inválido → 422",
             "request": {
               "url": {
@@ -243,18 +243,18 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "2451d8ef-cf33-476c-991a-8aaf3537a55c",
+                  "id": "c18179be-6483-4afd-8a39-3b51da80d9df",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A07 422 por email inválido', () => pm.response.to.have.status(422));"
                   ],
-                  "_lastExecutionId": "ed0f9ca3-176c-4d1d-9d62-b70465cde8dc"
+                  "_lastExecutionId": "a47e33ec-337b-4fdb-9dae-a418a3a1f917"
                 }
               }
             ]
           },
           {
-            "id": "84863f4e-2643-4212-ada6-e7578ad29f4e",
+            "id": "6f7d95e9-183f-4648-a601-64564e20c9f0",
             "name": "CP-A09 GET /auth/me sin token → 401",
             "request": {
               "url": {
@@ -281,7 +281,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "374b7b38-b0fd-4ddf-93fb-47db3d43f003",
+                  "id": "ba9e8ef6-d630-4e6a-bba5-e513d335f954",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A09 401 { error: \"Token requerido\" }', () => {",
@@ -289,13 +289,13 @@
                     "  pm.expect(pm.response.json()).to.eql({ error: 'Token requerido' });",
                     "});"
                   ],
-                  "_lastExecutionId": "c154fb53-9edd-4bf3-b0d4-99f9e6962a7e"
+                  "_lastExecutionId": "bd6c777b-d4fe-43b2-8686-e9c8fa43d5c2"
                 }
               }
             ]
           },
           {
-            "id": "918c1ce8-4c1d-4b29-9f3d-c98ee2cfc0e2",
+            "id": "7228ce9d-9e61-4191-9922-b8f0527cb360",
             "name": "CP-A10 GET /pacientes con esquema Basic → 401",
             "request": {
               "url": {
@@ -325,18 +325,18 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "af5e32d6-5f0e-43f6-9e46-fbd0f3b40d60",
+                  "id": "558265c1-1149-445a-a3ef-c138b56efaab",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A10 401 con un header que no es Bearer', () => pm.response.to.have.status(401));"
                   ],
-                  "_lastExecutionId": "574528e9-b80b-4c98-a5b3-93abb099e21a"
+                  "_lastExecutionId": "36e69d9a-948d-443a-9b0b-2ce8e95b18ff"
                 }
               }
             ]
           },
           {
-            "id": "04f1dba2-0baa-4b4e-897c-cc3281ebe553",
+            "id": "b654fde2-5717-4549-b732-a42262d107da",
             "name": "CP-A42 POST /auth/signup con contraseña corta → 422 sin devolverla",
             "request": {
               "url": {
@@ -372,23 +372,22 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "2b83af90-51a1-492a-a7f3-4ccd7a9c1f1a",
+                  "id": "0cc70ea8-fabb-42de-aa4c-d31e0e72d35c",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A42 422 en password', () => {",
                     "  pm.response.to.have.status(422);",
                     "  pm.expect(pm.response.json().errors.map((e) => e.path)).to.include('password');",
                     "});",
-                    "// DEF-A21: express-validator incluye el \"value\" enviado en cada error, contraseña incluida.",
                     "pm.test('CP-A42 el error no repite la contraseña enviada', () => pm.expect(pm.response.text()).to.not.include('ZZclave'));"
                   ],
-                  "_lastExecutionId": "30201134-412f-40ac-bf85-2be59ed1f63a"
+                  "_lastExecutionId": "2bb51d34-bd6e-492e-8be1-d7dbaa1915a7"
                 }
               }
             ]
           },
           {
-            "id": "004fc5be-e7a4-4a10-9b07-3d4887ad277b",
+            "id": "613ff83c-b675-4edb-9fc0-15c18caab112",
             "name": "CP-A37 GET ruta inexistente → 404",
             "request": {
               "url": {
@@ -414,7 +413,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "b4e6e8c0-86af-4fde-9d38-01413b251cac",
+                  "id": "c1b65dbf-7914-4f94-a2cb-032e408f8833",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A37 404 { error: \"Ruta no encontrada\" }', () => {",
@@ -422,7 +421,7 @@
                     "  pm.expect(pm.response.json()).to.eql({ error: 'Ruta no encontrada' });",
                     "});"
                   ],
-                  "_lastExecutionId": "3b27e540-cce8-4940-a98f-fa5866b8808d"
+                  "_lastExecutionId": "e092acb4-0df1-46a3-95e5-231f629107f9"
                 }
               }
             ]
@@ -431,7 +430,7 @@
         "event": []
       },
       {
-        "id": "087d1080-ca78-4266-abea-e6bf98723fc1",
+        "id": "1dcf3e1f-fab9-4072-a11b-85764818e5bd",
         "name": "2. Autenticación (necesita credenciales de un proyecto de test)",
         "description": {
           "content": "Logins con variables de entorno (--env-var). Guardan los tokens en el environment.",
@@ -439,7 +438,7 @@
         },
         "item": [
           {
-            "id": "22011084-f800-4311-8c5d-a0ef7d94b93b",
+            "id": "d80f9820-30fa-4e8a-a999-374412290043",
             "name": "CP-A02 POST /auth/login como profesional",
             "request": {
               "url": {
@@ -475,7 +474,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "66981df3-7cf9-47ec-a72d-7bdadca1ff51",
+                  "id": "0c46753a-9617-49aa-9ecc-b93c6f3b9723",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A02 200 con tokens y perfil, sin campos de más', () => {",
@@ -495,7 +494,7 @@
             ]
           },
           {
-            "id": "7f54fbd3-b8fe-46a2-97a1-cff6c9b01126",
+            "id": "352105df-a550-481a-ba99-8bfcbab26398",
             "name": "CP-A38 POST /auth/login como admin",
             "request": {
               "url": {
@@ -531,7 +530,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "d22ebf77-547e-41aa-b7d9-a4e9f6597514",
+                  "id": "aed05786-285f-4611-91e3-1c05b5a4f570",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A38 200 con tokens y perfil, sin campos de más', () => {",
@@ -551,7 +550,7 @@
             ]
           },
           {
-            "id": "1c1d2206-cd4d-4650-a14a-82dd6240f6b8",
+            "id": "ad869bb4-297e-490b-b466-9d46e2202593",
             "name": "CP-A39 POST /auth/login como segundo profesional",
             "request": {
               "url": {
@@ -587,7 +586,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "84dfdbd5-69ee-4e7e-9f80-83db7719a340",
+                  "id": "bf547c7f-1397-4a1c-b2d8-848682a31988",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A39 200 con tokens y perfil, sin campos de más', () => {",
@@ -607,7 +606,7 @@
             ]
           },
           {
-            "id": "7733cf6e-6209-4549-bbc2-472cffb6c6b4",
+            "id": "a00f7cfe-4f98-4cab-bf42-cdd1e19d7654",
             "name": "CP-A05 POST /auth/login con contraseña incorrecta → 401 genérico",
             "request": {
               "url": {
@@ -643,7 +642,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "cbe40387-54a7-4e8d-bb1a-72b5b76e4d9a",
+                  "id": "a1ae93df-1f70-4e94-9fb0-316c6473818a",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A05 401 \"Credenciales inválidas\" sin revelar si el email existe', () => {",
@@ -656,7 +655,7 @@
             ]
           },
           {
-            "id": "bbee64b9-4fea-4980-9172-dafa8420617a",
+            "id": "0f192beb-b793-42c9-8016-e9be639270dd",
             "name": "CP-A08 POST /auth/refresh con token inválido → 401",
             "request": {
               "url": {
@@ -692,7 +691,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "af401346-a3b9-4a20-a2b5-e8b15c87fd2d",
+                  "id": "5675a4c9-f2a9-4cc3-907c-52a0c9acbc10",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A08 401 con refresh token inválido', () => pm.response.to.have.status(401));"
@@ -702,7 +701,7 @@
             ]
           },
           {
-            "id": "97c5f5b0-f717-4e6a-8cb7-17827f2063b1",
+            "id": "3d8083be-2b17-46b0-b8dc-e2aefb13477d",
             "name": "CP-A11 GET /auth/me con token inválido → 401",
             "request": {
               "url": {
@@ -733,7 +732,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "91c8fc6d-f1b2-43dd-ad4e-c02c806aeb29",
+                  "id": "f92d5496-f811-44c6-abfb-ff2f94d66d52",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A11 401 \"Token inválido o expirado\"', () => {",
@@ -749,7 +748,7 @@
         "event": []
       },
       {
-        "id": "3eb9d746-362c-484e-8a0a-42deb0a42f5f",
+        "id": "b3aeedd8-bfa4-4132-b774-a2a182b2541f",
         "name": "3. Pacientes y aislamiento",
         "description": {
           "content": "Crea un paciente ZZ-TEST que se da de baja en la carpeta 6.",
@@ -757,7 +756,7 @@
         },
         "item": [
           {
-            "id": "d1ff165c-c1b4-4387-a953-d386de2c175a",
+            "id": "ce6bab79-3d99-40ef-abd7-3c845ae64cf1",
             "name": "CP-A12 GET /pacientes (contrato del listado)",
             "request": {
               "url": {
@@ -796,7 +795,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "734a131e-2f2d-4efc-b252-906015d9eec2",
+                  "id": "146e85f1-4357-456d-ae11-3fce8b9c9fd1",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A12 200 con data y pagination con tipos correctos', () => {",
@@ -818,7 +817,7 @@
             ]
           },
           {
-            "id": "596e858d-e2d8-450e-b448-3bafeb239a55",
+            "id": "9548760f-cee0-4458-91d6-1b8a010764e8",
             "name": "CP-A13 POST /pacientes crea ZZ-TEST",
             "request": {
               "url": {
@@ -857,7 +856,7 @@
               {
                 "listen": "prerequest",
                 "script": {
-                  "id": "ea9d8bc1-b7b1-4d9a-a834-4d49a29bc83b",
+                  "id": "729172e7-f628-45e3-8eb6-af944db99f2a",
                   "type": "text/javascript",
                   "exec": [
                     "if (!pm.environment.get('dniTest')) {",
@@ -869,7 +868,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "b6f9939e-1456-4d79-b69e-6eea463fca2b",
+                  "id": "91d3bf94-0cf3-4393-9e39-6b9abc3d10d1",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A13 201 con el paciente creado a nombre de quien lo crea', () => {",
@@ -887,7 +886,7 @@
             ]
           },
           {
-            "id": "4d536422-1943-4650-a910-7812672a0fa6",
+            "id": "8eb3fa6e-a3ee-4a01-8049-3a03be1a760c",
             "name": "CP-A14 POST /pacientes con el mismo DNI → 409",
             "request": {
               "url": {
@@ -926,7 +925,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "7cfc1e9d-cac6-4874-9204-f8b672c0b282",
+                  "id": "8523771f-5877-4922-bf3d-5eeb7a2e2b8a",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A14 409 \"Ya existe un paciente con ese DNI\"', () => {",
@@ -939,7 +938,7 @@
             ]
           },
           {
-            "id": "f8a903ee-c908-4769-9948-f4aba8532964",
+            "id": "0b4db83f-e845-4503-8d14-a70b7e3551f2",
             "name": "CP-A18 GET /pacientes?busqueda=DNI → el duplicado no se creó",
             "request": {
               "url": {
@@ -974,7 +973,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "80128b1b-dca3-4f0e-ad8b-4511a54a978a",
+                  "id": "fca73600-22a7-45f2-83e5-7ddc6f547976",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A18 hay exactamente un paciente con ese DNI', () => {",
@@ -987,7 +986,7 @@
             ]
           },
           {
-            "id": "c43a4bff-c647-4c63-a92e-9f87d6d40faa",
+            "id": "3040abfa-7014-4376-b8e2-4dd068505d08",
             "name": "CP-A15 GET paciente de A pedido por el profesional B → 404",
             "request": {
               "url": {
@@ -1018,7 +1017,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "b8cbe182-1d37-4ea2-a935-214c88a6b984",
+                  "id": "c6b4e99a-a02c-48b8-b728-b89bc921384d",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A15 404 (no revela que existe) y sin datos del paciente', () => {",
@@ -1031,7 +1030,7 @@
             ]
           },
           {
-            "id": "e6570529-4bea-472d-b77b-837f73c95244",
+            "id": "f89f546f-9d25-4691-99a4-476d559950c9",
             "name": "CP-A16 GET paciente de un profesional pedido por un admin → 404",
             "request": {
               "url": {
@@ -1062,7 +1061,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "2a847c54-0345-43db-9721-d395115f90de",
+                  "id": "5e2b4f6d-0b19-417e-b448-3a4661cdb1ed",
                   "type": "text/javascript",
                   "exec": [
                     "// Migración 004: el admin tampoco ve pacientes ajenos en SELECT.",
@@ -1076,7 +1075,7 @@
             ]
           },
           {
-            "id": "87959d5f-1106-468a-bd43-401aa387387e",
+            "id": "4044ea06-4436-41b2-927d-2b962a437c23",
             "name": "CP-A17 GET /pacientes/abc (id no UUID) → 422",
             "request": {
               "url": {
@@ -1107,7 +1106,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "264d761f-b60b-4e40-aa66-303e8072528e",
+                  "id": "2a41134b-9ef1-4a11-863e-d25aaab3ecec",
                   "type": "text/javascript",
                   "exec": [
                     "// DEF-A05: hoy responde 500 con el error crudo de Postgres.",
@@ -1118,7 +1117,7 @@
             ]
           },
           {
-            "id": "56906683-d853-41fc-8de4-46cfb762865d",
+            "id": "f1fde0d2-cf2a-4120-abba-d7b9ec7b142b",
             "name": "CP-A19 PATCH /pacientes/:id con estado inválido → 422",
             "request": {
               "url": {
@@ -1158,7 +1157,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "1711bd4a-0c57-4bc1-984c-92f8ad519e50",
+                  "id": "92cd2225-e1d0-47c2-b319-5ad9ed1a1cf0",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A19 422 \"El estado no es válido\"', () => {",
@@ -1174,7 +1173,7 @@
         "event": []
       },
       {
-        "id": "4cc13ab3-4313-45db-825a-fbcc50f25585",
+        "id": "ea8173ab-90e8-41db-9d4d-9329994ac48a",
         "name": "4. Turnos y consultorios",
         "description": {
           "content": "Reservas en el consultorio 3 en 2031; se cancelan en la carpeta 6.",
@@ -1182,7 +1181,7 @@
         },
         "item": [
           {
-            "id": "cbd678dc-cd33-400d-8b8f-cd5a257c2876",
+            "id": "181ca22e-0aab-4b4d-b2bf-652058dbf961",
             "name": "CP-A21 POST /turnos reserva el consultorio 3",
             "request": {
               "url": {
@@ -1221,7 +1220,7 @@
               {
                 "listen": "prerequest",
                 "script": {
-                  "id": "073f8d77-9fcb-4f3a-93ed-93c3bbfe6ee8",
+                  "id": "d3f0e157-bc7c-4ecb-9bd9-c113cb478612",
                   "type": "text/javascript",
                   "exec": [
                     "// Horario lejano y al azar para no chocar con datos reales: un día de 2031 a las 10:00 (UTC-3), consultorio 3.",
@@ -1240,7 +1239,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "5b7126c6-4a66-4049-8126-3a27390c3a4a",
+                  "id": "e21c3b08-0800-46ca-8b33-d712c9c9834f",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A21 201 con consultorio, estado programado y fechas', () => {",
@@ -1257,7 +1256,7 @@
             ]
           },
           {
-            "id": "9818098e-522c-4aed-b359-aaf52831b6db",
+            "id": "f4b36311-1792-4023-a396-182f660562ce",
             "name": "CP-A22 POST /turnos mismo consultorio y horario → 409",
             "request": {
               "url": {
@@ -1296,7 +1295,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "8cedd949-09af-4e16-abef-56c7e6f42ee1",
+                  "id": "323648a7-5925-4001-8382-1b2f6c659e56",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A22 409 con un mensaje que nombra el consultorio', () => {",
@@ -1310,7 +1309,7 @@
             ]
           },
           {
-            "id": "acd4dfd3-4172-4e1d-a0c6-fe86cb2d90a1",
+            "id": "0dd072d0-4faf-4165-9dbb-1ff258532441",
             "name": "CP-A31 POST /turnos con 1 minuto de solape → 409",
             "request": {
               "url": {
@@ -1349,7 +1348,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "7a6dfaba-2757-444d-b85b-8b83db408d94",
+                  "id": "dae5adf0-2e5e-45ec-9875-470f05a44a83",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A31 409: empieza 1 minuto antes de que termine el otro', () => pm.response.to.have.status(409));",
@@ -1360,7 +1359,7 @@
             ]
           },
           {
-            "id": "94702a70-1fba-46d6-9ee3-f6435e805040",
+            "id": "bd927a81-113f-4b5c-94ca-e6702ef4707e",
             "name": "CP-A25 POST /turnos que empieza justo cuando termina el otro → 201",
             "request": {
               "url": {
@@ -1399,7 +1398,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "9eb6e84b-83c7-42af-ac35-bebf01412830",
+                  "id": "6c0c8aa4-546e-46ad-ab68-66dd08f425fc",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A25 201: el borde fin = inicio no es superposición', () => pm.response.to.have.status(201));",
@@ -1410,7 +1409,7 @@
             ]
           },
           {
-            "id": "b9392e3b-4540-42b4-862d-4b1dd39c69b6",
+            "id": "0569e7ac-dfab-4073-937b-b671bfc26189",
             "name": "CP-A23 POST /turnos con consultorio 4 → 422",
             "request": {
               "url": {
@@ -1449,7 +1448,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "7b93b23f-dee8-4ead-ae05-d67552e66e83",
+                  "id": "99deabf1-543e-4adf-be0f-c05116df8acc",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A23 422 en consultorio', () => {",
@@ -1462,7 +1461,7 @@
             ]
           },
           {
-            "id": "d6eb048f-cb50-4888-8264-8ce05ceb3289",
+            "id": "4a3bae0f-3bdf-47b5-a578-d5cc0ad750de",
             "name": "CP-A24 POST /turnos con fin anterior al inicio → 422",
             "request": {
               "url": {
@@ -1501,7 +1500,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "d7891c53-1a94-44c7-83a6-a0a6f379b15e",
+                  "id": "ded5462f-73cc-4011-b9a5-8f69a3eb27bc",
                   "type": "text/javascript",
                   "exec": [
                     "// DEF-A03: hoy se acepta y crea un turno con duración negativa (se cancela en la carpeta 6).",
@@ -1513,7 +1512,7 @@
             ]
           },
           {
-            "id": "65d27921-22f6-4cb7-aa89-c4e4efcab12e",
+            "id": "0a106b29-f86a-46e9-a513-6346f29b32c3",
             "name": "CP-A20 GET /turnos: los turnos ajenos no traen datos clínicos",
             "request": {
               "url": {
@@ -1552,7 +1551,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "71af0f2c-a528-4899-9b1b-1ef4f25bde6a",
+                  "id": "4846d5e0-72bf-44c3-9f22-5733799115c9",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A20 el profesional B ve el consultorio ocupado pero no el paciente ni las notas', () => {",
@@ -1570,7 +1569,7 @@
         "event": []
       },
       {
-        "id": "455a962b-d340-4971-b0d6-f1307b28645c",
+        "id": "b9f644e2-616b-4c90-a516-dcf4b1d38e8d",
         "name": "5. Permisos, pagos y archivos",
         "description": {
           "content": "No escriben datos (los casos que escribirían se cortan en la validación o en el permiso).",
@@ -1578,7 +1577,7 @@
         },
         "item": [
           {
-            "id": "072583d7-1368-42a9-9c09-e24bef7074da",
+            "id": "86d1ba33-2deb-4a57-9ca5-b29c4707d7d9",
             "name": "CP-A29 GET /pagos/liquidacion como profesional → 403",
             "request": {
               "url": {
@@ -1614,7 +1613,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "ed775508-41d5-4ddc-93df-9e76c15e1efe",
+                  "id": "1a9455e2-e5df-4d01-ac00-99e67bf54c91",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A29 403 \"Se requiere rol admin\"', () => {",
@@ -1627,7 +1626,7 @@
             ]
           },
           {
-            "id": "246e9242-ad8f-4ccd-8781-681737042f12",
+            "id": "4b8a7541-4f99-4f3e-84eb-a00cc7391aa3",
             "name": "CP-A32 GET /pagos/liquidacion como admin (contrato)",
             "request": {
               "url": {
@@ -1663,7 +1662,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "ef2cd71c-1445-4272-abe2-7d418f19f19f",
+                  "id": "e336233e-0591-498a-bb72-539ce2d1b19c",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A32 200 con totales numéricos y un resumen por profesional', () => {",
@@ -1683,7 +1682,7 @@
             ]
           },
           {
-            "id": "fb88be04-2813-4cfb-8e16-e3ae520ba561",
+            "id": "78ac1e93-38a9-4295-a9e1-0b1d12ff5e31",
             "name": "CP-A33 GET /pagos/liquidacion con mes inválido → 422",
             "request": {
               "url": {
@@ -1719,7 +1718,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "1838595c-b071-48fc-b14d-fd73f0cccef4",
+                  "id": "d155296d-c734-4293-90a1-a185a644052f",
                   "type": "text/javascript",
                   "exec": [
                     "// DEF-A10: hoy responde 500.",
@@ -1730,7 +1729,7 @@
             ]
           },
           {
-            "id": "f7d3a588-a9a1-4189-bd1b-313051a7c109",
+            "id": "b92c76bf-8efd-429c-8843-1c30429844be",
             "name": "CP-A28 POST /pagos con monto 0 → 422",
             "request": {
               "url": {
@@ -1769,7 +1768,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "7c1ad99d-999d-49a7-9f2e-aecf536a6049",
+                  "id": "23b515b3-4f02-488b-83a8-c535c4b798e2",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A28 422 en monto_total (límite: mínimo 0,01)', () => {",
@@ -1782,7 +1781,7 @@
             ]
           },
           {
-            "id": "91814670-739b-4fd0-add2-017a20f491e4",
+            "id": "23ceb2a8-4cb6-402a-b1f3-53c3b03af138",
             "name": "CP-A34 GET /profesionales (contrato, sin datos sensibles)",
             "request": {
               "url": {
@@ -1812,7 +1811,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "bcb4b261-d131-4b47-a829-93e7cbf4e975",
+                  "id": "4486f370-4ecd-4bbb-84ac-e226f69f34d5",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A34 200 con una lista de activos sin email ni contraseña', () => {",
@@ -1822,7 +1821,6 @@
                     "    pm.expect(p).to.not.have.any.keys('email', 'password', 'telefono');",
                     "  });",
                     "});",
-                    "// DEF-A20: cualquier profesional ve el porcentaje de honorarios de los demás.",
                     "pm.test('CP-A34 un profesional no ve el porcentaje de honorarios de otros', () => {",
                     "  pm.response.json().filter((p) => p.id !== pm.environment.get('profesionalId'))",
                     "    .forEach((p) => pm.expect(p).to.not.have.property('porcentaje_honorarios'));",
@@ -1833,7 +1831,7 @@
             ]
           },
           {
-            "id": "f0952f81-77fc-4b36-8b7f-2d200838ae7d",
+            "id": "0376f944-ef6a-430f-91af-73fb2c884589",
             "name": "CP-A35 DELETE /profesionales/:id como profesional → 403",
             "request": {
               "url": {
@@ -1864,7 +1862,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "ba8a7fe4-677b-48f3-b7d0-d28efd1e0a55",
+                  "id": "60c4dc26-d662-48c4-9f35-3d64daf3326d",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A35 403: un profesional no puede desactivar a otro', () => pm.response.to.have.status(403));"
@@ -1874,7 +1872,7 @@
             ]
           },
           {
-            "id": "a5ee8525-d95c-4338-a44e-6d4494efe55c",
+            "id": "7e0c0d0e-c338-4dea-ae3d-6126c89518d2",
             "name": "CP-A26 GET /derivaciones (contrato)",
             "request": {
               "url": {
@@ -1904,7 +1902,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "185e6a6c-37e9-4e9e-8ff2-8db219bd368a",
+                  "id": "895d8896-3e95-48ec-a70b-fed4e0ee5636",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A26 200 con derivaciones propias en estados válidos', () => {",
@@ -1921,7 +1919,7 @@
             ]
           },
           {
-            "id": "fb94ee2a-e54c-4008-9c75-51ce9f7de177",
+            "id": "541af917-0d06-4655-b6e8-bf9ad27009bc",
             "name": "CP-A27 POST /archivos/upload-url de 10 MB + 1 byte → 422",
             "request": {
               "url": {
@@ -1961,7 +1959,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "3228a996-f434-46fb-b88e-32f99c449ed0",
+                  "id": "619061bf-6edb-4b67-ae69-72489808a0d4",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A27 422 en tamanio_bytes (límite: 10 MB)', () => {",
@@ -1974,7 +1972,7 @@
             ]
           },
           {
-            "id": "2d441235-cc7e-4a6f-81a3-d457b06a971d",
+            "id": "8366f41b-018f-4486-bfae-73930535b44f",
             "name": "CP-A36 POST /ia/confirmar con un token inventado → 400",
             "request": {
               "url": {
@@ -2014,7 +2012,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "333829df-ff35-4b47-bc91-916773c3a9d2",
+                  "id": "dea5f815-1d57-49ec-b3bd-d2368f23a699",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A36 400 \"Confirmación inválida\": la baja no se ejecuta sin el token firmado', () => {",
@@ -2030,7 +2028,7 @@
         "event": []
       },
       {
-        "id": "e077b985-07bf-49f9-9966-b1b9737386e9",
+        "id": "c758e831-59c1-44a1-8124-e26c6c0f11d4",
         "name": "6. Limpieza",
         "description": {
           "content": "Deja la base como estaba: cancela los turnos ZZ-TEST y da de baja el paciente ZZ-TEST.",
@@ -2038,7 +2036,7 @@
         },
         "item": [
           {
-            "id": "771814a7-c629-447f-ad52-58050b866250",
+            "id": "1bd9995c-9a01-4fa6-90a7-23db59a94ac0",
             "name": "CP-A41 Limpieza: cancelar turnoZZ",
             "request": {
               "url": {
@@ -2069,7 +2067,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "bb791791-0a19-4bad-af9c-e5994294d89a",
+                  "id": "eb705479-1933-4dce-b927-3b82fd5dba6d",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A41 turnoZZ cancelado (o no se había creado)', () => {",
@@ -2083,7 +2081,7 @@
             ]
           },
           {
-            "id": "0cd2a8fe-75b6-4873-9784-4112d4c8495c",
+            "id": "02aa7a68-44be-4bef-95a7-abd8278d70f7",
             "name": "CP-A41 Limpieza: cancelar turnoZZBorde",
             "request": {
               "url": {
@@ -2114,7 +2112,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "20c7f4e5-1d8f-4084-b67f-9c89b4fe37c4",
+                  "id": "156452d8-3701-403a-a13f-1eec4307d0fc",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A41 turnoZZBorde cancelado (o no se había creado)', () => {",
@@ -2128,7 +2126,7 @@
             ]
           },
           {
-            "id": "48830ad6-5262-4987-9c02-1600b6854efa",
+            "id": "3a82301b-a3af-4117-88f6-176a8930c9c0",
             "name": "CP-A41 Limpieza: cancelar turnoZZDuplicado",
             "request": {
               "url": {
@@ -2159,7 +2157,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "44472768-f510-4398-bc53-71a057edb482",
+                  "id": "fcaca8b3-4b51-4248-aa4b-99031291cf75",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A41 turnoZZDuplicado cancelado (o no se había creado)', () => {",
@@ -2173,7 +2171,7 @@
             ]
           },
           {
-            "id": "dcb5b5c0-a97a-48f2-b0b7-eba49e1f92bc",
+            "id": "556fe8dd-7ebe-448f-af21-672d2975fcd0",
             "name": "CP-A41 Limpieza: cancelar turnoZZSolape",
             "request": {
               "url": {
@@ -2204,7 +2202,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "c7468112-fc8a-4665-a65d-4a7fdf5b3201",
+                  "id": "57a66fcf-b2db-435c-a0fa-99c0e9f8288c",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A41 turnoZZSolape cancelado (o no se había creado)', () => {",
@@ -2218,7 +2216,7 @@
             ]
           },
           {
-            "id": "adb6dc88-0bf9-4fc3-b44f-d9691b99c5d5",
+            "id": "56eef053-7023-48b3-a668-4ec6149f7d5b",
             "name": "CP-A41 Limpieza: cancelar turnoZZInvertido",
             "request": {
               "url": {
@@ -2249,7 +2247,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "d3094508-e311-433c-a265-16cb0bfc9675",
+                  "id": "d4d186f6-5763-4450-a55c-7d4791bcc254",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A41 turnoZZInvertido cancelado (o no se había creado)', () => {",
@@ -2263,7 +2261,7 @@
             ]
           },
           {
-            "id": "39245e44-4f96-408a-945e-85829b07a9a9",
+            "id": "6d6ba51c-f6c8-44e0-bcec-887fb5588e20",
             "name": "CP-A30 DELETE /pacientes/:id hace la baja lógica",
             "request": {
               "url": {
@@ -2294,7 +2292,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "145b69bd-7a86-4a76-8583-4fa143829dd8",
+                  "id": "e281a9bb-682b-4cad-a93c-70c7133fffab",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A30 200 con mensaje e id', () => {",
@@ -2307,7 +2305,7 @@
             ]
           },
           {
-            "id": "15bc5e7b-5b3c-4108-a5d7-3a0b0a118b19",
+            "id": "d574235b-42e2-42c8-ac19-e6f8da781f43",
             "name": "CP-A40 GET del paciente dado de baja → 404",
             "request": {
               "url": {
@@ -2338,7 +2336,7 @@
               {
                 "listen": "test",
                 "script": {
-                  "id": "f9d1036f-d89e-409f-b385-9b142ef5fe6c",
+                  "id": "49e258a5-f751-440f-9b14-78ad36dbf1c3",
                   "type": "text/javascript",
                   "exec": [
                     "pm.test('CP-A40 después de la baja ya no se ve (pero no se borró: deleted_at)', () => pm.response.to.have.status(404));",
@@ -2356,7 +2354,7 @@
       {
         "listen": "test",
         "script": {
-          "id": "043784ca-7048-443c-be5f-9b91429a0306",
+          "id": "8f2cc130-cfb0-44b5-89ec-27451eeb9670",
           "type": "text/javascript",
           "exec": [
             "// Chequeos comunes a TODAS las respuestas: tiempo, nunca 500, nada sensible y formato de error.",
@@ -2374,7 +2372,7 @@
             "  });",
             "}"
           ],
-          "_lastExecutionId": "06760b07-5de0-4dd6-b93d-71500ac66e5a"
+          "_lastExecutionId": "23b6fedc-a8a3-4f6b-adbc-a3a66c402558"
         }
       }
     ],
@@ -2386,7 +2384,7 @@
       }
     ],
     "info": {
-      "_postman_id": "935ddc7b-d668-438e-a171-99f9c505b694",
+      "_postman_id": "9fcb6a3a-0faa-4778-bb70-6041c520d0e9",
       "name": "Mentes que Aprenden - API",
       "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
       "description": {
@@ -2399,7 +2397,7 @@
     "_": {
       "postman_variable_scope": "environment"
     },
-    "id": "5b9a8f88-1bb3-493a-a76d-cd82c467ec6a",
+    "id": "0b06d949-8b74-44d5-99c4-c3bcb4ed3cd2",
     "name": "Mentes que Aprenden - local",
     "values": [
       {
@@ -2490,7 +2488,7 @@
     ]
   },
   "globals": {
-    "id": "ffb0cce4-961d-47c3-aee5-649671d9be15",
+    "id": "d9be7c71-6d0b-407c-a06c-a72720a98215",
     "values": []
   },
   "run": {
@@ -2528,7 +2526,7 @@
       "assertions": {
         "total": 45,
         "pending": 0,
-        "failed": 3
+        "failed": 2
       },
       "testScripts": {
         "total": 18,
@@ -2542,10 +2540,10 @@
       }
     },
     "timings": {
-      "responseAverage": 2.5555555555555554,
+      "responseAverage": 3.4444444444444446,
       "responseMin": 1,
-      "responseMax": 10,
-      "responseSd": 2.71256791460749,
+      "responseMax": 12,
+      "responseSd": 3.4676636742949407,
       "dnsAverage": 0,
       "dnsMin": 0,
       "dnsMax": 0,
@@ -2554,8 +2552,8 @@
       "firstByteMin": 0,
       "firstByteMax": 0,
       "firstByteSd": 0,
-      "started": 1793139224014,
-      "completed": 1793139224163
+      "started": 1793143683137,
+      "completed": 1793143683291
     },
     "executions": [
       {
@@ -2568,11 +2566,11 @@
           "eof": false,
           "bof": true,
           "cr": false,
-          "ref": "a6e57c8b-ae5a-49ce-a099-451e2841c557",
-          "httpRequestId": "cc9524fa-32c5-4d26-b8d1-2b29797a6298"
+          "ref": "a4d7bb14-83dc-4633-990e-d96f62823cc9",
+          "httpRequestId": "0657de5c-5c23-4ae6-ac15-1fe409719bfa"
         },
         "item": {
-          "id": "2956ded6-d44a-4864-a600-6c176a1ea7cb",
+          "id": "c76408ad-e115-4319-8498-d0273634ca32",
           "name": "CP-A01 GET /health responde ok",
           "request": {
             "url": {
@@ -2598,7 +2596,7 @@
             {
               "listen": "test",
               "script": {
-                "id": "d116497d-6142-4327-9a64-7832660d41b9",
+                "id": "d530b073-d1d6-4dcb-b2dc-0540bbe5d850",
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('CP-A01 200 con status ok y timestamp ISO', () => {",
@@ -2609,7 +2607,7 @@
                   "  pm.expect(Object.keys(b).sort()).to.eql(['status', 'timestamp']);",
                   "});"
                 ],
-                "_lastExecutionId": "6f31dc3c-51c8-484e-a950-0b61c5b34fc5"
+                "_lastExecutionId": "160b4db4-f3d0-45d6-907c-eaf81ebb2de6"
               }
             }
           ]
@@ -2649,7 +2647,7 @@
             },
             {
               "key": "Postman-Token",
-              "value": "8a5ae6c0-d2e0-41b7-8289-7416d5776cd2",
+              "value": "8c30c866-7a0e-4a90-9ba6-d80b616651f3",
               "system": true
             },
             {
@@ -2671,7 +2669,7 @@
           "method": "GET"
         },
         "response": {
-          "id": "3b81f9a4-e8de-40d7-ad9e-dd6a36bf91e9",
+          "id": "c0f11cac-ab94-4ae9-a9d4-cf1b55eeea97",
           "status": "OK",
           "code": 200,
           "header": [
@@ -2745,11 +2743,11 @@
             },
             {
               "key": "RateLimit-Remaining",
-              "value": "986"
+              "value": "996"
             },
             {
               "key": "RateLimit-Reset",
-              "value": "867"
+              "value": "893"
             },
             {
               "key": "Content-Type",
@@ -2761,11 +2759,11 @@
             },
             {
               "key": "ETag",
-              "value": "W/\"36-zxTEGL9LtalVXJjAGBLduxZg3lI\""
+              "value": "W/\"36-JRvJhJCIaq84mL0y26aJcoOaFCM\""
             },
             {
               "key": "Date",
-              "value": "Tue, 27 Oct 2026 22:13:44 GMT"
+              "value": "Tue, 27 Oct 2026 23:28:03 GMT"
             },
             {
               "key": "Connection",
@@ -2819,27 +2817,27 @@
               55,
               84,
               50,
-              50,
-              58,
-              49,
               51,
               58,
-              52,
-              52,
-              46,
-              48,
               50,
               56,
+              58,
+              48,
+              51,
+              46,
+              49,
+              53,
+              51,
               90,
               34,
               125
             ]
           },
           "cookie": [],
-          "responseTime": 10,
+          "responseTime": 12,
           "responseSize": 54
         },
-        "id": "2956ded6-d44a-4864-a600-6c176a1ea7cb",
+        "id": "c76408ad-e115-4319-8498-d0273634ca32",
         "assertions": [
           {
             "assertion": "CP-A01 tiempo de respuesta < 1000 ms",
@@ -2861,15 +2859,15 @@
       },
       {
         "cursor": {
-          "ref": "dc32d442-e65a-4ef4-8935-769d1efa881b",
+          "ref": "6649580a-0949-4a7d-bc26-af45006c3248",
           "length": 9,
           "cycles": 1,
           "position": 1,
           "iteration": 0,
-          "httpRequestId": "28a35167-458f-4d58-9a6c-9154c50198d5"
+          "httpRequestId": "d757bc87-eb1a-4fa1-a5d1-4eb041d56bc2"
         },
         "item": {
-          "id": "e75a5de9-12cf-4dc8-b33b-b6eb969f93f7",
+          "id": "3f01d841-e611-4f59-be5f-f64c32446272",
           "name": "CP-A03 POST /auth/login con email inválido → 422",
           "request": {
             "url": {
@@ -2905,7 +2903,7 @@
             {
               "listen": "test",
               "script": {
-                "id": "9fd78c1d-e81e-4127-9c8a-4ad135377bb4",
+                "id": "79c8112f-3246-4f4d-82d9-9e9ffd124d6c",
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('CP-A03 422 con el campo y un mensaje legible', () => {",
@@ -2916,7 +2914,7 @@
                   "  pm.expect(e[0].msg).to.eql('El email no es válido');",
                   "});"
                 ],
-                "_lastExecutionId": "1c5e59f2-df53-4089-abab-13c96dff5af3"
+                "_lastExecutionId": "5136ad8b-908c-480d-8154-c1ec5f1d9f84"
               }
             }
           ]
@@ -2958,7 +2956,7 @@
             },
             {
               "key": "Postman-Token",
-              "value": "f14131a3-efda-4da0-8aec-4bddee3da75f",
+              "value": "d9d9e79d-b3ff-4232-893d-4dee09e93e26",
               "system": true
             },
             {
@@ -2994,7 +2992,7 @@
           }
         },
         "response": {
-          "id": "fb88adf0-1d92-45ee-aa6c-524a816f69be",
+          "id": "a2399efe-f588-4850-acea-74a0792813cd",
           "status": "Unprocessable Entity",
           "code": 422,
           "header": [
@@ -3068,11 +3066,11 @@
             },
             {
               "key": "RateLimit-Remaining",
-              "value": "985"
+              "value": "995"
             },
             {
               "key": "RateLimit-Reset",
-              "value": "867"
+              "value": "893"
             },
             {
               "key": "X-RateLimit-Limit",
@@ -3080,15 +3078,15 @@
             },
             {
               "key": "X-RateLimit-Remaining",
-              "value": "93"
+              "value": "99"
             },
             {
               "key": "Date",
-              "value": "Tue, 27 Oct 2026 22:13:44 GMT"
+              "value": "Tue, 27 Oct 2026 23:28:03 GMT"
             },
             {
               "key": "X-RateLimit-Reset",
-              "value": "1793140096"
+              "value": "1793144584"
             },
             {
               "key": "Content-Type",
@@ -3096,11 +3094,11 @@
             },
             {
               "key": "Content-Length",
-              "value": "114"
+              "value": "60"
             },
             {
               "key": "ETag",
-              "value": "W/\"72-0HRnu2yqHo3GfxEx/Ah4bp7qBvM\""
+              "value": "W/\"3c-levVSsVc2Ha/cXqN/Of9i1xZybU\""
             },
             {
               "key": "Connection",
@@ -3127,39 +3125,18 @@
               91,
               123,
               34,
-              116,
-              121,
               112,
-              101,
+              97,
+              116,
+              104,
               34,
               58,
               34,
-              102,
-              105,
               101,
-              108,
-              100,
-              34,
-              44,
-              34,
-              118,
+              109,
               97,
-              108,
-              117,
-              101,
-              34,
-              58,
-              34,
-              115,
               105,
-              110,
-              45,
-              97,
-              114,
-              114,
-              111,
-              98,
-              97,
+              108,
               34,
               44,
               34,
@@ -3192,49 +3169,16 @@
               100,
               111,
               34,
-              44,
-              34,
-              112,
-              97,
-              116,
-              104,
-              34,
-              58,
-              34,
-              101,
-              109,
-              97,
-              105,
-              108,
-              34,
-              44,
-              34,
-              108,
-              111,
-              99,
-              97,
-              116,
-              105,
-              111,
-              110,
-              34,
-              58,
-              34,
-              98,
-              111,
-              100,
-              121,
-              34,
               125,
               93,
               125
             ]
           },
           "cookie": [],
-          "responseTime": 2,
-          "responseSize": 114
+          "responseTime": 7,
+          "responseSize": 60
         },
-        "id": "e75a5de9-12cf-4dc8-b33b-b6eb969f93f7",
+        "id": "3f01d841-e611-4f59-be5f-f64c32446272",
         "assertions": [
           {
             "assertion": "CP-A03 tiempo de respuesta < 1000 ms",
@@ -3260,15 +3204,15 @@
       },
       {
         "cursor": {
-          "ref": "143bd448-614b-49e7-845e-f1ce7fdf0343",
+          "ref": "033f5dff-c443-482c-9d64-05c498982014",
           "length": 9,
           "cycles": 1,
           "position": 2,
           "iteration": 0,
-          "httpRequestId": "1226e572-7402-4ccf-b605-48fdc30838e0"
+          "httpRequestId": "2ee7e165-7903-434d-8759-beb6e59ff52d"
         },
         "item": {
-          "id": "05d597a0-3ccc-49d8-b8a5-8255a470ec1a",
+          "id": "760afb61-07ee-4885-bdbb-83bdf73577e4",
           "name": "CP-A04 POST /auth/login con JSON mal formado → 400",
           "request": {
             "url": {
@@ -3304,7 +3248,7 @@
             {
               "listen": "test",
               "script": {
-                "id": "090016ff-b69b-43a8-ada9-623afc1528fa",
+                "id": "792bd069-084e-4952-97ab-50263df47b33",
                 "type": "text/javascript",
                 "exec": [
                   "// DEF-A06: hoy responde 500 \"Error interno del servidor\".",
@@ -3312,7 +3256,7 @@
                   "  pm.response.to.have.status(400);",
                   "});"
                 ],
-                "_lastExecutionId": "fb34d111-10c0-47d2-9813-4d11cc668b6f"
+                "_lastExecutionId": "86235e98-19da-4fe5-baec-7bf62d96e9a4"
               }
             }
           ]
@@ -3354,7 +3298,7 @@
             },
             {
               "key": "Postman-Token",
-              "value": "100a14ab-91b0-422b-9b85-75c42659a68b",
+              "value": "ebb4e98f-1a49-4d9e-b57c-b80a612e079a",
               "system": true
             },
             {
@@ -3390,7 +3334,7 @@
           }
         },
         "response": {
-          "id": "cda73f6c-f407-4cfe-8ca4-9b65466484b5",
+          "id": "5adc551e-5f36-4f40-a935-b3dd26179a98",
           "status": "Internal Server Error",
           "code": 500,
           "header": [
@@ -3464,11 +3408,11 @@
             },
             {
               "key": "RateLimit-Remaining",
-              "value": "984"
+              "value": "994"
             },
             {
               "key": "RateLimit-Reset",
-              "value": "867"
+              "value": "893"
             },
             {
               "key": "Content-Type",
@@ -3484,7 +3428,7 @@
             },
             {
               "key": "Date",
-              "value": "Tue, 27 Oct 2026 22:13:44 GMT"
+              "value": "Tue, 27 Oct 2026 23:28:03 GMT"
             },
             {
               "key": "Connection",
@@ -3542,7 +3486,7 @@
           "responseTime": 1,
           "responseSize": 38
         },
-        "id": "05d597a0-3ccc-49d8-b8a5-8255a470ec1a",
+        "id": "760afb61-07ee-4885-bdbb-83bdf73577e4",
         "assertions": [
           {
             "assertion": "CP-A04 tiempo de respuesta < 1000 ms",
@@ -3582,15 +3526,15 @@
       },
       {
         "cursor": {
-          "ref": "82217d91-003d-4a52-a011-980fb41df312",
+          "ref": "03dc7654-7495-4fcc-b426-91d16d611c0f",
           "length": 9,
           "cycles": 1,
           "position": 3,
           "iteration": 0,
-          "httpRequestId": "635568a4-8a74-479b-a713-2098d359fecc"
+          "httpRequestId": "f45b6ef3-e771-40cf-8727-a5be69394056"
         },
         "item": {
-          "id": "3a5466b4-20ba-4d52-9085-60940a98849b",
+          "id": "d322b506-12da-4886-8e53-8e07e35e2aa8",
           "name": "CP-A06 POST /auth/signup vacío → 422 con todos los obligatorios",
           "request": {
             "url": {
@@ -3626,7 +3570,7 @@
             {
               "listen": "test",
               "script": {
-                "id": "c41c1ecd-ccc5-472b-af65-6dde8cbf66b8",
+                "id": "7a62a4e3-468c-4bb0-aef0-a90928fd4b16",
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('CP-A06 422 marcando email, password, nombre, apellido y especialidad', () => {",
@@ -3635,7 +3579,7 @@
                   "  ['email', 'password', 'nombre', 'apellido', 'especialidad'].forEach((c) => pm.expect(campos).to.include(c));",
                   "});"
                 ],
-                "_lastExecutionId": "289d6ca3-0f86-4f73-bdbf-df8a3b856763"
+                "_lastExecutionId": "e54bc4d7-f842-4599-b390-1f136d1aed57"
               }
             }
           ]
@@ -3677,7 +3621,7 @@
             },
             {
               "key": "Postman-Token",
-              "value": "4c2c32b0-9b0b-4137-92dc-5a6ea6ae4ca3",
+              "value": "0820104e-1638-49c9-80e7-91787d773d72",
               "system": true
             },
             {
@@ -3713,7 +3657,7 @@
           }
         },
         "response": {
-          "id": "ff7ecfcb-d002-454d-9132-a88cb2301545",
+          "id": "9904399b-0ffb-4133-98ad-fe368e862505",
           "status": "Unprocessable Entity",
           "code": 422,
           "header": [
@@ -3787,11 +3731,11 @@
             },
             {
               "key": "RateLimit-Remaining",
-              "value": "983"
+              "value": "993"
             },
             {
               "key": "RateLimit-Reset",
-              "value": "867"
+              "value": "893"
             },
             {
               "key": "X-RateLimit-Limit",
@@ -3799,15 +3743,15 @@
             },
             {
               "key": "X-RateLimit-Remaining",
-              "value": "92"
+              "value": "98"
             },
             {
               "key": "Date",
-              "value": "Tue, 27 Oct 2026 22:13:44 GMT"
+              "value": "Tue, 27 Oct 2026 23:28:03 GMT"
             },
             {
               "key": "X-RateLimit-Reset",
-              "value": "1793140096"
+              "value": "1793144584"
             },
             {
               "key": "Content-Type",
@@ -3815,11 +3759,11 @@
             },
             {
               "key": "Content-Length",
-              "value": "493"
+              "value": "306"
             },
             {
               "key": "ETag",
-              "value": "W/\"1ed-10zhxkMTXtRY1m12U/zRAQ4mzzE\""
+              "value": "W/\"132-luMC8eMfetRv7nt42mYa5L3bcbo\""
             },
             {
               "key": "Connection",
@@ -3846,18 +3790,18 @@
               91,
               123,
               34,
-              116,
-              121,
               112,
-              101,
+              97,
+              116,
+              104,
               34,
               58,
               34,
-              102,
-              105,
               101,
+              109,
+              97,
+              105,
               108,
-              100,
               34,
               44,
               34,
@@ -3890,7 +3834,9 @@
               100,
               111,
               34,
+              125,
               44,
+              123,
               34,
               112,
               97,
@@ -3899,45 +3845,13 @@
               34,
               58,
               34,
-              101,
-              109,
-              97,
-              105,
-              108,
-              34,
-              44,
-              34,
-              108,
-              111,
-              99,
-              97,
-              116,
-              105,
-              111,
-              110,
-              34,
-              58,
-              34,
-              98,
-              111,
-              100,
-              121,
-              34,
-              125,
-              44,
-              123,
-              34,
-              116,
-              121,
               112,
-              101,
-              34,
-              58,
-              34,
-              102,
-              105,
-              101,
-              108,
+              97,
+              115,
+              115,
+              119,
+              111,
+              114,
               100,
               34,
               44,
@@ -3996,7 +3910,9 @@
               101,
               115,
               34,
+              125,
               44,
+              123,
               34,
               112,
               97,
@@ -4005,60 +3921,12 @@
               34,
               58,
               34,
-              112,
-              97,
-              115,
-              115,
-              119,
-              111,
-              114,
-              100,
-              34,
-              44,
-              34,
-              108,
-              111,
-              99,
-              97,
-              116,
-              105,
-              111,
               110,
-              34,
-              58,
-              34,
-              98,
               111,
-              100,
-              121,
-              34,
-              125,
-              44,
-              123,
-              34,
-              116,
-              121,
-              112,
+              109,
+              98,
+              114,
               101,
-              34,
-              58,
-              34,
-              102,
-              105,
-              101,
-              108,
-              100,
-              34,
-              44,
-              34,
-              118,
-              97,
-              108,
-              117,
-              101,
-              34,
-              58,
-              34,
               34,
               44,
               34,
@@ -4093,7 +3961,9 @@
               105,
               111,
               34,
+              125,
               44,
+              123,
               34,
               112,
               97,
@@ -4102,58 +3972,14 @@
               34,
               58,
               34,
-              110,
-              111,
-              109,
-              98,
-              114,
-              101,
-              34,
-              44,
-              34,
-              108,
-              111,
-              99,
               97,
-              116,
-              105,
-              111,
-              110,
-              34,
-              58,
-              34,
-              98,
-              111,
-              100,
-              121,
-              34,
-              125,
-              44,
-              123,
-              34,
-              116,
-              121,
               112,
               101,
-              34,
-              58,
-              34,
-              102,
+              108,
+              108,
               105,
-              101,
-              108,
               100,
-              34,
-              44,
-              34,
-              118,
-              97,
-              108,
-              117,
-              101,
-              34,
-              58,
-              34,
+              111,
               34,
               44,
               34,
@@ -4190,7 +4016,9 @@
               105,
               111,
               34,
+              125,
               44,
+              123,
               34,
               112,
               97,
@@ -4199,48 +4027,17 @@
               34,
               58,
               34,
-              97,
+              101,
+              115,
               112,
               101,
-              108,
-              108,
-              105,
-              100,
-              111,
-              34,
-              44,
-              34,
-              108,
-              111,
               99,
+              105,
               97,
-              116,
-              105,
-              111,
-              110,
-              34,
-              58,
-              34,
-              98,
-              111,
-              100,
-              121,
-              34,
-              125,
-              44,
-              123,
-              34,
-              116,
-              121,
-              112,
-              101,
-              34,
-              58,
-              34,
-              102,
-              105,
-              101,
               108,
+              105,
+              100,
+              97,
               100,
               34,
               44,
@@ -4283,46 +4080,6 @@
               100,
               97,
               34,
-              44,
-              34,
-              112,
-              97,
-              116,
-              104,
-              34,
-              58,
-              34,
-              101,
-              115,
-              112,
-              101,
-              99,
-              105,
-              97,
-              108,
-              105,
-              100,
-              97,
-              100,
-              34,
-              44,
-              34,
-              108,
-              111,
-              99,
-              97,
-              116,
-              105,
-              111,
-              110,
-              34,
-              58,
-              34,
-              98,
-              111,
-              100,
-              121,
-              34,
               125,
               93,
               125
@@ -4330,9 +4087,9 @@
           },
           "cookie": [],
           "responseTime": 2,
-          "responseSize": 493
+          "responseSize": 306
         },
-        "id": "3a5466b4-20ba-4d52-9085-60940a98849b",
+        "id": "d322b506-12da-4886-8e53-8e07e35e2aa8",
         "assertions": [
           {
             "assertion": "CP-A06 tiempo de respuesta < 1000 ms",
@@ -4358,15 +4115,15 @@
       },
       {
         "cursor": {
-          "ref": "37b72692-465e-47aa-baf6-bac27597997a",
+          "ref": "25a0e7ad-5abb-4cc6-8aa5-da09d939776d",
           "length": 9,
           "cycles": 1,
           "position": 4,
           "iteration": 0,
-          "httpRequestId": "e4dab9f6-cc9d-40c5-b98b-df8c5dfa9421"
+          "httpRequestId": "70ac5355-31eb-4f4e-8a14-4c2c0b4662eb"
         },
         "item": {
-          "id": "558715a2-072b-4c57-81ee-3f0fcf459391",
+          "id": "96d26988-9329-43f6-b4bf-65e0ca78ccfc",
           "name": "CP-A07 POST /auth/forgot-password con email inválido → 422",
           "request": {
             "url": {
@@ -4402,12 +4159,12 @@
             {
               "listen": "test",
               "script": {
-                "id": "2451d8ef-cf33-476c-991a-8aaf3537a55c",
+                "id": "c18179be-6483-4afd-8a39-3b51da80d9df",
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('CP-A07 422 por email inválido', () => pm.response.to.have.status(422));"
                 ],
-                "_lastExecutionId": "ed0f9ca3-176c-4d1d-9d62-b70465cde8dc"
+                "_lastExecutionId": "a47e33ec-337b-4fdb-9dae-a418a3a1f917"
               }
             }
           ]
@@ -4449,7 +4206,7 @@
             },
             {
               "key": "Postman-Token",
-              "value": "d369e0c6-4b7b-43ff-af32-f99fe21689a7",
+              "value": "7e669906-2b63-4a0f-95b4-acf516a7c07c",
               "system": true
             },
             {
@@ -4485,7 +4242,7 @@
           }
         },
         "response": {
-          "id": "eaabac9b-311f-419c-aa3b-c31b0b356650",
+          "id": "b343e69d-faa1-4db2-9aba-da64544c14a7",
           "status": "Unprocessable Entity",
           "code": 422,
           "header": [
@@ -4559,11 +4316,11 @@
             },
             {
               "key": "RateLimit-Remaining",
-              "value": "982"
+              "value": "992"
             },
             {
               "key": "RateLimit-Reset",
-              "value": "867"
+              "value": "893"
             },
             {
               "key": "X-RateLimit-Limit",
@@ -4571,15 +4328,15 @@
             },
             {
               "key": "X-RateLimit-Remaining",
-              "value": "91"
+              "value": "97"
             },
             {
               "key": "Date",
-              "value": "Tue, 27 Oct 2026 22:13:44 GMT"
+              "value": "Tue, 27 Oct 2026 23:28:03 GMT"
             },
             {
               "key": "X-RateLimit-Reset",
-              "value": "1793140096"
+              "value": "1793144584"
             },
             {
               "key": "Content-Type",
@@ -4587,11 +4344,11 @@
             },
             {
               "key": "Content-Length",
-              "value": "115"
+              "value": "60"
             },
             {
               "key": "ETag",
-              "value": "W/\"73-FosocaXMF/YZOWlfdgIR2RK/3EE\""
+              "value": "W/\"3c-levVSsVc2Ha/cXqN/Of9i1xZybU\""
             },
             {
               "key": "Connection",
@@ -4618,35 +4375,13 @@
               91,
               123,
               34,
-              116,
-              121,
               112,
-              101,
-              34,
-              58,
-              34,
-              102,
-              105,
-              101,
-              108,
-              100,
-              34,
-              44,
-              34,
-              118,
               97,
-              108,
-              117,
-              101,
+              116,
+              104,
               34,
               58,
               34,
-              110,
-              111,
-              45,
-              101,
-              115,
-              45,
               101,
               109,
               97,
@@ -4684,49 +4419,16 @@
               100,
               111,
               34,
-              44,
-              34,
-              112,
-              97,
-              116,
-              104,
-              34,
-              58,
-              34,
-              101,
-              109,
-              97,
-              105,
-              108,
-              34,
-              44,
-              34,
-              108,
-              111,
-              99,
-              97,
-              116,
-              105,
-              111,
-              110,
-              34,
-              58,
-              34,
-              98,
-              111,
-              100,
-              121,
-              34,
               125,
               93,
               125
             ]
           },
           "cookie": [],
-          "responseTime": 1,
-          "responseSize": 115
+          "responseTime": 2,
+          "responseSize": 60
         },
-        "id": "558715a2-072b-4c57-81ee-3f0fcf459391",
+        "id": "96d26988-9329-43f6-b4bf-65e0ca78ccfc",
         "assertions": [
           {
             "assertion": "CP-A07 tiempo de respuesta < 1000 ms",
@@ -4752,15 +4454,15 @@
       },
       {
         "cursor": {
-          "ref": "9b8d1168-8148-4146-9976-874cf6fc3131",
+          "ref": "58ef6412-d29c-4f17-9b1e-2b7564e8b3ba",
           "length": 9,
           "cycles": 1,
           "position": 5,
           "iteration": 0,
-          "httpRequestId": "b502f41f-e2dc-4700-be79-e0bf15125344"
+          "httpRequestId": "4a6404fc-018d-4b5d-8e1e-f8494fb7c27b"
         },
         "item": {
-          "id": "84863f4e-2643-4212-ada6-e7578ad29f4e",
+          "id": "6f7d95e9-183f-4648-a601-64564e20c9f0",
           "name": "CP-A09 GET /auth/me sin token → 401",
           "request": {
             "url": {
@@ -4787,7 +4489,7 @@
             {
               "listen": "test",
               "script": {
-                "id": "374b7b38-b0fd-4ddf-93fb-47db3d43f003",
+                "id": "ba9e8ef6-d630-4e6a-bba5-e513d335f954",
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('CP-A09 401 { error: \"Token requerido\" }', () => {",
@@ -4795,7 +4497,7 @@
                   "  pm.expect(pm.response.json()).to.eql({ error: 'Token requerido' });",
                   "});"
                 ],
-                "_lastExecutionId": "c154fb53-9edd-4bf3-b0d4-99f9e6962a7e"
+                "_lastExecutionId": "bd6c777b-d4fe-43b2-8686-e9c8fa43d5c2"
               }
             }
           ]
@@ -4837,7 +4539,7 @@
             },
             {
               "key": "Postman-Token",
-              "value": "bfb81fdc-0321-4629-9118-c03c9f34acdf",
+              "value": "d4643350-9d61-4f66-be69-b19867248e74",
               "system": true
             },
             {
@@ -4859,7 +4561,7 @@
           "method": "GET"
         },
         "response": {
-          "id": "34b87062-f150-493a-9ab4-00706451e650",
+          "id": "d888d426-fa63-4b4e-a21e-e2820b6ca388",
           "status": "Unauthorized",
           "code": 401,
           "header": [
@@ -4933,11 +4635,11 @@
             },
             {
               "key": "RateLimit-Remaining",
-              "value": "981"
+              "value": "991"
             },
             {
               "key": "RateLimit-Reset",
-              "value": "867"
+              "value": "893"
             },
             {
               "key": "X-RateLimit-Limit",
@@ -4945,15 +4647,15 @@
             },
             {
               "key": "X-RateLimit-Remaining",
-              "value": "90"
+              "value": "96"
             },
             {
               "key": "Date",
-              "value": "Tue, 27 Oct 2026 22:13:44 GMT"
+              "value": "Tue, 27 Oct 2026 23:28:03 GMT"
             },
             {
               "key": "X-RateLimit-Reset",
-              "value": "1793140096"
+              "value": "1793144584"
             },
             {
               "key": "Content-Type",
@@ -5012,7 +4714,7 @@
           "responseTime": 1,
           "responseSize": 27
         },
-        "id": "84863f4e-2643-4212-ada6-e7578ad29f4e",
+        "id": "6f7d95e9-183f-4648-a601-64564e20c9f0",
         "assertions": [
           {
             "assertion": "CP-A09 tiempo de respuesta < 1000 ms",
@@ -5038,15 +4740,15 @@
       },
       {
         "cursor": {
-          "ref": "601d9807-e23c-4793-8c88-ba68743b9aea",
+          "ref": "97cb24be-1386-416c-9579-0f1516527a67",
           "length": 9,
           "cycles": 1,
           "position": 6,
           "iteration": 0,
-          "httpRequestId": "a19d3260-c6ff-4945-ab2f-301c727d07ff"
+          "httpRequestId": "4b88dd33-288d-4ce6-b5ec-7e3a4977cc1e"
         },
         "item": {
-          "id": "918c1ce8-4c1d-4b29-9f3d-c98ee2cfc0e2",
+          "id": "7228ce9d-9e61-4191-9922-b8f0527cb360",
           "name": "CP-A10 GET /pacientes con esquema Basic → 401",
           "request": {
             "url": {
@@ -5076,12 +4778,12 @@
             {
               "listen": "test",
               "script": {
-                "id": "af5e32d6-5f0e-43f6-9e46-fbd0f3b40d60",
+                "id": "558265c1-1149-445a-a3ef-c138b56efaab",
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('CP-A10 401 con un header que no es Bearer', () => pm.response.to.have.status(401));"
                 ],
-                "_lastExecutionId": "574528e9-b80b-4c98-a5b3-93abb099e21a"
+                "_lastExecutionId": "36e69d9a-948d-443a-9b0b-2ce8e95b18ff"
               }
             }
           ]
@@ -5126,7 +4828,7 @@
             },
             {
               "key": "Postman-Token",
-              "value": "daf1ee30-52c7-4e8d-99d1-1bd3c6ebaf79",
+              "value": "c036f000-8062-4456-8e2d-b33131e25cc4",
               "system": true
             },
             {
@@ -5148,7 +4850,7 @@
           "method": "GET"
         },
         "response": {
-          "id": "5238f802-c157-4b84-8fb3-b1822b6f180d",
+          "id": "8d4d2c71-3ebd-439a-adb9-7ec0a3609e7d",
           "status": "Unauthorized",
           "code": 401,
           "header": [
@@ -5222,11 +4924,11 @@
             },
             {
               "key": "RateLimit-Remaining",
-              "value": "980"
+              "value": "990"
             },
             {
               "key": "RateLimit-Reset",
-              "value": "867"
+              "value": "893"
             },
             {
               "key": "Content-Type",
@@ -5242,7 +4944,7 @@
             },
             {
               "key": "Date",
-              "value": "Tue, 27 Oct 2026 22:13:44 GMT"
+              "value": "Tue, 27 Oct 2026 23:28:03 GMT"
             },
             {
               "key": "Connection",
@@ -5286,10 +4988,10 @@
             ]
           },
           "cookie": [],
-          "responseTime": 1,
+          "responseTime": 2,
           "responseSize": 27
         },
-        "id": "918c1ce8-4c1d-4b29-9f3d-c98ee2cfc0e2",
+        "id": "7228ce9d-9e61-4191-9922-b8f0527cb360",
         "assertions": [
           {
             "assertion": "CP-A10 tiempo de respuesta < 1000 ms",
@@ -5315,15 +5017,15 @@
       },
       {
         "cursor": {
-          "ref": "d80ba381-0923-47cd-bc37-937a41b70e34",
+          "ref": "02b8ca07-fcc8-4609-8f45-f3d754120823",
           "length": 9,
           "cycles": 1,
           "position": 7,
           "iteration": 0,
-          "httpRequestId": "25be76ec-14da-4596-a116-c020b4e74cb2"
+          "httpRequestId": "b8a75ea8-5f31-4b22-9077-ad7d53c868cd"
         },
         "item": {
-          "id": "04f1dba2-0baa-4b4e-897c-cc3281ebe553",
+          "id": "b654fde2-5717-4549-b732-a42262d107da",
           "name": "CP-A42 POST /auth/signup con contraseña corta → 422 sin devolverla",
           "request": {
             "url": {
@@ -5359,17 +5061,16 @@
             {
               "listen": "test",
               "script": {
-                "id": "2b83af90-51a1-492a-a7f3-4ccd7a9c1f1a",
+                "id": "0cc70ea8-fabb-42de-aa4c-d31e0e72d35c",
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('CP-A42 422 en password', () => {",
                   "  pm.response.to.have.status(422);",
                   "  pm.expect(pm.response.json().errors.map((e) => e.path)).to.include('password');",
                   "});",
-                  "// DEF-A21: express-validator incluye el \"value\" enviado en cada error, contraseña incluida.",
                   "pm.test('CP-A42 el error no repite la contraseña enviada', () => pm.expect(pm.response.text()).to.not.include('ZZclave'));"
                 ],
-                "_lastExecutionId": "30201134-412f-40ac-bf85-2be59ed1f63a"
+                "_lastExecutionId": "2bb51d34-bd6e-492e-8be1-d7dbaa1915a7"
               }
             }
           ]
@@ -5411,7 +5112,7 @@
             },
             {
               "key": "Postman-Token",
-              "value": "c1562896-3b8d-459d-bf1d-2b109cd1c420",
+              "value": "d24a4c5d-f932-4f84-babe-7da4b4030967",
               "system": true
             },
             {
@@ -5447,7 +5148,7 @@
           }
         },
         "response": {
-          "id": "bdf5a13a-f42a-4bf0-b7f4-6d97ea4d046c",
+          "id": "317cd565-2a80-4952-9c92-57ce99710f63",
           "status": "Unprocessable Entity",
           "code": 422,
           "header": [
@@ -5521,11 +5222,11 @@
             },
             {
               "key": "RateLimit-Remaining",
-              "value": "979"
+              "value": "989"
             },
             {
               "key": "RateLimit-Reset",
-              "value": "867"
+              "value": "893"
             },
             {
               "key": "X-RateLimit-Limit",
@@ -5533,15 +5234,15 @@
             },
             {
               "key": "X-RateLimit-Remaining",
-              "value": "89"
+              "value": "95"
             },
             {
               "key": "Date",
-              "value": "Tue, 27 Oct 2026 22:13:44 GMT"
+              "value": "Tue, 27 Oct 2026 23:28:03 GMT"
             },
             {
               "key": "X-RateLimit-Reset",
-              "value": "1793140096"
+              "value": "1793144584"
             },
             {
               "key": "Content-Type",
@@ -5549,11 +5250,11 @@
             },
             {
               "key": "Content-Length",
-              "value": "139"
+              "value": "88"
             },
             {
               "key": "ETag",
-              "value": "W/\"8b-dOilqikYhiXxXLxlZO1u/O0a09Q\""
+              "value": "W/\"58-JOZUfl4sOAJKog/b0AnWon86hT4\""
             },
             {
               "key": "Connection",
@@ -5580,36 +5281,21 @@
               91,
               123,
               34,
-              116,
-              121,
               112,
-              101,
+              97,
+              116,
+              104,
               34,
               58,
               34,
-              102,
-              105,
-              101,
-              108,
+              112,
+              97,
+              115,
+              115,
+              119,
+              111,
+              114,
               100,
-              34,
-              44,
-              34,
-              118,
-              97,
-              108,
-              117,
-              101,
-              34,
-              58,
-              34,
-              90,
-              90,
-              99,
-              108,
-              97,
-              118,
-              101,
               34,
               44,
               34,
@@ -5667,42 +5353,6 @@
               101,
               115,
               34,
-              44,
-              34,
-              112,
-              97,
-              116,
-              104,
-              34,
-              58,
-              34,
-              112,
-              97,
-              115,
-              115,
-              119,
-              111,
-              114,
-              100,
-              34,
-              44,
-              34,
-              108,
-              111,
-              99,
-              97,
-              116,
-              105,
-              111,
-              110,
-              34,
-              58,
-              34,
-              98,
-              111,
-              100,
-              121,
-              34,
               125,
               93,
               125
@@ -5710,9 +5360,9 @@
           },
           "cookie": [],
           "responseTime": 2,
-          "responseSize": 139
+          "responseSize": 88
         },
-        "id": "04f1dba2-0baa-4b4e-897c-cc3281ebe553",
+        "id": "b654fde2-5717-4549-b732-a42262d107da",
         "assertions": [
           {
             "assertion": "CP-A42 tiempo de respuesta < 1000 ms",
@@ -5736,28 +5386,21 @@
           },
           {
             "assertion": "CP-A42 el error no repite la contraseña enviada",
-            "skipped": false,
-            "error": {
-              "name": "AssertionError",
-              "index": 1,
-              "test": "CP-A42 el error no repite la contraseña enviada",
-              "message": "expected '{\"errors\":[{\"type\":\"field\",\"value\":\"Z…' to not include 'ZZclave'",
-              "stack": "AssertionError: expected '{\"errors\":[{\"type\":\"field\",\"value\":\"Z…' to not include 'ZZclave'\n   at Object.eval sandbox-script.js:2:8)"
-            }
+            "skipped": false
           }
         ]
       },
       {
         "cursor": {
-          "ref": "6ab79195-7ee0-41d6-91d7-a2d9a4553f2c",
+          "ref": "24760601-a5c2-4f47-b1d4-ca3b7eaffd3f",
           "length": 9,
           "cycles": 1,
           "position": 8,
           "iteration": 0,
-          "httpRequestId": "bacb1204-e3c4-4b7f-a5c4-a30db1806c3b"
+          "httpRequestId": "3c5f04e1-0625-4386-83ba-b38eeafe56f4"
         },
         "item": {
-          "id": "004fc5be-e7a4-4a10-9b07-3d4887ad277b",
+          "id": "613ff83c-b675-4edb-9fc0-15c18caab112",
           "name": "CP-A37 GET ruta inexistente → 404",
           "request": {
             "url": {
@@ -5783,7 +5426,7 @@
             {
               "listen": "test",
               "script": {
-                "id": "b4e6e8c0-86af-4fde-9d38-01413b251cac",
+                "id": "c1b65dbf-7914-4f94-a2cb-032e408f8833",
                 "type": "text/javascript",
                 "exec": [
                   "pm.test('CP-A37 404 { error: \"Ruta no encontrada\" }', () => {",
@@ -5791,7 +5434,7 @@
                   "  pm.expect(pm.response.json()).to.eql({ error: 'Ruta no encontrada' });",
                   "});"
                 ],
-                "_lastExecutionId": "3b27e540-cce8-4940-a98f-fa5866b8808d"
+                "_lastExecutionId": "e092acb4-0df1-46a3-95e5-231f629107f9"
               }
             }
           ]
@@ -5832,7 +5475,7 @@
             },
             {
               "key": "Postman-Token",
-              "value": "e5140214-c241-4044-83e9-91b8a2a27151",
+              "value": "08875069-06ca-438a-8426-03b6189814ef",
               "system": true
             },
             {
@@ -5854,7 +5497,7 @@
           "method": "GET"
         },
         "response": {
-          "id": "5228a017-ad0c-427e-b00a-61cfe2186ff1",
+          "id": "4c167958-a39d-4b49-99e2-16097104d195",
           "status": "Not Found",
           "code": 404,
           "header": [
@@ -5928,11 +5571,11 @@
             },
             {
               "key": "RateLimit-Remaining",
-              "value": "978"
+              "value": "988"
             },
             {
               "key": "RateLimit-Reset",
-              "value": "867"
+              "value": "893"
             },
             {
               "key": "Content-Type",
@@ -5948,7 +5591,7 @@
             },
             {
               "key": "Date",
-              "value": "Tue, 27 Oct 2026 22:13:44 GMT"
+              "value": "Tue, 27 Oct 2026 23:28:03 GMT"
             },
             {
               "key": "Connection",
@@ -5995,10 +5638,10 @@
             ]
           },
           "cookie": [],
-          "responseTime": 3,
+          "responseTime": 2,
           "responseSize": 30
         },
-        "id": "004fc5be-e7a4-4a10-9b07-3d4887ad277b",
+        "id": "613ff83c-b675-4edb-9fc0-15c18caab112",
         "assertions": [
           {
             "assertion": "CP-A37 tiempo de respuesta < 1000 ms",
@@ -6024,7 +5667,7 @@
       }
     ],
     "transfers": {
-      "responseTotal": 1037
+      "responseTotal": 690
     },
     "failures": [
       {
@@ -6035,8 +5678,8 @@
           "message": "expected 500 to not be one of [ 500, 502, 503, 504 ]",
           "stack": "AssertionError: expected 500 to not be one of [ 500, 502, 503, 504 ]\n   at Object.eval sandbox-script.js:2:3)",
           "checksum": "88f41a25046f41621c1cdf83f1e10292",
-          "id": "0709a4e3-e528-4e2a-82ef-87cad5317163",
-          "timestamp": 1793139224073,
+          "id": "bd81c19e-0285-4e65-b127-39c9331a7ba9",
+          "timestamp": 1793143683201,
           "stacktrace": [
             {
               "fileName": "sandbox-script.js",
@@ -6051,7 +5694,7 @@
         },
         "at": "assertion:1 in test-script",
         "source": {
-          "id": "05d597a0-3ccc-49d8-b8a5-8255a470ec1a",
+          "id": "760afb61-07ee-4885-bdbb-83bdf73577e4",
           "name": "CP-A04 POST /auth/login con JSON mal formado → 400",
           "request": {
             "url": {
@@ -6087,7 +5730,7 @@
             {
               "listen": "test",
               "script": {
-                "id": "090016ff-b69b-43a8-ada9-623afc1528fa",
+                "id": "792bd069-084e-4952-97ab-50263df47b33",
                 "type": "text/javascript",
                 "exec": [
                   "// DEF-A06: hoy responde 500 \"Error interno del servidor\".",
@@ -6095,13 +5738,13 @@
                   "  pm.response.to.have.status(400);",
                   "});"
                 ],
-                "_lastExecutionId": "fb34d111-10c0-47d2-9813-4d11cc668b6f"
+                "_lastExecutionId": "86235e98-19da-4fe5-baec-7bf62d96e9a4"
               }
             }
           ]
         },
         "parent": {
-          "id": "cc0d38fc-e8c6-430d-aac0-0a2f2fad6043",
+          "id": "52ae45d4-0652-4a91-b924-d26aeb3f5750",
           "name": "1. Sin credenciales (no llegan a Supabase)",
           "description": {
             "content": "Se cortan antes de cualquier consulta a Supabase u OpenRouter: se pueden correr contra un server local con claves falsas.",
@@ -6109,7 +5752,7 @@
           },
           "item": [
             {
-              "id": "2956ded6-d44a-4864-a600-6c176a1ea7cb",
+              "id": "c76408ad-e115-4319-8498-d0273634ca32",
               "name": "CP-A01 GET /health responde ok",
               "request": {
                 "url": {
@@ -6135,7 +5778,7 @@
                 {
                   "listen": "test",
                   "script": {
-                    "id": "d116497d-6142-4327-9a64-7832660d41b9",
+                    "id": "d530b073-d1d6-4dcb-b2dc-0540bbe5d850",
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('CP-A01 200 con status ok y timestamp ISO', () => {",
@@ -6146,13 +5789,13 @@
                       "  pm.expect(Object.keys(b).sort()).to.eql(['status', 'timestamp']);",
                       "});"
                     ],
-                    "_lastExecutionId": "6f31dc3c-51c8-484e-a950-0b61c5b34fc5"
+                    "_lastExecutionId": "160b4db4-f3d0-45d6-907c-eaf81ebb2de6"
                   }
                 }
               ]
             },
             {
-              "id": "e75a5de9-12cf-4dc8-b33b-b6eb969f93f7",
+              "id": "3f01d841-e611-4f59-be5f-f64c32446272",
               "name": "CP-A03 POST /auth/login con email inválido → 422",
               "request": {
                 "url": {
@@ -6188,7 +5831,7 @@
                 {
                   "listen": "test",
                   "script": {
-                    "id": "9fd78c1d-e81e-4127-9c8a-4ad135377bb4",
+                    "id": "79c8112f-3246-4f4d-82d9-9e9ffd124d6c",
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('CP-A03 422 con el campo y un mensaje legible', () => {",
@@ -6199,13 +5842,13 @@
                       "  pm.expect(e[0].msg).to.eql('El email no es válido');",
                       "});"
                     ],
-                    "_lastExecutionId": "1c5e59f2-df53-4089-abab-13c96dff5af3"
+                    "_lastExecutionId": "5136ad8b-908c-480d-8154-c1ec5f1d9f84"
                   }
                 }
               ]
             },
             {
-              "id": "05d597a0-3ccc-49d8-b8a5-8255a470ec1a",
+              "id": "760afb61-07ee-4885-bdbb-83bdf73577e4",
               "name": "CP-A04 POST /auth/login con JSON mal formado → 400",
               "request": {
                 "url": {
@@ -6241,7 +5884,7 @@
                 {
                   "listen": "test",
                   "script": {
-                    "id": "090016ff-b69b-43a8-ada9-623afc1528fa",
+                    "id": "792bd069-084e-4952-97ab-50263df47b33",
                     "type": "text/javascript",
                     "exec": [
                       "// DEF-A06: hoy responde 500 \"Error interno del servidor\".",
@@ -6249,13 +5892,13 @@
                       "  pm.response.to.have.status(400);",
                       "});"
                     ],
-                    "_lastExecutionId": "fb34d111-10c0-47d2-9813-4d11cc668b6f"
+                    "_lastExecutionId": "86235e98-19da-4fe5-baec-7bf62d96e9a4"
                   }
                 }
               ]
             },
             {
-              "id": "3a5466b4-20ba-4d52-9085-60940a98849b",
+              "id": "d322b506-12da-4886-8e53-8e07e35e2aa8",
               "name": "CP-A06 POST /auth/signup vacío → 422 con todos los obligatorios",
               "request": {
                 "url": {
@@ -6291,7 +5934,7 @@
                 {
                   "listen": "test",
                   "script": {
-                    "id": "c41c1ecd-ccc5-472b-af65-6dde8cbf66b8",
+                    "id": "7a62a4e3-468c-4bb0-aef0-a90928fd4b16",
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('CP-A06 422 marcando email, password, nombre, apellido y especialidad', () => {",
@@ -6300,13 +5943,13 @@
                       "  ['email', 'password', 'nombre', 'apellido', 'especialidad'].forEach((c) => pm.expect(campos).to.include(c));",
                       "});"
                     ],
-                    "_lastExecutionId": "289d6ca3-0f86-4f73-bdbf-df8a3b856763"
+                    "_lastExecutionId": "e54bc4d7-f842-4599-b390-1f136d1aed57"
                   }
                 }
               ]
             },
             {
-              "id": "558715a2-072b-4c57-81ee-3f0fcf459391",
+              "id": "96d26988-9329-43f6-b4bf-65e0ca78ccfc",
               "name": "CP-A07 POST /auth/forgot-password con email inválido → 422",
               "request": {
                 "url": {
@@ -6342,18 +5985,18 @@
                 {
                   "listen": "test",
                   "script": {
-                    "id": "2451d8ef-cf33-476c-991a-8aaf3537a55c",
+                    "id": "c18179be-6483-4afd-8a39-3b51da80d9df",
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('CP-A07 422 por email inválido', () => pm.response.to.have.status(422));"
                     ],
-                    "_lastExecutionId": "ed0f9ca3-176c-4d1d-9d62-b70465cde8dc"
+                    "_lastExecutionId": "a47e33ec-337b-4fdb-9dae-a418a3a1f917"
                   }
                 }
               ]
             },
             {
-              "id": "84863f4e-2643-4212-ada6-e7578ad29f4e",
+              "id": "6f7d95e9-183f-4648-a601-64564e20c9f0",
               "name": "CP-A09 GET /auth/me sin token → 401",
               "request": {
                 "url": {
@@ -6380,7 +6023,7 @@
                 {
                   "listen": "test",
                   "script": {
-                    "id": "374b7b38-b0fd-4ddf-93fb-47db3d43f003",
+                    "id": "ba9e8ef6-d630-4e6a-bba5-e513d335f954",
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('CP-A09 401 { error: \"Token requerido\" }', () => {",
@@ -6388,13 +6031,13 @@
                       "  pm.expect(pm.response.json()).to.eql({ error: 'Token requerido' });",
                       "});"
                     ],
-                    "_lastExecutionId": "c154fb53-9edd-4bf3-b0d4-99f9e6962a7e"
+                    "_lastExecutionId": "bd6c777b-d4fe-43b2-8686-e9c8fa43d5c2"
                   }
                 }
               ]
             },
             {
-              "id": "918c1ce8-4c1d-4b29-9f3d-c98ee2cfc0e2",
+              "id": "7228ce9d-9e61-4191-9922-b8f0527cb360",
               "name": "CP-A10 GET /pacientes con esquema Basic → 401",
               "request": {
                 "url": {
@@ -6424,18 +6067,18 @@
                 {
                   "listen": "test",
                   "script": {
-                    "id": "af5e32d6-5f0e-43f6-9e46-fbd0f3b40d60",
+                    "id": "558265c1-1149-445a-a3ef-c138b56efaab",
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('CP-A10 401 con un header que no es Bearer', () => pm.response.to.have.status(401));"
                     ],
-                    "_lastExecutionId": "574528e9-b80b-4c98-a5b3-93abb099e21a"
+                    "_lastExecutionId": "36e69d9a-948d-443a-9b0b-2ce8e95b18ff"
                   }
                 }
               ]
             },
             {
-              "id": "04f1dba2-0baa-4b4e-897c-cc3281ebe553",
+              "id": "b654fde2-5717-4549-b732-a42262d107da",
               "name": "CP-A42 POST /auth/signup con contraseña corta → 422 sin devolverla",
               "request": {
                 "url": {
@@ -6471,23 +6114,22 @@
                 {
                   "listen": "test",
                   "script": {
-                    "id": "2b83af90-51a1-492a-a7f3-4ccd7a9c1f1a",
+                    "id": "0cc70ea8-fabb-42de-aa4c-d31e0e72d35c",
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('CP-A42 422 en password', () => {",
                       "  pm.response.to.have.status(422);",
                       "  pm.expect(pm.response.json().errors.map((e) => e.path)).to.include('password');",
                       "});",
-                      "// DEF-A21: express-validator incluye el \"value\" enviado en cada error, contraseña incluida.",
                       "pm.test('CP-A42 el error no repite la contraseña enviada', () => pm.expect(pm.response.text()).to.not.include('ZZclave'));"
                     ],
-                    "_lastExecutionId": "30201134-412f-40ac-bf85-2be59ed1f63a"
+                    "_lastExecutionId": "2bb51d34-bd6e-492e-8be1-d7dbaa1915a7"
                   }
                 }
               ]
             },
             {
-              "id": "004fc5be-e7a4-4a10-9b07-3d4887ad277b",
+              "id": "613ff83c-b675-4edb-9fc0-15c18caab112",
               "name": "CP-A37 GET ruta inexistente → 404",
               "request": {
                 "url": {
@@ -6513,7 +6155,7 @@
                 {
                   "listen": "test",
                   "script": {
-                    "id": "b4e6e8c0-86af-4fde-9d38-01413b251cac",
+                    "id": "c1b65dbf-7914-4f94-a2cb-032e408f8833",
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('CP-A37 404 { error: \"Ruta no encontrada\" }', () => {",
@@ -6521,7 +6163,7 @@
                       "  pm.expect(pm.response.json()).to.eql({ error: 'Ruta no encontrada' });",
                       "});"
                     ],
-                    "_lastExecutionId": "3b27e540-cce8-4940-a98f-fa5866b8808d"
+                    "_lastExecutionId": "e092acb4-0df1-46a3-95e5-231f629107f9"
                   }
                 }
               ]
@@ -6530,14 +6172,14 @@
           "event": []
         },
         "cursor": {
-          "ref": "143bd448-614b-49e7-845e-f1ce7fdf0343",
+          "ref": "033f5dff-c443-482c-9d64-05c498982014",
           "length": 9,
           "cycles": 1,
           "position": 2,
           "iteration": 0,
-          "httpRequestId": "1226e572-7402-4ccf-b605-48fdc30838e0",
-          "scriptId": "043784ca-7048-443c-be5f-9b91429a0306",
-          "execution": "3c41acbf-f6a6-4690-bacf-5cc4cbe19987"
+          "httpRequestId": "2ee7e165-7903-434d-8759-beb6e59ff52d",
+          "scriptId": "8f2cc130-cfb0-44b5-89ec-27451eeb9670",
+          "execution": "28aa70f8-19ef-4ad9-876d-a1825d4ef398"
         }
       },
       {
@@ -6548,8 +6190,8 @@
           "message": "expected response to have status code 400 but got 500",
           "stack": "AssertionError: expected response to have status code 400 but got 500\n   at Object.eval sandbox-script.js:1:3)",
           "checksum": "602fdf6b554eae3d83c3e521b6f77f87",
-          "id": "632e9aa2-fca4-40a1-bc5d-b5d5e2297874",
-          "timestamp": 1793139224077,
+          "id": "a9b45edf-93c7-4940-a16a-371c758407e2",
+          "timestamp": 1793143683205,
           "stacktrace": [
             {
               "fileName": "sandbox-script.js",
@@ -6564,7 +6206,7 @@
         },
         "at": "assertion:0 in test-script",
         "source": {
-          "id": "05d597a0-3ccc-49d8-b8a5-8255a470ec1a",
+          "id": "760afb61-07ee-4885-bdbb-83bdf73577e4",
           "name": "CP-A04 POST /auth/login con JSON mal formado → 400",
           "request": {
             "url": {
@@ -6600,7 +6242,7 @@
             {
               "listen": "test",
               "script": {
-                "id": "090016ff-b69b-43a8-ada9-623afc1528fa",
+                "id": "792bd069-084e-4952-97ab-50263df47b33",
                 "type": "text/javascript",
                 "exec": [
                   "// DEF-A06: hoy responde 500 \"Error interno del servidor\".",
@@ -6608,13 +6250,13 @@
                   "  pm.response.to.have.status(400);",
                   "});"
                 ],
-                "_lastExecutionId": "fb34d111-10c0-47d2-9813-4d11cc668b6f"
+                "_lastExecutionId": "86235e98-19da-4fe5-baec-7bf62d96e9a4"
               }
             }
           ]
         },
         "parent": {
-          "id": "cc0d38fc-e8c6-430d-aac0-0a2f2fad6043",
+          "id": "52ae45d4-0652-4a91-b924-d26aeb3f5750",
           "name": "1. Sin credenciales (no llegan a Supabase)",
           "description": {
             "content": "Se cortan antes de cualquier consulta a Supabase u OpenRouter: se pueden correr contra un server local con claves falsas.",
@@ -6622,7 +6264,7 @@
           },
           "item": [
             {
-              "id": "2956ded6-d44a-4864-a600-6c176a1ea7cb",
+              "id": "c76408ad-e115-4319-8498-d0273634ca32",
               "name": "CP-A01 GET /health responde ok",
               "request": {
                 "url": {
@@ -6648,7 +6290,7 @@
                 {
                   "listen": "test",
                   "script": {
-                    "id": "d116497d-6142-4327-9a64-7832660d41b9",
+                    "id": "d530b073-d1d6-4dcb-b2dc-0540bbe5d850",
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('CP-A01 200 con status ok y timestamp ISO', () => {",
@@ -6659,13 +6301,13 @@
                       "  pm.expect(Object.keys(b).sort()).to.eql(['status', 'timestamp']);",
                       "});"
                     ],
-                    "_lastExecutionId": "6f31dc3c-51c8-484e-a950-0b61c5b34fc5"
+                    "_lastExecutionId": "160b4db4-f3d0-45d6-907c-eaf81ebb2de6"
                   }
                 }
               ]
             },
             {
-              "id": "e75a5de9-12cf-4dc8-b33b-b6eb969f93f7",
+              "id": "3f01d841-e611-4f59-be5f-f64c32446272",
               "name": "CP-A03 POST /auth/login con email inválido → 422",
               "request": {
                 "url": {
@@ -6701,7 +6343,7 @@
                 {
                   "listen": "test",
                   "script": {
-                    "id": "9fd78c1d-e81e-4127-9c8a-4ad135377bb4",
+                    "id": "79c8112f-3246-4f4d-82d9-9e9ffd124d6c",
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('CP-A03 422 con el campo y un mensaje legible', () => {",
@@ -6712,13 +6354,13 @@
                       "  pm.expect(e[0].msg).to.eql('El email no es válido');",
                       "});"
                     ],
-                    "_lastExecutionId": "1c5e59f2-df53-4089-abab-13c96dff5af3"
+                    "_lastExecutionId": "5136ad8b-908c-480d-8154-c1ec5f1d9f84"
                   }
                 }
               ]
             },
             {
-              "id": "05d597a0-3ccc-49d8-b8a5-8255a470ec1a",
+              "id": "760afb61-07ee-4885-bdbb-83bdf73577e4",
               "name": "CP-A04 POST /auth/login con JSON mal formado → 400",
               "request": {
                 "url": {
@@ -6754,7 +6396,7 @@
                 {
                   "listen": "test",
                   "script": {
-                    "id": "090016ff-b69b-43a8-ada9-623afc1528fa",
+                    "id": "792bd069-084e-4952-97ab-50263df47b33",
                     "type": "text/javascript",
                     "exec": [
                       "// DEF-A06: hoy responde 500 \"Error interno del servidor\".",
@@ -6762,13 +6404,13 @@
                       "  pm.response.to.have.status(400);",
                       "});"
                     ],
-                    "_lastExecutionId": "fb34d111-10c0-47d2-9813-4d11cc668b6f"
+                    "_lastExecutionId": "86235e98-19da-4fe5-baec-7bf62d96e9a4"
                   }
                 }
               ]
             },
             {
-              "id": "3a5466b4-20ba-4d52-9085-60940a98849b",
+              "id": "d322b506-12da-4886-8e53-8e07e35e2aa8",
               "name": "CP-A06 POST /auth/signup vacío → 422 con todos los obligatorios",
               "request": {
                 "url": {
@@ -6804,7 +6446,7 @@
                 {
                   "listen": "test",
                   "script": {
-                    "id": "c41c1ecd-ccc5-472b-af65-6dde8cbf66b8",
+                    "id": "7a62a4e3-468c-4bb0-aef0-a90928fd4b16",
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('CP-A06 422 marcando email, password, nombre, apellido y especialidad', () => {",
@@ -6813,13 +6455,13 @@
                       "  ['email', 'password', 'nombre', 'apellido', 'especialidad'].forEach((c) => pm.expect(campos).to.include(c));",
                       "});"
                     ],
-                    "_lastExecutionId": "289d6ca3-0f86-4f73-bdbf-df8a3b856763"
+                    "_lastExecutionId": "e54bc4d7-f842-4599-b390-1f136d1aed57"
                   }
                 }
               ]
             },
             {
-              "id": "558715a2-072b-4c57-81ee-3f0fcf459391",
+              "id": "96d26988-9329-43f6-b4bf-65e0ca78ccfc",
               "name": "CP-A07 POST /auth/forgot-password con email inválido → 422",
               "request": {
                 "url": {
@@ -6855,18 +6497,18 @@
                 {
                   "listen": "test",
                   "script": {
-                    "id": "2451d8ef-cf33-476c-991a-8aaf3537a55c",
+                    "id": "c18179be-6483-4afd-8a39-3b51da80d9df",
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('CP-A07 422 por email inválido', () => pm.response.to.have.status(422));"
                     ],
-                    "_lastExecutionId": "ed0f9ca3-176c-4d1d-9d62-b70465cde8dc"
+                    "_lastExecutionId": "a47e33ec-337b-4fdb-9dae-a418a3a1f917"
                   }
                 }
               ]
             },
             {
-              "id": "84863f4e-2643-4212-ada6-e7578ad29f4e",
+              "id": "6f7d95e9-183f-4648-a601-64564e20c9f0",
               "name": "CP-A09 GET /auth/me sin token → 401",
               "request": {
                 "url": {
@@ -6893,7 +6535,7 @@
                 {
                   "listen": "test",
                   "script": {
-                    "id": "374b7b38-b0fd-4ddf-93fb-47db3d43f003",
+                    "id": "ba9e8ef6-d630-4e6a-bba5-e513d335f954",
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('CP-A09 401 { error: \"Token requerido\" }', () => {",
@@ -6901,13 +6543,13 @@
                       "  pm.expect(pm.response.json()).to.eql({ error: 'Token requerido' });",
                       "});"
                     ],
-                    "_lastExecutionId": "c154fb53-9edd-4bf3-b0d4-99f9e6962a7e"
+                    "_lastExecutionId": "bd6c777b-d4fe-43b2-8686-e9c8fa43d5c2"
                   }
                 }
               ]
             },
             {
-              "id": "918c1ce8-4c1d-4b29-9f3d-c98ee2cfc0e2",
+              "id": "7228ce9d-9e61-4191-9922-b8f0527cb360",
               "name": "CP-A10 GET /pacientes con esquema Basic → 401",
               "request": {
                 "url": {
@@ -6937,18 +6579,18 @@
                 {
                   "listen": "test",
                   "script": {
-                    "id": "af5e32d6-5f0e-43f6-9e46-fbd0f3b40d60",
+                    "id": "558265c1-1149-445a-a3ef-c138b56efaab",
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('CP-A10 401 con un header que no es Bearer', () => pm.response.to.have.status(401));"
                     ],
-                    "_lastExecutionId": "574528e9-b80b-4c98-a5b3-93abb099e21a"
+                    "_lastExecutionId": "36e69d9a-948d-443a-9b0b-2ce8e95b18ff"
                   }
                 }
               ]
             },
             {
-              "id": "04f1dba2-0baa-4b4e-897c-cc3281ebe553",
+              "id": "b654fde2-5717-4549-b732-a42262d107da",
               "name": "CP-A42 POST /auth/signup con contraseña corta → 422 sin devolverla",
               "request": {
                 "url": {
@@ -6984,23 +6626,22 @@
                 {
                   "listen": "test",
                   "script": {
-                    "id": "2b83af90-51a1-492a-a7f3-4ccd7a9c1f1a",
+                    "id": "0cc70ea8-fabb-42de-aa4c-d31e0e72d35c",
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('CP-A42 422 en password', () => {",
                       "  pm.response.to.have.status(422);",
                       "  pm.expect(pm.response.json().errors.map((e) => e.path)).to.include('password');",
                       "});",
-                      "// DEF-A21: express-validator incluye el \"value\" enviado en cada error, contraseña incluida.",
                       "pm.test('CP-A42 el error no repite la contraseña enviada', () => pm.expect(pm.response.text()).to.not.include('ZZclave'));"
                     ],
-                    "_lastExecutionId": "30201134-412f-40ac-bf85-2be59ed1f63a"
+                    "_lastExecutionId": "2bb51d34-bd6e-492e-8be1-d7dbaa1915a7"
                   }
                 }
               ]
             },
             {
-              "id": "004fc5be-e7a4-4a10-9b07-3d4887ad277b",
+              "id": "613ff83c-b675-4edb-9fc0-15c18caab112",
               "name": "CP-A37 GET ruta inexistente → 404",
               "request": {
                 "url": {
@@ -7026,7 +6667,7 @@
                 {
                   "listen": "test",
                   "script": {
-                    "id": "b4e6e8c0-86af-4fde-9d38-01413b251cac",
+                    "id": "c1b65dbf-7914-4f94-a2cb-032e408f8833",
                     "type": "text/javascript",
                     "exec": [
                       "pm.test('CP-A37 404 { error: \"Ruta no encontrada\" }', () => {",
@@ -7034,7 +6675,7 @@
                       "  pm.expect(pm.response.json()).to.eql({ error: 'Ruta no encontrada' });",
                       "});"
                     ],
-                    "_lastExecutionId": "3b27e540-cce8-4940-a98f-fa5866b8808d"
+                    "_lastExecutionId": "e092acb4-0df1-46a3-95e5-231f629107f9"
                   }
                 }
               ]
@@ -7043,529 +6684,14 @@
           "event": []
         },
         "cursor": {
-          "ref": "143bd448-614b-49e7-845e-f1ce7fdf0343",
+          "ref": "033f5dff-c443-482c-9d64-05c498982014",
           "length": 9,
           "cycles": 1,
           "position": 2,
           "iteration": 0,
-          "httpRequestId": "1226e572-7402-4ccf-b605-48fdc30838e0",
-          "scriptId": "090016ff-b69b-43a8-ada9-623afc1528fa",
-          "execution": "fb34d111-10c0-47d2-9813-4d11cc668b6f"
-        }
-      },
-      {
-        "error": {
-          "name": "AssertionError",
-          "index": 1,
-          "test": "CP-A42 el error no repite la contraseña enviada",
-          "message": "expected '{\"errors\":[{\"type\":\"field\",\"value\":\"Z…' to not include 'ZZclave'",
-          "stack": "AssertionError: expected '{\"errors\":[{\"type\":\"field\",\"value\":\"Z…' to not include 'ZZclave'\n   at Object.eval sandbox-script.js:2:8)",
-          "checksum": "d3a2db016dacade7b58107f50a4a5cbb",
-          "id": "1f9f68a9-6582-46d3-935b-50810717d2ec",
-          "timestamp": 1793139224146,
-          "stacktrace": [
-            {
-              "fileName": "sandbox-script.js",
-              "lineNumber": 2,
-              "functionName": "Object.eval",
-              "typeName": "Object",
-              "methodName": "eval",
-              "columnNumber": 8,
-              "native": false
-            }
-          ]
-        },
-        "at": "assertion:1 in test-script",
-        "source": {
-          "id": "04f1dba2-0baa-4b4e-897c-cc3281ebe553",
-          "name": "CP-A42 POST /auth/signup con contraseña corta → 422 sin devolverla",
-          "request": {
-            "url": {
-              "path": [
-                "auth",
-                "signup"
-              ],
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "query": [],
-              "variable": []
-            },
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "method": "POST",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"zz-test@ejemplo.com\",\n  \"password\": \"ZZclave\",\n  \"nombre\": \"ZZ-TEST\",\n  \"apellido\": \"Newman\",\n  \"especialidad\": \"otro\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "response": [],
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "id": "2b83af90-51a1-492a-a7f3-4ccd7a9c1f1a",
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test('CP-A42 422 en password', () => {",
-                  "  pm.response.to.have.status(422);",
-                  "  pm.expect(pm.response.json().errors.map((e) => e.path)).to.include('password');",
-                  "});",
-                  "// DEF-A21: express-validator incluye el \"value\" enviado en cada error, contraseña incluida.",
-                  "pm.test('CP-A42 el error no repite la contraseña enviada', () => pm.expect(pm.response.text()).to.not.include('ZZclave'));"
-                ],
-                "_lastExecutionId": "30201134-412f-40ac-bf85-2be59ed1f63a"
-              }
-            }
-          ]
-        },
-        "parent": {
-          "id": "cc0d38fc-e8c6-430d-aac0-0a2f2fad6043",
-          "name": "1. Sin credenciales (no llegan a Supabase)",
-          "description": {
-            "content": "Se cortan antes de cualquier consulta a Supabase u OpenRouter: se pueden correr contra un server local con claves falsas.",
-            "type": "text/plain"
-          },
-          "item": [
-            {
-              "id": "2956ded6-d44a-4864-a600-6c176a1ea7cb",
-              "name": "CP-A01 GET /health responde ok",
-              "request": {
-                "url": {
-                  "path": [
-                    "health"
-                  ],
-                  "host": [
-                    "{{serverUrl}}"
-                  ],
-                  "query": [],
-                  "variable": []
-                },
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "method": "GET"
-              },
-              "response": [],
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "id": "d116497d-6142-4327-9a64-7832660d41b9",
-                    "type": "text/javascript",
-                    "exec": [
-                      "pm.test('CP-A01 200 con status ok y timestamp ISO', () => {",
-                      "  pm.response.to.have.status(200);",
-                      "  const b = pm.response.json();",
-                      "  pm.expect(b.status).to.eql('ok');",
-                      "  pm.expect(new Date(b.timestamp).toISOString()).to.eql(b.timestamp);",
-                      "  pm.expect(Object.keys(b).sort()).to.eql(['status', 'timestamp']);",
-                      "});"
-                    ],
-                    "_lastExecutionId": "6f31dc3c-51c8-484e-a950-0b61c5b34fc5"
-                  }
-                }
-              ]
-            },
-            {
-              "id": "e75a5de9-12cf-4dc8-b33b-b6eb969f93f7",
-              "name": "CP-A03 POST /auth/login con email inválido → 422",
-              "request": {
-                "url": {
-                  "path": [
-                    "auth",
-                    "login"
-                  ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "query": [],
-                  "variable": []
-                },
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "method": "POST",
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"email\": \"sin-arroba\",\n  \"password\": \"x\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                }
-              },
-              "response": [],
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "id": "9fd78c1d-e81e-4127-9c8a-4ad135377bb4",
-                    "type": "text/javascript",
-                    "exec": [
-                      "pm.test('CP-A03 422 con el campo y un mensaje legible', () => {",
-                      "  pm.response.to.have.status(422);",
-                      "  const e = pm.response.json().errors;",
-                      "  pm.expect(e).to.be.an('array').that.is.not.empty;",
-                      "  pm.expect(e[0].path).to.eql('email');",
-                      "  pm.expect(e[0].msg).to.eql('El email no es válido');",
-                      "});"
-                    ],
-                    "_lastExecutionId": "1c5e59f2-df53-4089-abab-13c96dff5af3"
-                  }
-                }
-              ]
-            },
-            {
-              "id": "05d597a0-3ccc-49d8-b8a5-8255a470ec1a",
-              "name": "CP-A04 POST /auth/login con JSON mal formado → 400",
-              "request": {
-                "url": {
-                  "path": [
-                    "auth",
-                    "login"
-                  ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "query": [],
-                  "variable": []
-                },
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "method": "POST",
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\"email\": \"a@b.com\", \"password\": ",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                }
-              },
-              "response": [],
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "id": "090016ff-b69b-43a8-ada9-623afc1528fa",
-                    "type": "text/javascript",
-                    "exec": [
-                      "// DEF-A06: hoy responde 500 \"Error interno del servidor\".",
-                      "pm.test('CP-A04 400 (no 500) ante un JSON mal formado', () => {",
-                      "  pm.response.to.have.status(400);",
-                      "});"
-                    ],
-                    "_lastExecutionId": "fb34d111-10c0-47d2-9813-4d11cc668b6f"
-                  }
-                }
-              ]
-            },
-            {
-              "id": "3a5466b4-20ba-4d52-9085-60940a98849b",
-              "name": "CP-A06 POST /auth/signup vacío → 422 con todos los obligatorios",
-              "request": {
-                "url": {
-                  "path": [
-                    "auth",
-                    "signup"
-                  ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "query": [],
-                  "variable": []
-                },
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "method": "POST",
-                "body": {
-                  "mode": "raw",
-                  "raw": "{}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                }
-              },
-              "response": [],
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "id": "c41c1ecd-ccc5-472b-af65-6dde8cbf66b8",
-                    "type": "text/javascript",
-                    "exec": [
-                      "pm.test('CP-A06 422 marcando email, password, nombre, apellido y especialidad', () => {",
-                      "  pm.response.to.have.status(422);",
-                      "  const campos = pm.response.json().errors.map((e) => e.path);",
-                      "  ['email', 'password', 'nombre', 'apellido', 'especialidad'].forEach((c) => pm.expect(campos).to.include(c));",
-                      "});"
-                    ],
-                    "_lastExecutionId": "289d6ca3-0f86-4f73-bdbf-df8a3b856763"
-                  }
-                }
-              ]
-            },
-            {
-              "id": "558715a2-072b-4c57-81ee-3f0fcf459391",
-              "name": "CP-A07 POST /auth/forgot-password con email inválido → 422",
-              "request": {
-                "url": {
-                  "path": [
-                    "auth",
-                    "forgot-password"
-                  ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "query": [],
-                  "variable": []
-                },
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "method": "POST",
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"email\": \"no-es-email\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                }
-              },
-              "response": [],
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "id": "2451d8ef-cf33-476c-991a-8aaf3537a55c",
-                    "type": "text/javascript",
-                    "exec": [
-                      "pm.test('CP-A07 422 por email inválido', () => pm.response.to.have.status(422));"
-                    ],
-                    "_lastExecutionId": "ed0f9ca3-176c-4d1d-9d62-b70465cde8dc"
-                  }
-                }
-              ]
-            },
-            {
-              "id": "84863f4e-2643-4212-ada6-e7578ad29f4e",
-              "name": "CP-A09 GET /auth/me sin token → 401",
-              "request": {
-                "url": {
-                  "path": [
-                    "auth",
-                    "me"
-                  ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "query": [],
-                  "variable": []
-                },
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "method": "GET"
-              },
-              "response": [],
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "id": "374b7b38-b0fd-4ddf-93fb-47db3d43f003",
-                    "type": "text/javascript",
-                    "exec": [
-                      "pm.test('CP-A09 401 { error: \"Token requerido\" }', () => {",
-                      "  pm.response.to.have.status(401);",
-                      "  pm.expect(pm.response.json()).to.eql({ error: 'Token requerido' });",
-                      "});"
-                    ],
-                    "_lastExecutionId": "c154fb53-9edd-4bf3-b0d4-99f9e6962a7e"
-                  }
-                }
-              ]
-            },
-            {
-              "id": "918c1ce8-4c1d-4b29-9f3d-c98ee2cfc0e2",
-              "name": "CP-A10 GET /pacientes con esquema Basic → 401",
-              "request": {
-                "url": {
-                  "path": [
-                    "pacientes"
-                  ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "query": [],
-                  "variable": []
-                },
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  },
-                  {
-                    "key": "Authorization",
-                    "value": "Basic dXNlcjpwYXNz"
-                  }
-                ],
-                "method": "GET"
-              },
-              "response": [],
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "id": "af5e32d6-5f0e-43f6-9e46-fbd0f3b40d60",
-                    "type": "text/javascript",
-                    "exec": [
-                      "pm.test('CP-A10 401 con un header que no es Bearer', () => pm.response.to.have.status(401));"
-                    ],
-                    "_lastExecutionId": "574528e9-b80b-4c98-a5b3-93abb099e21a"
-                  }
-                }
-              ]
-            },
-            {
-              "id": "04f1dba2-0baa-4b4e-897c-cc3281ebe553",
-              "name": "CP-A42 POST /auth/signup con contraseña corta → 422 sin devolverla",
-              "request": {
-                "url": {
-                  "path": [
-                    "auth",
-                    "signup"
-                  ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "query": [],
-                  "variable": []
-                },
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "method": "POST",
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"email\": \"zz-test@ejemplo.com\",\n  \"password\": \"ZZclave\",\n  \"nombre\": \"ZZ-TEST\",\n  \"apellido\": \"Newman\",\n  \"especialidad\": \"otro\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                }
-              },
-              "response": [],
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "id": "2b83af90-51a1-492a-a7f3-4ccd7a9c1f1a",
-                    "type": "text/javascript",
-                    "exec": [
-                      "pm.test('CP-A42 422 en password', () => {",
-                      "  pm.response.to.have.status(422);",
-                      "  pm.expect(pm.response.json().errors.map((e) => e.path)).to.include('password');",
-                      "});",
-                      "// DEF-A21: express-validator incluye el \"value\" enviado en cada error, contraseña incluida.",
-                      "pm.test('CP-A42 el error no repite la contraseña enviada', () => pm.expect(pm.response.text()).to.not.include('ZZclave'));"
-                    ],
-                    "_lastExecutionId": "30201134-412f-40ac-bf85-2be59ed1f63a"
-                  }
-                }
-              ]
-            },
-            {
-              "id": "004fc5be-e7a4-4a10-9b07-3d4887ad277b",
-              "name": "CP-A37 GET ruta inexistente → 404",
-              "request": {
-                "url": {
-                  "path": [
-                    "no-existe"
-                  ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "query": [],
-                  "variable": []
-                },
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "method": "GET"
-              },
-              "response": [],
-              "event": [
-                {
-                  "listen": "test",
-                  "script": {
-                    "id": "b4e6e8c0-86af-4fde-9d38-01413b251cac",
-                    "type": "text/javascript",
-                    "exec": [
-                      "pm.test('CP-A37 404 { error: \"Ruta no encontrada\" }', () => {",
-                      "  pm.response.to.have.status(404);",
-                      "  pm.expect(pm.response.json()).to.eql({ error: 'Ruta no encontrada' });",
-                      "});"
-                    ],
-                    "_lastExecutionId": "3b27e540-cce8-4940-a98f-fa5866b8808d"
-                  }
-                }
-              ]
-            }
-          ],
-          "event": []
-        },
-        "cursor": {
-          "ref": "d80ba381-0923-47cd-bc37-937a41b70e34",
-          "length": 9,
-          "cycles": 1,
-          "position": 7,
-          "iteration": 0,
-          "httpRequestId": "25be76ec-14da-4596-a116-c020b4e74cb2",
-          "scriptId": "2b83af90-51a1-492a-a7f3-4ccd7a9c1f1a",
-          "execution": "30201134-412f-40ac-bf85-2be59ed1f63a"
+          "httpRequestId": "2ee7e165-7903-434d-8759-beb6e59ff52d",
+          "scriptId": "792bd069-084e-4952-97ab-50263df47b33",
+          "execution": "86235e98-19da-4fe5-baec-7bf62d96e9a4"
         }
       }
     ],
