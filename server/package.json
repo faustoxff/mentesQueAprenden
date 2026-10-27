@@ -7,10 +7,10 @@
     "dev": "nodemon src/server.js",
     "start": "node src/server.js",
     "migrate": "node src/utils/runMigrations.js",
-    "test": "cross-env NODE_ENV=test jest --runInBand --selectProjects unit",
-    "test:integration": "cross-env NODE_ENV=test jest --runInBand --selectProjects integration",
-    "test:all": "cross-env NODE_ENV=test jest --runInBand",
-    "test:coverage": "cross-env NODE_ENV=test jest --runInBand --selectProjects unit --coverage",
+    "test": "cross-env NODE_ENV=test TZ=America/Argentina/Buenos_Aires jest --runInBand --selectProjects unit",
+    "test:integration": "cross-env NODE_ENV=test TZ=America/Argentina/Buenos_Aires jest --runInBand --selectProjects integration",
+    "test:all": "cross-env NODE_ENV=test TZ=America/Argentina/Buenos_Aires jest --runInBand",
+    "test:coverage": "cross-env NODE_ENV=test TZ=America/Argentina/Buenos_Aires jest --runInBand --selectProjects unit --coverage",
     "lint": "eslint src __tests__"
   },
   "dependencies": {
