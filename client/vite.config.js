@@ -41,7 +41,12 @@ export default defineConfig({
       include: ['src/**/*.{js,jsx}'],
       exclude: ['src/**/*.test.{js,jsx}', 'src/test/**', 'src/main.jsx'],
       // Piso: si baja de esto, el CI falla. Subirlo a medida que se agreguen tests.
-      thresholds: { statements: 19, branches: 74, functions: 40, lines: 19 }
+      // El global lo bajan las páginas grandes (agenda, detalle de paciente); lo crítico
+      // (sesión, API, errores, rutas de auth) tiene su propio piso.
+      thresholds: {
+        statements: 30, branches: 80, functions: 42, lines: 30,
+        'src/{services,store,utils,hooks,components/auth}/**': { statements: 85, branches: 75, functions: 75, lines: 85 }
+      }
     }
   }
 });
