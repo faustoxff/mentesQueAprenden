@@ -282,6 +282,21 @@ describe('POST /turnos: validación', () => {
     expect(turnoService.crear).not.toHaveBeenCalled();
   });
 
+  test('CP-U276 GET /turnos: incluir_cancelados acepta true/false y rechaza otro valor', async () => {
+    turnoService.listar.mockResolvedValue([]);
+
+    const invalido = await comoProf(request(app).get('/api/turnos?incluir_cancelados=si'));
+    const porDefecto = await comoProf(request(app).get('/api/turnos'));
+    const conCancelados = await comoProf(request(app).get('/api/turnos?incluir_cancelados=true'));
+
+    expect(invalido.status).toBe(422);
+    expect(invalido.body.errors[0].path).toBe('incluir_cancelados');
+    expect(porDefecto.status).toBe(200);
+    expect(turnoService.listar.mock.calls[0][3]).toEqual({ incluirSesiones: true, incluirCancelados: false });
+    expect(conCancelados.status).toBe(200);
+    expect(turnoService.listar.mock.calls[1][3]).toEqual({ incluirSesiones: true, incluirCancelados: true });
+  });
+
   test('CP-U22 choque de consultorio: el 409 del service llega al cliente', async () => {
     turnoService.crear.mockRejectedValue(Object.assign(new Error('Consultorio 1 ocupado en ese horario'), { status: 409 }));
 

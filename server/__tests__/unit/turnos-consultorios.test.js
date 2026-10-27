@@ -229,3 +229,23 @@ describe('SesionService.actualizar: el turno vinculado se mueve con la sesión',
     await expect(SesionService.actualizar(db, 'ajena', { notas_libres: 'x' })).rejects.toMatchObject({ status: 404 });
   });
 });
+
+describe('TurnoService.listar: turnos cancelados (historial)', () => {
+  test('CP-U274 por defecto (agenda) excluye los turnos cancelados', async () => {
+    const { db, enTabla } = crearDb({ turnos: ok([]), 'rpc:turnos_ocupacion': ok([]) });
+
+    await TurnoService.listar(db, {}, 'yo');
+
+    expect(enTabla('turnos', 'neq')).toContainEqual(['estado', 'cancelado']);
+  });
+
+  test('CP-U275 con incluirCancelados los propios cancelados también vienen', async () => {
+    const cancelado = { id: 't1', fecha_inicio: '2026-10-01T13:00:00Z', estado: 'cancelado', profesional: { id: 'yo' } };
+    const { db, enTabla } = crearDb({ turnos: ok([cancelado]), 'rpc:turnos_ocupacion': ok([]) });
+
+    const lista = await TurnoService.listar(db, {}, 'yo', { incluirCancelados: true });
+
+    expect(enTabla('turnos', 'neq')).not.toContainEqual(['estado', 'cancelado']);
+    expect(lista).toEqual([cancelado]);
+  });
+});

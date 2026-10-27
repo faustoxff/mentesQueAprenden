@@ -71,7 +71,7 @@ Superado el límite → `429`.
 
 | Método | Ruta | Descripción |
 |---|---|---|
-| GET | `/` | Lista (filtros por query, incluye sesiones asociadas) |
+| GET | `/` | Lista (query: `fecha_inicio`, `fecha_fin`, `profesional_id`; incluye sesiones asociadas). Los cancelados no vienen, salvo con `incluir_cancelados=true` (lo usa el historial; otro valor que no sea `true`/`false` → `422`) |
 | POST | `/` | `fecha_inicio`, `fecha_fin` (ISO 8601), `profesional_id` obligatorios; `paciente_id?`, `tipo?`, `consultorio?` (1–3) |
 | PATCH | `/:id` | Cualquier campo anterior + `estado` |
 | DELETE | `/:id` | Cancela el turno (`estado = cancelado`) |

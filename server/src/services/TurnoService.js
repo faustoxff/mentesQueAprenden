@@ -5,7 +5,8 @@ class TurnoService {
   // datos, y los de otros profesionales reducidos a "consultorio ocupado"
   // sin paciente ni notas — así se puede armar un calendario compartido
   // sin filtrar datos clínicos ajenos.
-  async listar(db, { fecha_inicio, fecha_fin, profesional_id }, profesionalActualId, { incluirSesiones = false } = {}) {
+  // incluirCancelados: el historial los muestra; la agenda no (es el comportamiento por defecto).
+  async listar(db, { fecha_inicio, fecha_fin, profesional_id }, profesionalActualId, { incluirSesiones = false, incluirCancelados = false } = {}) {
     let q = db
       .from('turnos')
       .select(`
@@ -15,9 +16,9 @@ class TurnoService {
         profesional:profesionales!profesional_id(id, nombre, apellido, especialidad),
         sesion:sesiones(id)
       `)
-      .neq('estado', 'cancelado')
       .order('fecha_inicio', { ascending: true });
 
+    if (!incluirCancelados) q = q.neq('estado', 'cancelado');
     if (fecha_inicio) q = q.gte('fecha_inicio', fecha_inicio);
     if (fecha_fin) q = q.lte('fecha_inicio', fecha_fin);
     if (profesional_id) q = q.eq('profesional_id', profesional_id);

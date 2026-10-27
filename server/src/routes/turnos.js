@@ -1,5 +1,5 @@
 const express = require('express');
-const { body, param, validationResult } = require('express-validator');
+const { body, param, query, validationResult } = require('express-validator');
 const { requireAuth, getAuthenticatedClient } = require('../middleware/auth');
 const turnoService = require('../services/TurnoService');
 
@@ -10,10 +10,16 @@ function manejarError(res, err, fallback = { status: 500, message: 'Error intern
   res.status(status).json({ error: err.status ? err.message : fallback.message });
 }
 
-// GET /turnos?fecha_inicio=&fecha_fin=&profesional_id=
-router.get('/', requireAuth, async (req, res) => {
+// GET /turnos?fecha_inicio=&fecha_fin=&profesional_id=&incluir_cancelados=
+router.get('/', requireAuth, [
+  query('incluir_cancelados').optional().isIn(['true', 'false']).withMessage('incluir_cancelados debe ser true o false')
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) return res.status(422).json({ errors: errors.array() });
+
   try {
-    const data = await turnoService.listar(getAuthenticatedClient(req), req.query, req.profesional.id, { incluirSesiones: true });
+    const incluirCancelados = req.query.incluir_cancelados === 'true';
+    const data = await turnoService.listar(getAuthenticatedClient(req), req.query, req.profesional.id, { incluirSesiones: true, incluirCancelados });
     res.json(data);
   } catch (err) {
     manejarError(res, err);
