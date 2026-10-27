@@ -32,8 +32,7 @@ describe('PagoService.crear: división de honorarios', () => {
     expect(pago).toMatchObject({ monto_profesional: 5000, monto_espacio: 0, porcentaje_profesional: 100 });
   });
 
-  // DEF-A01: `porcentaje_honorarios || 70` convierte un 0 % legítimo en 70 %.
-  test.failing('CP-U53 con 0 % todo el monto queda para el espacio', async () => {
+  test('CP-U53 con 0 % todo el monto queda para el espacio', async () => {
     const pago = await cobrar(5000, 0);
 
     expect(pago).toMatchObject({ monto_profesional: 0, monto_espacio: 5000, porcentaje_profesional: 0 });

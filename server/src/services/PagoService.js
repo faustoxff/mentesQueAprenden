@@ -1,4 +1,5 @@
 const { supabaseAdmin } = require('../config/supabase');
+const { porcentajeHonorarios } = require('../utils/honorarios');
 
 function rangoDelMes(mes) {
   const inicio = `${mes}-01T00:00:00-03:00`;
@@ -77,7 +78,7 @@ class PagoService {
       throw err;
     }
 
-    const porcentaje = sesion.profesional.porcentaje_honorarios || 70;
+    const porcentaje = porcentajeHonorarios(sesion.profesional?.porcentaje_honorarios);
     const monto_profesional = (monto_total * porcentaje) / 100;
     const monto_espacio = monto_total - monto_profesional;
 

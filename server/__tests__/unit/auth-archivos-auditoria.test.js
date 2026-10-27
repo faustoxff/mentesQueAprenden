@@ -122,8 +122,7 @@ describe('AuthService: registro', () => {
     expect(res).toEqual({ profesional: { id: 'u9' }, session: null });
   });
 
-  // DEF-A01: `porcentaje_honorarios || 70.00` también pisa un 0 % elegido por el admin.
-  test.failing('CP-U131 un admin puede registrar un profesional con 0 % de honorarios', async () => {
+  test('CP-U131 un admin puede registrar un profesional con 0 % de honorarios', async () => {
     mockAdminAuth.createUser.mockResolvedValue({ data: { user: { id: 'u9' } }, error: null });
     const admin = crearDb({ profesionales: ok({ id: 'u9' }) });
     mockAdmin.from.mockImplementation(admin.db.from);

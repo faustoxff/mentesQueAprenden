@@ -1,4 +1,5 @@
 const { supabase, supabaseAdmin } = require('../config/supabase');
+const { porcentajeHonorarios } = require('../utils/honorarios');
 
 class AuthService {
   async _crearUsuarioYProfesional({ email, password, nombre, apellido, especialidad, rol, matricula, telefono, porcentaje_honorarios }) {
@@ -49,12 +50,14 @@ class AuthService {
   // Solo admin puede registrar profesionales, con rol elegible
   async registrar(body) {
     const { email, password, nombre, apellido, especialidad, rol, matricula, porcentaje_honorarios, telefono } = body;
+    // Se valida antes de crear el usuario en Auth, para no dejar una cuenta a medias.
+    const porcentaje = porcentajeHonorarios(porcentaje_honorarios);
     const profesional = await this._crearUsuarioYProfesional({
       email, password, nombre, apellido, especialidad,
       rol: rol || 'profesional',
       matricula,
       telefono,
-      porcentaje_honorarios: porcentaje_honorarios || 70.00
+      porcentaje_honorarios: porcentaje
     });
     return { profesional };
   }
