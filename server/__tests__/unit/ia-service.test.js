@@ -57,23 +57,28 @@ describe('acceso a pacientes ajenos (IDOR)', () => {
 });
 
 describe('herramientas del chat', () => {
+  // Datos válidos según las mismas reglas que las rutas: el chat valida antes de ir a la base.
+  const AJENO = '22222222-2222-4222-8222-222222222222';
+  const P1 = '33333333-3333-4333-8333-333333333333';
+  const profUuid = { ...profesional, id: '44444444-4444-4444-8444-444444444444' };
+
   test('registrar_sesion sobre un paciente ajeno falla y no inserta', async () => {
     const { db, enTabla } = crearDb({ pacientes: ok(null) });
-    await expect(iaService.ejecutarTool('registrar_sesion', { paciente_id: 'ajeno', fecha: '2026-01-01' }, profesional, db))
+    await expect(iaService.ejecutarTool('registrar_sesion', { paciente_id: AJENO, fecha: '2026-01-01T10:00:00', tipo: 'tratamiento' }, profesional, db))
       .rejects.toMatchObject({ status: 404 });
     expect(enTabla('sesiones', 'insert')).toHaveLength(0);
   });
 
   test('crear_turno sobre un paciente ajeno falla y no inserta', async () => {
     const { db, enTabla } = crearDb({ pacientes: ok(null) });
-    await expect(iaService.ejecutarTool('crear_turno', { paciente_id: 'ajeno', fecha_inicio: '2026-01-01T10:00:00Z' }, profesional, db))
+    await expect(iaService.ejecutarTool('crear_turno', { paciente_id: AJENO, fecha_inicio: '2026-01-01T10:00:00Z' }, profUuid, db))
       .rejects.toMatchObject({ status: 404 });
     expect(enTabla('turnos', 'insert')).toHaveLength(0);
   });
 
   test('las herramientas escriben con el cliente del usuario, no con el admin', async () => {
-    const { db, enTabla } = crearDb({ pacientes: ok({ id: 'p1' }), sesiones: ok({ id: 's1' }) });
-    await iaService.ejecutarTool('registrar_sesion', { paciente_id: 'p1', fecha: '2026-01-01' }, profesional, db);
+    const { db, enTabla } = crearDb({ pacientes: ok({ id: P1 }), sesiones: ok({ id: 's1' }) });
+    await iaService.ejecutarTool('registrar_sesion', { paciente_id: P1, fecha: '2026-01-01T10:00:00', tipo: 'tratamiento' }, profesional, db);
     expect(enTabla('sesiones', 'insert')).toHaveLength(1);
     expect(mockAdmin.from).not.toHaveBeenCalled();
   });
@@ -93,11 +98,11 @@ describe('herramientas del chat', () => {
       .rejects.toThrow('Paciente no encontrado');
   });
 
-  test('crear_paciente: un no-admin no puede asignarlo a otro profesional', async () => {
-    const { db, enTabla } = crearDb({ pacientes: ok({ id: 'p1' }) });
-    const args = { nombre: 'A', apellido: 'B', dni: '12345678', fecha_nacimiento: '2000-01-01', profesional_principal_id: 'otro' };
-    await iaService.ejecutarTool('crear_paciente', args, profesional, db);
-    expect(enTabla('pacientes', 'insert')[0][0].profesional_principal_id).toBe('prof-1');
+  test('crear_paciente: un no-admin no puede asignarlo a otro profesional (403, igual que el formulario)', async () => {
+    const { db, enTabla } = crearDb({ pacientes: ok({ id: P1 }) });
+    const args = { nombre: 'A', apellido: 'B', dni: '12345678', fecha_nacimiento: '2000-01-01', profesional_principal_id: AJENO };
+    await expect(iaService.ejecutarTool('crear_paciente', args, profesional, db)).rejects.toMatchObject({ status: 403 });
+    expect(enTabla('pacientes', 'insert')).toHaveLength(0);
   });
 
   test('buscar_pacientes ignora caracteres que alterarían el filtro', async () => {

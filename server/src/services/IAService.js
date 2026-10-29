@@ -3,15 +3,16 @@ const { supabaseAdmin } = require('../config/supabase');
 const { extraerTextoDocumento } = require('./geminiExtractor');
 const pacienteService = require('./PacienteService');
 const turnoService = require('./TurnoService');
-const { sanitizarBusqueda } = require('../utils/busqueda');
 const { crearToken, verificarToken } = require('../utils/confirmacion');
-const { esDniValido, DNI_MENSAJE } = require('../utils/dni');
+const { exigirDatosValidos } = require('../utils/validacion');
+const { reglasCrearPaciente } = require('../validaciones/pacientes');
+const { reglasCrearSesion } = require('../validaciones/sesiones');
+const { reglasCrearTurno } = require('../validaciones/turnos');
 const sesionService = require('./SesionService');
 
 const MODELO_TEXTO = 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
 const MODELO_CHAT = 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
 
-const TIPOS_SESION = ['evaluacion', 'tratamiento', 'seguimiento', 'devolucion', 'reunion_interdisciplinaria'];
 
 const ZONA_HORARIA = 'America/Argentina/Buenos_Aires';
 const PATRON_FECHA = /^\d{4}-\d{2}-\d{2}$/;
@@ -141,13 +142,7 @@ class IAService {
   // o derivación aceptada. Estos helpers dan un 404 (no un 403) para no revelar si el
   // id existe.
   async asegurarAccesoPaciente(db, pacienteId) {
-    const { data } = await db
-      .from('pacientes')
-      .select('id')
-      .eq('id', pacienteId)
-      .is('deleted_at', null)
-      .maybeSingle();
-    if (!data) throw Object.assign(new Error('Paciente no encontrado'), { status: 404 });
+    await pacienteService.asegurarAcceso(db, pacienteId);
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -156,8 +151,8 @@ class IAService {
 
   async sugerirNotas({ notas_parciales, paciente_id, tipo_sesion, especialidad }, db) {
     await this.asegurarAccesoPaciente(db, paciente_id);
-    const [{ data: paciente }, { data: anteriores }] = await Promise.all([
-      db.from('pacientes').select('fecha_nacimiento, motivo_consulta').eq('id', paciente_id).single(),
+    const [paciente, { data: anteriores }] = await Promise.all([
+      pacienteService.obtenerDatosBasicos(db, paciente_id, 'fecha_nacimiento, motivo_consulta'),
       db.from('sesiones').select('fecha, tipo, resumen_ia, notas_libres').eq('paciente_id', paciente_id).order('fecha', { ascending: false }).limit(3)
     ]);
 
@@ -216,8 +211,8 @@ Notas:\n${notas_libres}`;
 
   async sugerirDerivacion({ paciente_id, contexto_adicional }, db) {
     await this.asegurarAccesoPaciente(db, paciente_id);
-    const [{ data: paciente }, { data: sesiones }] = await Promise.all([
-      db.from('pacientes').select('motivo_consulta, fecha_nacimiento').eq('id', paciente_id).single(),
+    const [paciente, { data: sesiones }] = await Promise.all([
+      pacienteService.obtenerDatosBasicos(db, paciente_id, 'motivo_consulta, fecha_nacimiento'),
       db.from('sesiones').select('tipo, resumen_ia, notas_libres').eq('paciente_id', paciente_id).order('fecha', { ascending: false }).limit(5)
     ]);
 
@@ -317,26 +312,16 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
         };
       }
 
-      case 'buscar_pacientes': {
-        const busqueda = sanitizarBusqueda(args.busqueda);
-        if (!busqueda) return [];
+      case 'buscar_pacientes':
         // Con el cliente del usuario, RLS ya limita a sus pacientes y a los derivados.
-        const { data } = await db
-          .from('pacientes')
-          .select('id, nombre, apellido, dni, fecha_nacimiento, estado, telefono, motivo_consulta')
-          .or(`nombre.ilike.%${busqueda}%,apellido.ilike.%${busqueda}%,dni.ilike.%${busqueda}%`)
-          .is('deleted_at', null)
-          .limit(5);
-        return data || [];
-      }
+        return pacienteService.buscar(db, args.busqueda, {
+          limite: 5,
+          campos: 'id, nombre, apellido, dni, fecha_nacimiento, estado, telefono, motivo_consulta'
+        });
 
       case 'ver_paciente': {
-        const { data: pac } = await db
-          .from('pacientes')
-          .select('id, nombre, apellido, dni, fecha_nacimiento, genero, telefono, email, motivo_consulta, estado, obra_social_id, profesional_principal_id')
-          .eq('id', args.paciente_id)
-          .is('deleted_at', null)
-          .maybeSingle();
+        const pac = await pacienteService.obtenerDatosBasicos(db, args.paciente_id,
+          'id, nombre, apellido, dni, fecha_nacimiento, genero, telefono, email, motivo_consulta, estado, obra_social_id, profesional_principal_id');
         if (!pac) return { error: 'Paciente no encontrado' };
 
         const { data: sesiones } = await db.from('sesiones')
@@ -354,22 +339,9 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
         return { type: 'form', form: 'crear_turno', prefill: args };
 
       case 'crear_paciente': {
-        if (!args.fecha_nacimiento) throw new Error('fecha_nacimiento es obligatoria para crear un paciente');
-        if (!esDniValido(args.dni)) throw new Error(DNI_MENSAJE);
-        const CAMPOS_PACIENTE = ['nombre', 'apellido', 'dni', 'fecha_nacimiento', 'telefono', 'email', 'motivo_consulta'];
-        // Solo un admin puede asignarlo a otro profesional.
-        const principal = (profesional.rol === 'admin' && args.profesional_principal_id) || profesional.id;
-        const payload = {
-          ...Object.fromEntries(Object.entries(args).filter(([k]) => CAMPOS_PACIENTE.includes(k))),
-          profesional_principal_id: principal,
-          created_by: profesional.id,
-          estado: 'activo'
-        };
-        // Para otro titular, el insert pasa pero el select posterior no (RLS): va con el admin ya validado.
-        const cliente = principal === profesional.id ? db : supabaseAdmin;
-        const { data, error } = await cliente.from('pacientes').insert(payload).select().single();
-        if (error) throw new Error(error.message);
-        return data;
+        // Mismas reglas y misma lógica que POST /pacientes (incluido quién puede asignarlo a otro).
+        const datos = await exigirDatosValidos(reglasCrearPaciente, args);
+        return pacienteService.crear(db, datos, profesional);
       }
 
       case 'ver_agenda': {
@@ -438,22 +410,20 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
       }
 
       case 'crear_turno': {
-        const duracion = args.duracion_minutos || 50;
+        // Mismas reglas y misma lógica que POST /turnos. El turno es siempre del profesional del chat.
         const inicio = new Date(args.fecha_inicio);
-        const fin = new Date(inicio.getTime() + duracion * 60000);
-        if (args.paciente_id) await this.asegurarAccesoPaciente(db, args.paciente_id);
-        const { data, error } = await db.from('turnos').insert({
-          paciente_id: args.paciente_id,
+        const fin = new Date(inicio.getTime() + (args.duracion_minutos || 50) * 60000);
+        const datos = await exigirDatosValidos(reglasCrearTurno, {
+          fecha_inicio: args.fecha_inicio,
+          fecha_fin: Number.isNaN(fin.getTime()) ? undefined : fin.toISOString(),
           profesional_id: profesional.id,
-          created_by: profesional.id,
-          fecha_inicio: inicio.toISOString(),
-          fecha_fin: fin.toISOString(),
+          paciente_id: args.paciente_id,
           tipo: args.tipo || 'tratamiento',
-          notas: args.notas,
-          estado: 'programado'
-        }).select('*, paciente:pacientes(nombre, apellido)').single();
-        if (error) throw new Error(error.message);
-        return data;
+          consultorio: args.consultorio,
+          notas: args.notas
+        });
+        if (datos.paciente_id) await this.asegurarAccesoPaciente(db, datos.paciente_id);
+        return turnoService.crear(db, profesional.id, datos);
       }
 
       case 'listar_profesionales': {
@@ -465,34 +435,25 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
       }
 
       case 'registrar_sesion': {
-        if (args.tipo && !TIPOS_SESION.includes(args.tipo)) {
-          throw new Error(`tipo inválido: debe ser uno de ${TIPOS_SESION.join(', ')}`);
-        }
-        await this.asegurarAccesoPaciente(db, args.paciente_id);
-        const { data, error } = await db.from('sesiones').insert({
+        // Mismas reglas y misma lógica que POST /sesiones. Desde el chat se carga rápido,
+        // sin consultorio ni turno: después se completa desde la pantalla de la sesión.
+        const datos = await exigirDatosValidos(reglasCrearSesion, {
           paciente_id: args.paciente_id,
-          profesional_id: profesional.id,
-          created_by: profesional.id,
           fecha: args.fecha,
           tipo: args.tipo,
-          duracion_minutos: args.duracion_minutos || 50,
+          duracion_minutos: args.duracion_minutos,
           notas_libres: args.notas_libres,
           monto: args.monto
-        }).select('*, paciente:pacientes(nombre, apellido)').single();
-        if (error) throw new Error(error.message);
-        return data;
+        });
+        await this.asegurarAccesoPaciente(db, datos.paciente_id);
+        return sesionService.crear(db, profesional.id, datos);
       }
 
       case 'eliminar_paciente': {
         // El modelo NO borra: solo genera una solicitud de confirmación firmada por el
         // servidor. El borrado se hace cuando la persona aprieta el botón (confirmarEliminacion).
         if (!args.paciente_id) throw new Error('paciente_id es obligatorio');
-        const { data: pac } = await db
-          .from('pacientes')
-          .select('id, nombre, apellido')
-          .eq('id', args.paciente_id)
-          .is('deleted_at', null)
-          .maybeSingle();
+        const pac = await pacienteService.obtenerDatosBasicos(db, args.paciente_id, 'id, nombre, apellido');
         if (!pac) throw new Error('Paciente no encontrado');
         return {
           type: 'confirm',
