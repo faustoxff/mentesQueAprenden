@@ -1,4 +1,5 @@
-const { supabaseAdmin } = require('../config/supabase');
+const pagoRepository = require('../repositories/PagoRepository');
+const sesionRepository = require('../repositories/SesionRepository');
 const { porcentajeHonorarios, repartirHonorarios } = require('../utils/honorarios');
 
 function rangoDelMes(mes) {
@@ -10,64 +11,27 @@ function rangoDelMes(mes) {
 
 class PagoService {
   async listar(db, { mes, profesional_id }) {
-    let q = db
-      .from('pagos')
-      .select(`
-        *,
-        sesion:sesiones(id, fecha, tipo),
-        paciente:pacientes(id, nombre, apellido),
-        profesional:profesionales!profesional_id(id, nombre, apellido, especialidad)
-      `)
-      .order('fecha_pago', { ascending: false });
-
-    if (mes) {
-      const { inicio, fin } = rangoDelMes(mes);
-      q = q.gte('fecha_pago', inicio).lt('fecha_pago', fin);
-    }
-    if (profesional_id) q = q.eq('profesional_id', profesional_id);
-
-    const { data, error } = await q;
-    if (error) throw new Error(error.message);
-    return data;
+    const { inicio, fin } = mes ? rangoDelMes(mes) : {};
+    return pagoRepository.listar(db, { desde: inicio, hasta: fin, profesionalId: profesional_id });
   }
 
   async listarSesionesPendientes(db) {
-    const { data, error } = await db
-      .from('sesiones')
-      .select(`
-        id, fecha, tipo, monto, duracion_minutos,
-        paciente:pacientes(id, nombre, apellido),
-        profesional:profesionales!profesional_id(id, nombre, apellido)
-      `)
-      .eq('pagado', false)
-      .not('monto', 'is', null)
-      .order('fecha', { ascending: false });
-
-    if (error) throw new Error(error.message);
-    return data;
+    return sesionRepository.listarPendientesDeCobro(db);
   }
 
   async crear(db, profesionalId, { sesion_id, monto_total, metodo_pago, numero_comprobante }, rol) {
     // Antes de usar el cliente admin: la sesión tiene que ser visible para quien cobra
     // (RLS) y ser suya, salvo que sea admin. Si no, 404 (no se revela si existe).
-    const { data: propia } = await db
-      .from('sesiones')
-      .select('id, profesional_id')
-      .eq('id', sesion_id)
-      .maybeSingle();
+    const propia = await sesionRepository.obtenerTitular(db, sesion_id);
     if (!propia || (propia.profesional_id !== profesionalId && rol !== 'admin')) {
       const err = new Error('Sesión no encontrada');
       err.status = 404;
       throw err;
     }
 
-    const { data: sesion, error: sesErr } = await supabaseAdmin
-      .from('sesiones')
-      .select('*, profesional:profesionales!profesional_id(porcentaje_honorarios)')
-      .eq('id', sesion_id)
-      .single();
+    const sesion = await sesionRepository.obtenerConHonorariosComoAdmin(sesion_id);
 
-    if (sesErr || !sesion) {
+    if (!sesion) {
       const err = new Error('Sesión no encontrada');
       err.status = 404;
       throw err;
@@ -81,27 +45,18 @@ class PagoService {
     const porcentaje = porcentajeHonorarios(sesion.profesional?.porcentaje_honorarios);
     const montos = repartirHonorarios(monto_total, porcentaje);
 
-    const { data: pago, error: pagoErr } = await db
-      .from('pagos')
-      .insert({
-        sesion_id,
-        paciente_id: sesion.paciente_id,
-        profesional_id: sesion.profesional_id,
-        ...montos,
-        porcentaje_profesional: porcentaje,
-        metodo_pago,
-        numero_comprobante,
-        registrado_por: profesionalId
-      })
-      .select()
-      .single();
+    const pago = await pagoRepository.crear(db, {
+      sesion_id,
+      paciente_id: sesion.paciente_id,
+      profesional_id: sesion.profesional_id,
+      ...montos,
+      porcentaje_profesional: porcentaje,
+      metodo_pago,
+      numero_comprobante,
+      registrado_por: profesionalId
+    });
 
-    if (pagoErr) throw new Error(pagoErr.message);
-
-    await supabaseAdmin
-      .from('sesiones')
-      .update({ pagado: true, fecha_pago: new Date().toISOString(), metodo_pago })
-      .eq('id', sesion_id);
+    await sesionRepository.marcarPagadaComoAdmin(sesion_id, { fechaPago: new Date().toISOString(), metodoPago: metodo_pago });
 
     return pago;
   }
@@ -109,17 +64,7 @@ class PagoService {
   async liquidacion(mes) {
     const { inicio, fin } = rangoDelMes(mes);
 
-    const { data, error } = await supabaseAdmin
-      .from('pagos')
-      .select(`
-        profesional_id,
-        monto_total, monto_profesional, monto_espacio,
-        profesional:profesionales!profesional_id(nombre, apellido, especialidad)
-      `)
-      .gte('fecha_pago', inicio)
-      .lt('fecha_pago', fin);
-
-    if (error) throw new Error(error.message);
+    const data = await pagoRepository.listarMontosComoAdmin({ desde: inicio, hasta: fin });
 
     const resumen = data.reduce((acc, p) => {
       const key = p.profesional_id;
