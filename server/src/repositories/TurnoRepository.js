@@ -1,4 +1,4 @@
-const { datosDe } = require('./errores');
+const { datosDe, datosOpcionales } = require('./errores');
 
 // Consultas a la tabla `turnos`. Reciben `db`, el cliente con el token del profesional,
 // así que RLS decide qué filas se ven.
@@ -62,6 +62,63 @@ class TurnoRepository {
       .eq('id', id)
       .select()
       .single());
+  }
+
+  // Inserta o modifica sin pedir la fila de vuelta (un UPDATE que RLS no deja ver no falla).
+  async insertarSinDevolver(db, turno) {
+    datosDe(await db.from('turnos').insert(turno));
+  }
+
+  async actualizarSinDevolver(db, id, cambios) {
+    datosDe(await db.from('turnos').update(cambios).eq('id', id));
+  }
+
+  // true si el consultorio está libre en el rango (función de la migración 008, que ve
+  // los turnos de todos pero solo responde sí o no).
+  async consultorioLibre(db, { consultorio, desde, hasta, excluirTurnoId }) {
+    return datosDe(await db.rpc('consultorio_libre', {
+      p_consultorio: consultorio,
+      p_inicio: desde,
+      p_fin: hasta,
+      p_excluir: excluirTurnoId || null
+    }));
+  }
+
+  // Camino anterior a la migración 008: algún turno activo que se superponga con el
+  // rango, o null si no se pudo leer.
+  async superpuestosSinFuncion(db, { consultorio, desde, hasta, excluirTurnoId }) {
+    let q = db
+      .from('turnos')
+      .select('id')
+      .eq('consultorio', consultorio)
+      .neq('estado', 'cancelado')
+      .lt('fecha_inicio', hasta)
+      .gt('fecha_fin', desde);
+    if (excluirTurnoId) q = q.neq('id', excluirTurnoId);
+    return datosOpcionales(await q.limit(1));
+  }
+
+  // Turno activo vinculado a la sesión (a lo sumo uno), o null si no se pudo leer.
+  async activosDeSesion(db, sesionId) {
+    return datosOpcionales(await db
+      .from('turnos')
+      .select('id, fecha_inicio, consultorio')
+      .eq('sesion_id', sesionId)
+      .neq('estado', 'cancelado')
+      .limit(1));
+  }
+
+  // Turnos activos sin sesión del mismo paciente y profesional en el rango, o null si no se pudo leer.
+  async sinSesionEnRango(db, { pacienteId, profesionalId, desde, hasta }) {
+    return datosOpcionales(await db
+      .from('turnos')
+      .select('id, fecha_inicio, consultorio')
+      .is('sesion_id', null)
+      .neq('estado', 'cancelado')
+      .eq('paciente_id', pacienteId)
+      .eq('profesional_id', profesionalId)
+      .gte('fecha_inicio', desde)
+      .lte('fecha_inicio', hasta));
   }
 
   async cancelar(db, id) {

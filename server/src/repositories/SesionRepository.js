@@ -5,6 +5,63 @@ const { datosDe, datosOpcionales } = require('./errores');
 // profesional (RLS decide qué filas se ven); las que terminan en `ComoAdmin` usan el
 // cliente de servicio y solo se llaman después de verificar el acceso.
 class SesionRepository {
+  // Detalle de la sesión con paciente, profesional y sus turnos.
+  async obtenerDetalle(db, id) {
+    return datosDe(await db
+      .from('sesiones')
+      .select(`
+        *,
+        paciente:pacientes(id, nombre, apellido, dni, fecha_nacimiento),
+        profesional:profesionales!profesional_id(id, nombre, apellido, especialidad),
+        turnos(id, consultorio, estado)
+      `)
+      .eq('id', id)
+      .single());
+  }
+
+  async obtener(db, id, campos = '*') {
+    return datosDe(await db.from('sesiones').select(campos).eq('id', id).single());
+  }
+
+  // Sesiones registradas por el profesional, de la más reciente a la más vieja.
+  async listarDelProfesional(db, profesionalId, { pacienteId, hasta, limite }) {
+    let q = db
+      .from('sesiones')
+      .select('id, fecha, tipo, duracion_minutos, pagado, paciente:pacientes(id, nombre, apellido)')
+      .eq('profesional_id', profesionalId)
+      .order('fecha', { ascending: false })
+      .limit(limite);
+
+    if (pacienteId) q = q.eq('paciente_id', pacienteId);
+    if (hasta) q = q.lte('fecha', hasta);
+
+    return datosDe(await q);
+  }
+
+  async crear(db, sesion) {
+    return datosDe(await db.from('sesiones').insert(sesion).select().single());
+  }
+
+  async actualizar(db, id, cambios) {
+    return datosDe(await db.from('sesiones').update(cambios).eq('id', id).select().single());
+  }
+
+  // Deshace una sesión recién creada. No lanza: se usa mientras ya se está reportando otro error.
+  async eliminarComoAdmin(id) {
+    await supabaseAdmin.from('sesiones').delete().eq('id', id);
+  }
+
+  async listarVersionesDeNotas(db, sesionId) {
+    return datosDe(await db
+      .from('versiones_notas')
+      .select(`
+        *,
+        modificado_por:profesionales(id, nombre, apellido)
+      `)
+      .eq('sesion_id', sesionId)
+      .order('modificado_at', { ascending: false }));
+  }
+
   // Sesiones del profesional en el rango, con sus turnos para saber si ya están en la agenda.
   async listarDelProfesionalConTurnos(db, profesionalId, { desde, hasta }) {
     let q = db
