@@ -297,6 +297,28 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U293 | mientras carga muestra el esqueleto | Historial de turnos | Unitaria (componente) | `client/src/pages/HistorialPage.test.jsx` |  |
 | CP-U294 | un profesional ve "Historial" en el menú y lo lleva a /historial | Historial: acceso desde el menú | Unitaria (componente) | `client/src/components/chat/ChatSidebar.test.jsx` |  |
 | CP-U295 | para un admin, "Historial" queda antes de "Administración" | Historial: acceso desde el menú | Unitaria (componente) | `client/src/components/chat/ChatSidebar.test.jsx` |  |
+| CP-U296 | los 422 de signup, register, change-password, pacientes y turnos traen solo campo y mensaje, sin el valor enviado | Errores de validación (DEF-A18) | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
+| CP-U297 | erroresDeValidacion devuelve solo path y msg | Errores de validación (DEF-A18) | Unitaria | `server/__tests__/unit/validacion.test.js` |  |
+| CP-U298 | si falla el log de la descarga, la descarga sigue y queda el error en consola | Auditoría de accesos (DEF-A02) | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` |  |
+| CP-U299 | el admin ve el porcentaje de honorarios de todos | Porcentaje de honorarios (DEF-A17) | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` |  |
+| CP-U300 | porcentajeHonorarios: 0, 100, decimales, texto y sin valor → 70; fuera de 0–100 → 422 | Honorarios (DEF-A01) | Unitaria | `server/__tests__/unit/honorarios.test.js` |  |
+| CP-U301 | el reparto en centavos suma exactamente el total ($10,05, $0,01, $100,01, 0 % y 100 %) | Honorarios (DEF-A14) | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` |  |
+| CP-U302 | el meta viewport no bloquea el zoom | Zoom en móvil (DEF-A19) | Unitaria | `client/src/viewport.test.js` |  |
+| CP-U303 | en pantallas chicas los campos usan al menos 16 px | Zoom en móvil (DEF-A19) | Unitaria | `client/src/viewport.test.js` |  |
+| CP-U304 | el modal se anuncia como diálogo con el título como nombre | Modal accesible (DEF-A20) | Unitaria (componente) | `client/src/components/ui/Modal.test.jsx` |  |
+| CP-U305 | Escape cierra el modal y el foco vuelve al botón que lo abrió | Modal accesible (DEF-A20) | Unitaria (componente) | `client/src/components/ui/Modal.test.jsx` |  |
+| CP-U306 | el botón Cerrar también devuelve el foco | Modal accesible (DEF-A20) | Unitaria (componente) | `client/src/components/ui/Modal.test.jsx` |  |
+| CP-U307 | cerrado no renderiza nada | Modal accesible (DEF-A20) | Unitaria (componente) | `client/src/components/ui/Modal.test.jsx` |  |
+| CP-U308 | "Nuevo turno" abre un diálogo y cada campo se encuentra por su label | Formulario de turno accesible (DEF-A20) | Unitaria (componente) | `client/src/pages/AgendaPage.test.jsx` |  |
+| CP-U309 | la regla del DNI acepta 7 y 8 dígitos y rechaza 6, 9, puntos, espacios, letras y vacío | Regla única del DNI | Unitaria | `server/__tests__/unit/dni.test.js` |  |
+| CP-U310 | el mensaje dice el formato esperado y la expresión no tiene flags | Regla única del DNI | Unitaria | `server/__tests__/unit/dni.test.js` |  |
+| CP-U311 | POST y PATCH /pacientes con DNI inválido responden el mensaje de la regla única | Regla única del DNI | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
+| CP-U312 | crear_paciente desde el chat con DNI inválido no inserta y responde el mensaje de la regla única | Regla única del DNI | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U313 | validarDni acepta 7 y 8 dígitos y devuelve el mensaje en los demás casos | Regla única del DNI | Unitaria | `client/src/utils/dni.test.js` |  |
+| CP-U314 | el patrón para react-hook-form usa la misma expresión y mensaje | Regla única del DNI | Unitaria | `client/src/utils/dni.test.js` |  |
+| CP-U315 | client y server tienen exactamente la misma regla y el mismo mensaje | Regla única del DNI (contrato client–server) | Unitaria | `client/src/utils/dni.test.js` |  |
+| CP-U316 | el formulario del chat con DNI inválido avisa con el mensaje de la regla única y no envía | Regla única del DNI | Unitaria (componente) | `client/src/components/chat/PacienteFormCard.test.jsx` |  |
+| CP-U317 | el formulario del chat con un DNI válido envía el alta | Regla única del DNI | Unitaria (componente) | `client/src/components/chat/PacienteFormCard.test.jsx` |  |
 | CP-A01 | GET /health responde ok | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A02 | POST /auth/login como profesional | Autenticación (necesita credenciales de un proyecto de test) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A03 | POST /auth/login con email inválido → 422 | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
@@ -358,4 +380,4 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-E17 | el historial se abre desde el menú y no muestra la ocupación de otros profesionales | Historial de turnos | E2E | `client/e2e/navegabilidad.e2e.js` |  |
 | CP-E18 | historial sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
 
-Totales: 293 IDs unitarios, 42 de API y 18 E2E.
+Totales: 315 IDs unitarios, 42 de API y 18 E2E.
