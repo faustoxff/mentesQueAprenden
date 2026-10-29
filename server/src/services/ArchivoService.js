@@ -1,4 +1,5 @@
 const { supabaseAdmin } = require('../config/supabase');
+const pacienteService = require('./PacienteService');
 
 const BUCKET = 'historias-clinicas';
 
@@ -18,17 +19,13 @@ class ArchivoService {
   async generarUrlSubida(db, profesionalId, body) {
     const { paciente_id, nombre_original, mime_type, tamanio_bytes, tipo, sesion_id, descripcion } = body;
 
-    // Verificar acceso al paciente
-    const { data: paciente } = await db
-      .from('pacientes')
-      .select('id')
-      .eq('id', paciente_id)
-      .single();
-
-    if (!paciente) {
-      const err = new Error('Sin acceso a este paciente');
-      err.status = 403;
-      throw err;
+    // Verificar acceso al paciente (incluye que no esté dado de baja). Se responde 403
+    // como siempre en esta ruta.
+    try {
+      await pacienteService.asegurarAcceso(db, paciente_id);
+    } catch (err) {
+      if (err.status !== 404) throw err;
+      throw Object.assign(new Error('Sin acceso a este paciente'), { status: 403 });
     }
 
     // Derivar extensión desde mime_type (no del nombre enviado por el cliente)

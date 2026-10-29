@@ -43,6 +43,43 @@ class PacienteService {
     };
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // Acceso y lecturas para otros services (archivos, chat, IA)
+  // Las reglas de "existe, no está dado de baja y RLS lo deja ver" viven acá.
+  // ─────────────────────────────────────────────────────────────
+
+  // Lanza 404 si el paciente no existe, está dado de baja o RLS no lo deja ver
+  // (para quien llama, las tres cosas son lo mismo).
+  async asegurarAcceso(db, id) {
+    const paciente = await this.obtenerDatosBasicos(db, id, 'id');
+    if (!paciente) throw Object.assign(new Error('Paciente no encontrado'), { status: 404 });
+    return paciente;
+  }
+
+  // Columnas pedidas de un paciente activo y visible, o null.
+  async obtenerDatosBasicos(db, id, campos = 'id, nombre, apellido') {
+    const { data } = await db
+      .from('pacientes')
+      .select(campos)
+      .eq('id', id)
+      .is('deleted_at', null)
+      .maybeSingle();
+    return data || null;
+  }
+
+  // Búsqueda rápida por nombre, apellido o DNI (sin paginar), para el chat.
+  async buscar(db, busqueda, { limite = 5, campos = 'id, nombre, apellido, dni' } = {}) {
+    const termino = sanitizarBusqueda(busqueda);
+    if (!termino) return [];
+    const { data } = await db
+      .from('pacientes')
+      .select(campos)
+      .or(`nombre.ilike.%${termino}%,apellido.ilike.%${termino}%,dni.ilike.%${termino}%`)
+      .is('deleted_at', null)
+      .limit(limite);
+    return data || [];
+  }
+
   async obtener(db, id) {
     const { data, error } = await db
       .from('pacientes')
