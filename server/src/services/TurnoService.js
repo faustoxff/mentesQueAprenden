@@ -1,4 +1,5 @@
-const { funcionNoExiste } = require('../utils/rpc');
+const turnoRepository = require('../repositories/TurnoRepository');
+const sesionRepository = require('../repositories/SesionRepository');
 
 class TurnoService {
   // Trae los turnos propios (o accesibles por derivación) con todos los
@@ -7,24 +8,7 @@ class TurnoService {
   // sin filtrar datos clínicos ajenos.
   // incluirCancelados: el historial los muestra; la agenda no (es el comportamiento por defecto).
   async listar(db, { fecha_inicio, fecha_fin, profesional_id }, profesionalActualId, { incluirSesiones = false, incluirCancelados = false } = {}) {
-    let q = db
-      .from('turnos')
-      .select(`
-        id, fecha_inicio, fecha_fin, estado, tipo, notas, consultorio, recordatorio_enviado,
-        paciente_id,
-        paciente:pacientes(id, nombre, apellido, telefono),
-        profesional:profesionales!profesional_id(id, nombre, apellido, especialidad),
-        sesion:sesiones(id)
-      `)
-      .order('fecha_inicio', { ascending: true });
-
-    if (!incluirCancelados) q = q.neq('estado', 'cancelado');
-    if (fecha_inicio) q = q.gte('fecha_inicio', fecha_inicio);
-    if (fecha_fin) q = q.lte('fecha_inicio', fecha_fin);
-    if (profesional_id) q = q.eq('profesional_id', profesional_id);
-
-    const { data, error } = await q;
-    if (error) throw new Error(error.message);
+    const data = await turnoRepository.listar(db, { desde: fecha_inicio, hasta: fecha_fin, profesionalId: profesional_id, incluirCancelados });
 
     const turnos = data.map(t => {
       const esPropio = t.profesional?.id === profesionalActualId;
@@ -54,12 +38,13 @@ class TurnoService {
   }
 
   async ocupacionAjena(db, { fecha_inicio, fecha_fin, profesional_id }, idsYaIncluidos) {
-    const { data, error } = await db.rpc('turnos_ocupacion', {
-      p_desde: fecha_inicio || null,
-      p_hasta: fecha_fin || null
-    });
-    if (funcionNoExiste(error)) return this.ocupacionAjenaSinFuncion(db, { fecha_inicio, fecha_fin, profesional_id }, idsYaIncluidos);
-    if (error) throw new Error(error.message);
+    let data;
+    try {
+      data = await turnoRepository.ocupacion(db, { desde: fecha_inicio, hasta: fecha_fin });
+    } catch (error) {
+      if (error.tipo === 'FUNCION_INEXISTENTE') return this.ocupacionAjenaSinFuncion(db, { fecha_inicio, fecha_fin, profesional_id }, idsYaIncluidos);
+      throw error;
+    }
 
     return (data || [])
       .filter(t => !idsYaIncluidos.has(t.id) && (!profesional_id || t.profesional_id === profesional_id))
@@ -74,19 +59,10 @@ class TurnoService {
       }));
   }
 
-  // Camino anterior a la migración 008 (la policy dejaba leer todos los turnos): solo
-  // se piden las columnas que no son datos clínicos.
+  // Backend desplegado antes que la migración 008: se usa el camino anterior para no
+  // romper el calendario.
   async ocupacionAjenaSinFuncion(db, { fecha_inicio, fecha_fin, profesional_id }, idsYaIncluidos) {
-    let q = db
-      .from('turnos')
-      .select('id, fecha_inicio, fecha_fin, estado, consultorio, profesional:profesionales!profesional_id(id, nombre, apellido)')
-      .neq('estado', 'cancelado');
-    if (fecha_inicio) q = q.gte('fecha_inicio', fecha_inicio);
-    if (fecha_fin) q = q.lte('fecha_inicio', fecha_fin);
-    if (profesional_id) q = q.eq('profesional_id', profesional_id);
-
-    const { data, error } = await q;
-    if (error) throw new Error(error.message);
+    const data = await turnoRepository.ocupacionSinFuncion(db, { desde: fecha_inicio, hasta: fecha_fin, profesionalId: profesional_id });
     return (data || [])
       .filter(t => !idsYaIncluidos.has(t.id))
       .map(t => ({ ...t, ocupado: true }));
@@ -97,15 +73,7 @@ class TurnoService {
   // se la devuelve con la misma forma que un turno para que la agenda la
   // muestre. No ocupa consultorio (consultorio null).
   async sesionesSinTurno(db, profesionalId, desde, hasta) {
-    let q = db
-      .from('sesiones')
-      .select('id, fecha, duracion_minutos, tipo, paciente_id, paciente:pacientes(id, nombre, apellido, telefono), turnos(id, estado)')
-      .eq('profesional_id', profesionalId);
-    if (desde) q = q.gte('fecha', desde);
-    if (hasta) q = q.lte('fecha', hasta);
-
-    const { data, error } = await q;
-    if (error) throw new Error(error.message);
+    const data = await sesionRepository.listarDelProfesionalConTurnos(db, profesionalId, { desde, hasta });
 
     return data
       .filter(s => !(s.turnos || []).some(t => t.estado !== 'cancelado'))
@@ -124,52 +92,29 @@ class TurnoService {
   }
 
   async crear(db, profesionalId, body) {
-    const { data, error } = await db
-      .from('turnos')
-      .insert({ ...body, created_by: profesionalId })
-      .select(`
-        *,
-        paciente:pacientes(id, nombre, apellido, telefono),
-        profesional:profesionales!profesional_id(id, nombre, apellido)
-      `)
-      .single();
-
-    if (error) {
-      if (error.code === '23P01') {
-        const err = new Error(error.message);
-        err.status = 409;
-        throw err;
-      }
-      throw new Error(error.message);
+    try {
+      return await turnoRepository.crear(db, { ...body, created_by: profesionalId });
+    } catch (error) {
+      if (error.tipo === 'CHOQUE_HORARIO') error.status = 409;
+      throw error;
     }
-    return data;
   }
 
   async actualizar(db, id, body) {
     const { created_by, created_at, id: _id, ...updateData } = body;
 
-    const { data, error } = await db
-      .from('turnos')
-      .update(updateData)
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      const err = new Error(error.code === '23P01' ? error.message : 'Error al actualizar el turno');
-      err.status = error.code === 'PGRST116' ? 404 : error.code === '23P01' ? 409 : 500;
+    try {
+      return await turnoRepository.actualizar(db, id, updateData);
+    } catch (error) {
+      const choque = error.tipo === 'CHOQUE_HORARIO';
+      const err = new Error(choque ? error.message : 'Error al actualizar el turno');
+      err.status = error.tipo === 'NO_ENCONTRADO' ? 404 : choque ? 409 : 500;
       throw err;
     }
-    return data;
   }
 
   async cancelar(db, id) {
-    const { error } = await db
-      .from('turnos')
-      .update({ estado: 'cancelado' })
-      .eq('id', id);
-
-    if (error) throw new Error(error.message);
+    await turnoRepository.cancelar(db, id);
   }
 }
 

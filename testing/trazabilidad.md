@@ -330,6 +330,10 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U326 | buscar no filtra con un término vacío o de solo símbolos | Acceso a pacientes centralizado | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
 | CP-U327 | ver_paciente y buscar_pacientes del chat leen a través de PacienteService | Acceso a pacientes centralizado | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
 | CP-U328 | no se firma una URL de subida para un paciente dado de baja | Archivos (DEF-A22) | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U329 | los códigos de Supabase/Postgres se traducen a tipos propios | Capa de repositorios | Unitaria | `server/__tests__/unit/repositorios.test.js` |  |
+| CP-U330 | datosDe devuelve los datos cuando no hay error | Capa de repositorios | Unitaria | `server/__tests__/unit/repositorios.test.js` |  |
+| CP-U331 | un choque de consultorio al crear llega como CHOQUE_HORARIO | Capa de repositorios | Unitaria | `server/__tests__/unit/repositorios.test.js` |  |
+| CP-U332 | la ocupación pide el rango a la función de la base | Capa de repositorios | Unitaria | `server/__tests__/unit/repositorios.test.js` |  |
 | CP-A01 | GET /health responde ok | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A02 | POST /auth/login como profesional | Autenticación (necesita credenciales de un proyecto de test) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A03 | POST /auth/login con email inválido → 422 | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
@@ -391,4 +395,4 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-E17 | el historial se abre desde el menú y no muestra la ocupación de otros profesionales | Historial de turnos | E2E | `client/e2e/navegabilidad.e2e.js` |  |
 | CP-E18 | historial sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
 
-Totales: 326 IDs unitarios, 42 de API y 18 E2E.
+Totales: 330 IDs unitarios, 42 de API y 18 E2E.
