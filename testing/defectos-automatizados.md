@@ -35,8 +35,9 @@ Relevamiento del 2026-10-27 sobre `master` (commit `a6d110b` más los tests de e
 | DEF-A15 | La edad del paciente suma el año un día antes (zona horaria) | Baja | No | Abierto |
 | DEF-A16 | `/admin` no tiene guarda de rol en el cliente | Baja | No (el backend bloquea) | Abierto |
 | DEF-A21 | `docs/API.md` no coincide con el código | Baja | No | Abierto |
+| DEF-A22 | Se puede pedir una URL para subir un archivo a un paciente dado de baja | Baja | Sí (bajo) | **Corregido** (sin commitear) |
 
-Totales: 21 defectos (5 alta, 3 media, 13 baja), 6 con impacto en seguridad. **Corregidos: 7** (las 5 de prioridad alta, DEF-A14 y DEF-A18). **Abiertos: 14** (DEF-A03 de prioridad media y 13 de prioridad baja).
+Totales: 22 defectos (5 alta, 3 media, 14 baja), 7 con impacto en seguridad. **Corregidos: 8** (las 5 de prioridad alta, DEF-A14, DEF-A18 y DEF-A22). **Abiertos: 14** (DEF-A03 de prioridad media y 13 de prioridad baja).
 
 ---
 
@@ -226,6 +227,15 @@ Totales: 21 defectos (5 alta, 3 media, 13 baja), 6 con impacto en seguridad. **C
 - **Probabilidad:** alta · **Impacto:** bajo · **Prioridad:** baja · **Seguridad:** no.
 
 ---
+
+## DEF-A22 — Se puede pedir una URL para subir un archivo a un paciente dado de baja
+- **Estado:** **Corregido** (cambio sin commitear todavía): la verificación de acceso de archivos ahora usa `PacienteService.asegurarAcceso`, que excluye los dados de baja. Se mantiene la respuesta 403 de esta ruta. Test de regresión: CP-U328.
+- **Dónde:** `server/src/services/ArchivoService.js` (`generarUrlSubida`): verificaba el acceso al paciente con su propia consulta, sin el filtro de baja que sí usan el resto de las verificaciones.
+- **Pasos:** dar de baja un paciente y, con su id, pedir `POST /api/archivos/upload-url`.
+- **Esperado:** 403 "Sin acceso a este paciente", sin firmar ninguna URL.
+- **Obtenido:** se firmaba la URL y se registraba el archivo de un paciente que ya no aparece en el sistema.
+- **Evidencia:** revisión de código al analizar el acoplamiento con la tabla de pacientes; CP-U328.
+- **Probabilidad:** baja (hace falta el id del paciente) · **Impacto:** medio · **Prioridad:** baja · **Seguridad:** sí, bajo.
 
 ## Observaciones (no son defectos, quedan para decidir)
 - **Turnos con fecha pasada — decisión tomada: se permiten y se consultan en `/historial`.** `SesionService` los usa para registrar sesiones ya hechas. El historial los muestra con los cancelados (`GET /turnos?incluir_cancelados=true`) y permite registrar la sesión de los que quedaron sin cerrar (CP-U274…CP-U276, CP-U280…CP-U295).

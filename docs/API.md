@@ -167,7 +167,7 @@ El modelo no usa `tools` nativas: responde un bloque ` ```json {"action": "...",
 | `listar_mis_pacientes`, `buscar_pacientes`, `ver_paciente` | Consulta |
 | `ver_agenda`, `listar_mis_sesiones`, `listar_profesionales` | Consulta |
 | `mostrar_formulario_paciente`, `mostrar_formulario_turno` | Abre formulario en el cliente (corta el loop, sin texto) |
-| `crear_paciente`, `crear_turno`, `registrar_sesion` | Escritura |
+| `crear_paciente`, `crear_turno`, `registrar_sesion` | Escritura. Aplican las mismas validaciones (mismos mensajes, `422`) y la misma lógica que `POST /pacientes`, `/turnos` y `/sesiones`: el chat llama a los mismos services. `registrar_sesion` no reserva consultorio ni vincula turno: eso se completa después desde la sesión |
 | `eliminar_paciente` | Escritura (el prompt exige confirmación explícita) |
 
 `tool_results` es `[{ name, result }]`; el cliente lo usa para renderizar tarjetas (`ChatToolResults.jsx`).

@@ -319,6 +319,17 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U315 | client y server tienen exactamente la misma regla y el mismo mensaje | Regla única del DNI (contrato client–server) | Unitaria | `client/src/utils/dni.test.js` |  |
 | CP-U316 | el formulario del chat con DNI inválido avisa con el mensaje de la regla única y no envía | Regla única del DNI | Unitaria (componente) | `client/src/components/chat/PacienteFormCard.test.jsx` |  |
 | CP-U317 | el formulario del chat con un DNI válido envía el alta | Regla única del DNI | Unitaria (componente) | `client/src/components/chat/PacienteFormCard.test.jsx` |  |
+| CP-U318 | registrar_sesion del chat con duración, monto, fecha o tipo inválidos rechaza con el mismo mensaje que POST /sesiones | Chat y formularios por el mismo camino (SoC) | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U319 | una sesión válida del chat se crea con SesionService.crear, sin consultorio | Chat y formularios por el mismo camino (SoC) | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U320 | el chat corre exactamente las reglas de la ruta | Chat y formularios por el mismo camino (SoC) | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U321 | crear_paciente del chat usa PacienteService.crear con los datos saneados | Chat y formularios por el mismo camino (SoC) | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U322 | crear_paciente sin fecha de nacimiento → 422 con el mensaje del formulario | Chat y formularios por el mismo camino (SoC) | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U323 | crear_turno del chat usa TurnoService.crear con fin = inicio + duración | Chat y formularios por el mismo camino (SoC) | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U324 | crear_turno del chat con consultorio 4 → 422 | Chat y formularios por el mismo camino (SoC) | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U325 | asegurarAcceso: ajeno o dado de baja → 404 | Acceso a pacientes centralizado | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U326 | buscar no filtra con un término vacío o de solo símbolos | Acceso a pacientes centralizado | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U327 | ver_paciente y buscar_pacientes del chat leen a través de PacienteService | Acceso a pacientes centralizado | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U328 | no se firma una URL de subida para un paciente dado de baja | Archivos (DEF-A22) | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
 | CP-A01 | GET /health responde ok | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A02 | POST /auth/login como profesional | Autenticación (necesita credenciales de un proyecto de test) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A03 | POST /auth/login con email inválido → 422 | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
@@ -380,4 +391,4 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-E17 | el historial se abre desde el menú y no muestra la ocupación de otros profesionales | Historial de turnos | E2E | `client/e2e/navegabilidad.e2e.js` |  |
 | CP-E18 | historial sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
 
-Totales: 315 IDs unitarios, 42 de API y 18 E2E.
+Totales: 326 IDs unitarios, 42 de API y 18 E2E.
