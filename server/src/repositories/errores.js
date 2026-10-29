@@ -21,4 +21,8 @@ function datosDe({ data, error }) {
   return data;
 }
 
-module.exports = { ErrorDeDatos, datosDe };
+// Para lecturas donde "no está" y "no se pudo leer" se tratan igual (el service responde
+// 404/422): devuelve null ante cualquier error.
+const datosOpcionales = ({ data }) => data ?? null;
+
+module.exports = { ErrorDeDatos, datosDe, datosOpcionales };

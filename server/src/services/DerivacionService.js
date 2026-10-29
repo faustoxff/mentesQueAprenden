@@ -1,3 +1,6 @@
+const derivacionRepository = require('../repositories/DerivacionRepository');
+const profesionalRepository = require('../repositories/ProfesionalRepository');
+
 class DerivacionService {
   // db es el cliente de Supabase autenticado con el JWT del usuario (respeta RLS).
   // Cada método lo recibe como parámetro porque depende de la request.
@@ -9,11 +12,7 @@ class DerivacionService {
       throw err;
     }
 
-    const { data: destino } = await db
-      .from('profesionales')
-      .select('id, activo')
-      .eq('id', body.profesional_destino_id)
-      .single();
+    const destino = await profesionalRepository.obtenerEstado(db, body.profesional_destino_id);
 
     if (!destino || !destino.activo) {
       const err = new Error('El profesional destinatario no existe o está inactivo');
@@ -21,34 +20,18 @@ class DerivacionService {
       throw err;
     }
 
-    const { data, error } = await db
-      .from('derivaciones')
-      .insert({
-        paciente_id: body.paciente_id,
-        profesional_origen_id: profesionalOrigenId,
-        profesional_destino_id: body.profesional_destino_id,
-        motivo: body.motivo,
-        observaciones: body.observaciones
-      })
-      .select(`
-        *,
-        paciente:pacientes(id, nombre, apellido),
-        origen:profesionales!profesional_origen_id(id, nombre, apellido, especialidad),
-        destino:profesionales!profesional_destino_id(id, nombre, apellido, especialidad)
-      `)
-      .single();
-
-    if (error) throw new Error(error.message);
-    return data;
+    return derivacionRepository.crear(db, {
+      paciente_id: body.paciente_id,
+      profesional_origen_id: profesionalOrigenId,
+      profesional_destino_id: body.profesional_destino_id,
+      motivo: body.motivo,
+      observaciones: body.observaciones
+    });
   }
 
   async responder(db, id, profesionalId, body) {
     // Verificar que el profesional destino es quien responde
-    const { data: derivacion } = await db
-      .from('derivaciones')
-      .select('profesional_destino_id, estado')
-      .eq('id', id)
-      .single();
+    const derivacion = await derivacionRepository.obtenerCampos(db, id, 'profesional_destino_id, estado');
 
     if (!derivacion) {
       const err = new Error('Derivación no encontrada');
@@ -66,30 +49,18 @@ class DerivacionService {
       throw err;
     }
 
-    const { data, error } = await db
-      .from('derivaciones')
-      .update({
-        estado: body.estado,
-        observaciones: body.observaciones,
-        fecha_respuesta: new Date().toISOString(),
-        activa: body.estado === 'aceptada'
-      })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw new Error(error.message);
-    return data;
+    return derivacionRepository.actualizar(db, id, {
+      estado: body.estado,
+      observaciones: body.observaciones,
+      fecha_respuesta: new Date().toISOString(),
+      activa: body.estado === 'aceptada'
+    });
   }
 
   async completar(db, id, profesionalId) {
     // Cierra el acceso del destino al paciente: cualquiera de las dos partes
     // puede marcarla completada (ej: terminó el tratamiento derivado).
-    const { data: derivacion } = await db
-      .from('derivaciones')
-      .select('profesional_origen_id, profesional_destino_id, estado, activa')
-      .eq('id', id)
-      .single();
+    const derivacion = await derivacionRepository.obtenerCampos(db, id, 'profesional_origen_id, profesional_destino_id, estado, activa');
 
     if (!derivacion) {
       const err = new Error('Derivación no encontrada');
@@ -107,47 +78,15 @@ class DerivacionService {
       throw err;
     }
 
-    const { data, error } = await db
-      .from('derivaciones')
-      .update({ estado: 'completada', activa: false })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) throw new Error(error.message);
-    return data;
+    return derivacionRepository.actualizar(db, id, { estado: 'completada', activa: false });
   }
 
   async listar(db, profesionalId) {
-    const { data, error } = await db
-      .from('derivaciones')
-      .select(`
-        *,
-        paciente:pacientes(id, nombre, apellido, dni),
-        origen:profesionales!profesional_origen_id(id, nombre, apellido, especialidad),
-        destino:profesionales!profesional_destino_id(id, nombre, apellido, especialidad)
-      `)
-      .or(`profesional_origen_id.eq.${profesionalId},profesional_destino_id.eq.${profesionalId}`)
-      .order('created_at', { ascending: false });
-
-    if (error) throw new Error(error.message);
-    return data;
+    return derivacionRepository.listarDelProfesional(db, profesionalId);
   }
 
   async listarPendientes(db, profesionalId) {
-    const { data, error } = await db
-      .from('derivaciones')
-      .select(`
-        *,
-        paciente:pacientes(id, nombre, apellido, dni, fecha_nacimiento),
-        origen:profesionales!profesional_origen_id(id, nombre, apellido, especialidad)
-      `)
-      .eq('profesional_destino_id', profesionalId)
-      .eq('estado', 'pendiente')
-      .order('created_at', { ascending: false });
-
-    if (error) throw new Error(error.message);
-    return data;
+    return derivacionRepository.listarPendientesDe(db, profesionalId);
   }
 }
 
