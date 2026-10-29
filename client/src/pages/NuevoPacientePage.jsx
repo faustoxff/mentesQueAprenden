@@ -5,6 +5,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { ArrowLeft } from 'lucide-react';
 import api from '../services/api';
 import { aplicarErroresAlForm, getErrorMessage } from '../utils/errores';
+import { PATRON_DNI } from '../utils/dni';
 
 export default function NuevoPacientePage() {
   const navigate = useNavigate();
@@ -80,7 +81,7 @@ export default function NuevoPacientePage() {
               <input
                 {...register('dni', {
                   required: 'El DNI es obligatorio',
-                  pattern: { value: /^\d{7,8}$/, message: 'El DNI debe tener 7 u 8 dígitos, sin puntos ni espacios' }
+                  pattern: PATRON_DNI
                 })}
                 className={inputClass(errors.dni)}
                 placeholder="30123456"

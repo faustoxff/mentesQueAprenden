@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 import { getErrorMessage } from '../../utils/errores';
+import { validarDni } from '../../utils/dni';
 
 export function PacienteFormCard({ prefill = {} }) {
   const queryClient = useQueryClient();
@@ -32,8 +33,9 @@ export function PacienteFormCard({ prefill = {} }) {
       toast.error('Nombre, apellido, DNI y fecha de nacimiento son obligatorios');
       return;
     }
-    if (!/^\d{7,8}$/.test(form.dni)) {
-      toast.error('El DNI debe tener 7 u 8 dígitos numéricos');
+    const errorDni = validarDni(form.dni);
+    if (errorDni) {
+      toast.error(errorDni);
       return;
     }
     setSaving(true);

@@ -6,6 +6,7 @@ import { ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../services/api';
 import { aplicarErroresAlForm, getErrorMessage } from '../utils/errores';
+import { PATRON_DNI } from '../utils/dni';
 
 export default function EditarPacientePage() {
   const { id } = useParams();
@@ -110,7 +111,7 @@ export default function EditarPacientePage() {
             </Field>
             <Field label="DNI" required error={errors.dni}>
               <input
-                {...register('dni', { required: 'El DNI es obligatorio', pattern: { value: /^\d{7,8}$/, message: 'El DNI debe tener 7 u 8 dígitos, sin puntos ni espacios' } })}
+                {...register('dni', { required: 'El DNI es obligatorio', pattern: PATRON_DNI })}
                 className={inputClass(errors.dni)}
                 inputMode="numeric"
               />
