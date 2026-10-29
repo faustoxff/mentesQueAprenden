@@ -3,6 +3,7 @@ const { body, param, query, validationResult } = require('express-validator');
 const { erroresDeValidacion } = require('../utils/validacion');
 const { requireAuth, getAuthenticatedClient } = require('../middleware/auth');
 const turnoService = require('../services/TurnoService');
+const { reglasCrearTurno } = require('../validaciones/turnos');
 
 const router = express.Router();
 
@@ -30,14 +31,7 @@ router.get('/', requireAuth, [
 // POST /turnos
 router.post('/',
   requireAuth,
-  [
-    body('fecha_inicio').isISO8601(),
-    body('fecha_fin').isISO8601(),
-    body('profesional_id').isUUID(),
-    body('paciente_id').optional().isUUID(),
-    body('tipo').optional().isIn(['evaluacion', 'tratamiento', 'seguimiento', 'devolucion', 'reunion_interdisciplinaria']),
-    body('consultorio').optional().isInt({ min: 1, max: 3 })
-  ],
+  reglasCrearTurno,
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
