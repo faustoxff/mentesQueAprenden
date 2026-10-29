@@ -5,6 +5,7 @@ const pacienteService = require('./PacienteService');
 const turnoService = require('./TurnoService');
 const { sanitizarBusqueda } = require('../utils/busqueda');
 const { crearToken, verificarToken } = require('../utils/confirmacion');
+const { esDniValido, DNI_MENSAJE } = require('../utils/dni');
 const sesionService = require('./SesionService');
 
 const MODELO_TEXTO = 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
@@ -354,7 +355,7 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
 
       case 'crear_paciente': {
         if (!args.fecha_nacimiento) throw new Error('fecha_nacimiento es obligatoria para crear un paciente');
-        if (!args.dni || !/^\d{7,8}$/.test(args.dni)) throw new Error('dni inválido: debe tener 7 u 8 dígitos');
+        if (!esDniValido(args.dni)) throw new Error(DNI_MENSAJE);
         const CAMPOS_PACIENTE = ['nombre', 'apellido', 'dni', 'fecha_nacimiento', 'telefono', 'email', 'motivo_consulta'];
         // Solo un admin puede asignarlo a otro profesional.
         const principal = (profesional.rol === 'admin' && args.profesional_principal_id) || profesional.id;

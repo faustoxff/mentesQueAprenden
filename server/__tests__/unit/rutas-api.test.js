@@ -354,6 +354,18 @@ describe('pacientes: validación y estados', () => {
   });
 
   test.each([
+    ['POST', (r) => r.post('/api/pacientes').send(paciente({ dni: '123456789' }))],
+    ['PATCH', (r) => r.patch(`/api/pacientes/${UUID}`).send({ dni: '123456789' })]
+  ])('CP-U311 %s /pacientes con DNI inválido responde el mensaje de la regla única', async (_metodo, pedir) => {
+    const { DNI_MENSAJE } = require('../../src/utils/dni');
+
+    const res = await comoProf(pedir(request(app)));
+
+    expect(res.status).toBe(422);
+    expect(res.body.errors).toContainEqual({ path: 'dni', msg: DNI_MENSAJE });
+  });
+
+  test.each([
     ['DNI de 7 dígitos', { dni: '1234567' }],
     ['DNI de 8 dígitos', { dni: '12345678' }],
     ['teléfono de 8 caracteres', { telefono: '11223344' }],

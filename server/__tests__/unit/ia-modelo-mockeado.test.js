@@ -167,6 +167,17 @@ describe('chat: loop de acciones', () => {
   });
 });
 
+describe('crear_paciente desde el chat', () => {
+  test.each(['123456', '123456789', '12.345.678'])('CP-U312 con DNI %s no inserta y responde el mensaje de la regla única', async (dni) => {
+    const { DNI_MENSAJE } = require('../../src/utils/dni');
+    const { db, enTabla } = crearDb({});
+
+    await expect(iaService.ejecutarTool('crear_paciente', { nombre: 'ZZ-TEST', apellido: 'Chat', dni, fecha_nacimiento: '2015-03-10' }, profesional, db))
+      .rejects.toThrow(DNI_MENSAJE);
+    expect(enTabla('pacientes', 'insert')).toHaveLength(0);
+  });
+});
+
 describe('baja de paciente: siempre con confirmación explícita', () => {
   test('CP-U181 un token vencido (más de 5 minutos) se rechaza y no da de baja a nadie', async () => {
     const hace6min = Date.now() - 6 * 60 * 1000;

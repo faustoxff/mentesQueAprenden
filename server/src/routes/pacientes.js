@@ -5,6 +5,7 @@ const { requireAuth } = require('../middleware/auth');
 const { registrarAcceso } = require('../middleware/auditLog');
 const { getAuthenticatedClient } = require('../middleware/auth');
 const pacienteService = require('../services/PacienteService');
+const { DNI_REGEX, DNI_MENSAJE } = require('../utils/dni');
 
 const router = express.Router();
 
@@ -47,7 +48,7 @@ router.post('/',
     body('nombre').trim().notEmpty().withMessage('El nombre es obligatorio'),
     body('apellido').trim().notEmpty().withMessage('El apellido es obligatorio'),
     body('dni').trim().notEmpty().withMessage('El DNI es obligatorio').bail()
-      .matches(/^\d{7,8}$/).withMessage('El DNI debe tener 7 u 8 dígitos, sin puntos ni espacios'),
+      .matches(DNI_REGEX).withMessage(DNI_MENSAJE),
     body('fecha_nacimiento').customSanitizer(v => {
       // Convertir dd/MM/yyyy → yyyy-MM-dd si viene del browser en español
       if (v && /^\d{2}\/\d{2}\/\d{4}$/.test(v)) {
@@ -84,7 +85,7 @@ router.patch('/:id',
     param('id').isUUID().withMessage('El identificador del paciente no es válido'),
     body('nombre').optional().trim().notEmpty().withMessage('El nombre no puede quedar vacío'),
     body('apellido').optional().trim().notEmpty().withMessage('El apellido no puede quedar vacío'),
-    body('dni').optional().matches(/^\d{7,8}$/).withMessage('El DNI debe tener 7 u 8 dígitos, sin puntos ni espacios'),
+    body('dni').optional().matches(DNI_REGEX).withMessage(DNI_MENSAJE),
     body('fecha_nacimiento').optional().isISO8601().withMessage('La fecha de nacimiento no es válida'),
     body('estado').optional().isIn(['activo', 'derivado', 'alta', 'inactivo']).withMessage('El estado no es válido'),
     body('profesional_principal_id').optional({ checkFalsy: true }).isUUID().withMessage('El profesional asignado no es válido'),
