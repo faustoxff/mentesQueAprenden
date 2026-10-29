@@ -1,7 +1,7 @@
-const { supabaseAdmin } = require('../config/supabase');
 const pacienteService = require('./PacienteService');
-
-const BUCKET = 'historias-clinicas';
+const archivoRepository = require('../repositories/ArchivoRepository');
+const almacenamientoRepository = require('../repositories/AlmacenamientoRepository');
+const logAccesoRepository = require('../repositories/LogAccesoRepository');
 
 const MIME_TO_EXT = {
   'application/pdf': 'pdf',
@@ -33,31 +33,21 @@ class ArchivoService {
     const nombre_storage = `${paciente_id}/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
 
     // URL firmada para upload (5 minutos)
-    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
-      .from(BUCKET)
-      .createSignedUploadUrl(nombre_storage);
-
-    if (uploadError) throw new Error(uploadError.message);
+    const uploadData = await almacenamientoRepository.urlDeSubida(nombre_storage);
 
     // Registrar el archivo en la BD (pendiente hasta que se confirme el upload)
-    const { data: archivo, error: dbError } = await db
-      .from('archivos_adjuntos')
-      .insert({
-        paciente_id,
-        sesion_id,
-        nombre_original,
-        nombre_storage,
-        storage_path: nombre_storage,
-        tipo,
-        mime_type,
-        tamanio_bytes,
-        descripcion,
-        subido_por: profesionalId
-      })
-      .select()
-      .single();
-
-    if (dbError) throw new Error(dbError.message);
+    const archivo = await archivoRepository.crear(db, {
+      paciente_id,
+      sesion_id,
+      nombre_original,
+      nombre_storage,
+      storage_path: nombre_storage,
+      tipo,
+      mime_type,
+      tamanio_bytes,
+      descripcion,
+      subido_por: profesionalId
+    });
 
     return {
       archivo_id: archivo.id,
@@ -67,49 +57,31 @@ class ArchivoService {
   }
 
   async obtenerUrlDescarga(db, id, profesionalId, { ip, userAgent }) {
-    const { data: archivo, error } = await db
-      .from('archivos_adjuntos')
-      .select('*, paciente:pacientes(id)')
-      .eq('id', id)
-      .single();
+    const archivo = await archivoRepository.obtener(db, id, '*, paciente:pacientes(id)');
 
-    if (error || !archivo) {
+    if (!archivo) {
       const err = new Error('Archivo no encontrado');
       err.status = 404;
       throw err;
     }
 
-    // Log de la descarga (Ley 25.326). Se espera el insert: el builder de Supabase solo
-    // manda la consulta con await/then. Si el log falla, la descarga sigue igual.
-    try {
-      const { error: logError } = await supabaseAdmin.from('logs_acceso').insert({
-        profesional_id: profesionalId,
-        paciente_id: archivo.paciente_id,
-        accion: 'descargar_archivo',
-        recurso: 'archivo:' + id,
-        ip_address: ip,
-        user_agent: userAgent,
-        metadata: { nombre_original: archivo.nombre_original }
-      });
-      if (logError) console.error('Error al registrar log de acceso:', logError);
-    } catch (err) {
-      console.error('Error al registrar log de acceso:', err.message);
-    }
+    // Log de la descarga (Ley 25.326). Si el log falla, la descarga sigue igual.
+    await logAccesoRepository.registrarComoAdmin({
+      profesional_id: profesionalId,
+      paciente_id: archivo.paciente_id,
+      accion: 'descargar_archivo',
+      recurso: 'archivo:' + id,
+      ip_address: ip,
+      user_agent: userAgent,
+      metadata: { nombre_original: archivo.nombre_original }
+    });
 
-    const { data: urlData, error: urlError } = await supabaseAdmin.storage
-      .from(BUCKET)
-      .createSignedUrl(archivo.storage_path, 300); // 5 minutos
-
-    if (urlError) throw new Error(urlError.message);
-    return { url: urlData.signedUrl, nombre_original: archivo.nombre_original };
+    const url = await almacenamientoRepository.urlDeDescarga(archivo.storage_path, 300); // 5 minutos
+    return { url, nombre_original: archivo.nombre_original };
   }
 
   async eliminar(db, id, profesional) {
-    const { data: archivo } = await db
-      .from('archivos_adjuntos')
-      .select('storage_path, subido_por')
-      .eq('id', id)
-      .single();
+    const archivo = await archivoRepository.obtener(db, id, 'storage_path, subido_por');
 
     if (!archivo) {
       const err = new Error('Archivo no encontrado');
@@ -125,20 +97,18 @@ class ArchivoService {
     // Primero la metadata, confirmando que se borró (sin policy de DELETE, RLS devuelve
     // 0 filas sin error). Recién después el archivo: si falla acá queda un archivo
     // huérfano en el storage, que es mejor que metadata apuntando a un archivo perdido.
-    const { data: borradas, error } = await db
-      .from('archivos_adjuntos')
-      .delete()
-      .eq('id', id)
-      .select('id');
-    if (error) throw new Error(error.message);
+    const borradas = await archivoRepository.eliminar(db, id);
     if (!borradas?.length) {
       const err = new Error('Sin permiso para eliminar este archivo');
       err.status = 403;
       throw err;
     }
 
-    const { error: storageError } = await supabaseAdmin.storage.from(BUCKET).remove([archivo.storage_path]);
-    if (storageError) console.error('No se pudo borrar el archivo del storage:', storageError.message);
+    try {
+      await almacenamientoRepository.eliminar(archivo.storage_path);
+    } catch (error) {
+      console.error('No se pudo borrar el archivo del storage:', error.message);
+    }
   }
 }
 
