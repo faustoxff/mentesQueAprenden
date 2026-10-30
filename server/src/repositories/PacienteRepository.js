@@ -12,6 +12,7 @@ class PacienteRepository {
   // Una página de pacientes activos, por apellido: { data, count }.
   async listarActivos(db, { termino, estado, profesionalPrincipalId, desde, hasta }) {
     let query = db
+    // GET
       .from('pacientes')
       .select(`
         id, nombre, apellido, dni, fecha_nacimiento, estado,
