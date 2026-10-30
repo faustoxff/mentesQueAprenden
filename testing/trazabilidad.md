@@ -342,6 +342,8 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U338 | crear un turno para un paciente dado de baja → 404 sin insertar | Acceso a pacientes centralizado | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
 | CP-U339 | un turno sin paciente no consulta pacientes | Acceso a pacientes centralizado | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
 | CP-U340 | crear una sesión para un paciente dado de baja → 404 sin insertar | Acceso a pacientes centralizado | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U341 | cuando Menta responde, el input del chat queda enfocado | Chat (usabilidad) | Unitaria | `client/src/components/chat/ChatSidebar.test.jsx` |  |
+| CP-U342 | si la IA falla, el input del chat también queda enfocado | Chat (usabilidad) | Unitaria | `client/src/components/chat/ChatSidebar.test.jsx` |  |
 | CP-A01 | GET /health responde ok | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A02 | POST /auth/login como profesional | Autenticación (necesita credenciales de un proyecto de test) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A03 | POST /auth/login con email inválido → 422 | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
@@ -403,4 +405,4 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-E17 | el historial se abre desde el menú y no muestra la ocupación de otros profesionales | Historial de turnos | E2E | `client/e2e/navegabilidad.e2e.js` |  |
 | CP-E18 | historial sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
 
-Totales: 338 IDs unitarios, 42 de API y 18 E2E.
+Totales: 340 IDs unitarios, 42 de API y 18 E2E.

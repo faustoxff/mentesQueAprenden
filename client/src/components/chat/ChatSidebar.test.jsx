@@ -52,3 +52,28 @@ describe('ChatSidebar: menú', () => {
     expect(opciones.slice(-2)).toEqual(['Historial', 'Administración']);
   });
 });
+
+describe('ChatSidebar: foco del input', () => {
+  it('CP-U341 cuando Menta responde, el input queda enfocado para escribir el siguiente mensaje', async () => {
+    renderizar();
+    const input = screen.getByPlaceholderText('Preguntale algo a Menta...');
+    // Un navegador real le saca el foco al input cuando se deshabilita mientras espera; jsdom no.
+    api.post.mockImplementation(async () => { input.blur(); return { data: { message: '¡Hola!', tool_results: [] } }; });
+
+    await userEvent.type(input, 'hola{Enter}');
+    await screen.findByText('¡Hola!');
+
+    expect(input).toHaveFocus();
+  });
+
+  it('CP-U342 si la IA falla, el input también queda enfocado para reintentar', async () => {
+    renderizar();
+    const input = screen.getByPlaceholderText('Preguntale algo a Menta...');
+    api.post.mockImplementation(async () => { input.blur(); throw new Error('Network Error'); });
+
+    await userEvent.type(input, 'hola{Enter}');
+    await screen.findByText(/No pudimos conectarnos/);
+
+    expect(input).toHaveFocus();
+  });
+});

@@ -60,9 +60,15 @@ export default function ChatSidebar({ className = 'flex' }) {
   const [dragOver, setDragOver] = useState(false);
   const bottomRef = useRef(null);
   const fileInputRef = useRef(null);
+  const inputRef = useRef(null);
   const dragCounter = useRef(0);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, loading, archivosAdjuntos]);
+  // El input se deshabilita mientras Menta responde y pierde el foco: al terminar se
+  // vuelve a enfocar para poder escribir el siguiente mensaje sin hacer clic.
+  useEffect(() => {
+    if (!loading && messages.length) inputRef.current?.focus();
+  }, [loading, messages.length]);
   useEffect(() => {
     try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(messages)); } catch {}
   }, [messages]);
@@ -307,6 +313,7 @@ export default function ChatSidebar({ className = 'flex' }) {
             <Paperclip size={16} />
           </button>
           <input
+            ref={inputRef}
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
