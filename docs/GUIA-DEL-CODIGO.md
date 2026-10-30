@@ -22,10 +22,10 @@ Navegador (React, PWA)
 Cada pedido atraviesa siempre lo mismo:
 
 ```
-index.js ─► routes/X.js ─► middleware ─► services/XService.js ─► Supabase
- (helmet,    (valida la      (requireAuth,    (reglas de negocio,
-  CORS,       entrada con     requireAdmin,    arma las consultas)
-  rate limit) express-        registrarAcceso)
+index.js ─► routes/X.js ─► middleware ─► services/XService.js ─► repositories/XRepository.js ─► Supabase
+ (helmet,    (valida la      (requireAuth,    (reglas de           (arma las consultas,
+  CORS,       entrada con     requireAdmin,    negocio, decide      traduce los errores
+  rate limit) express-        registrarAcceso) 404/409/422)         de la base)
               validator)
 ```
 
@@ -34,16 +34,21 @@ index.js ─► routes/X.js ─► middleware ─► services/XService.js ─►
 | App | `src/index.js` | Seguridad global, rate limit, monta las rutas bajo `/api/...` | Lógica de negocio |
 | Rutas | `src/routes/` | Validan el body/params y traducen errores a códigos HTTP | Hablar con la base directo |
 | Middleware | `src/middleware/` | Autenticación, rol admin, auditoría | — |
-| Servicios | `src/services/` | **Toda la lógica**: reglas, consultas, errores con `status` | Conocer `req`/`res` |
+| Servicios | `src/services/` | **Las reglas de negocio** y los errores con `status` | Conocer `req`/`res` o usar Supabase directo |
+| Repositorios | `src/repositories/` | **Las consultas** a Supabase (tablas, `rpc`, Storage), una clase por tabla | Decidir reglas o códigos HTTP |
 
-Convención de errores: un servicio lanza `new Error(msg)` con `err.status` (404, 409, 422…) y la ruta responde `res.status(err.status || 500)`. Por eso los servicios se testean sin levantar Express.
+Convención de errores: un repositorio lanza un `ErrorDeDatos` ([repositories/errores.js](../server/src/repositories/errores.js)) con un `tipo` propio (`NO_ENCONTRADO`, `DUPLICADO`, `CHOQUE_HORARIO`, `FUNCION_INEXISTENTE`, `OTRO`), así nadie por encima conoce códigos de PostgREST o Postgres. El servicio decide qué significa (por ejemplo `NO_ENCONTRADO` → 404) y lanza el error con `err.status`; la ruta responde `res.status(err.status || 500)`. Por eso los servicios se testean sin levantar Express.
+
+ESLint hace cumplir la separación: un service o una ruta que importe `config/supabase` falla el lint. La excepción es `AuthService`, que usa Supabase Auth (login, sesiones, contraseñas) y no tablas.
+
+**Qué no resuelve:** las reglas de quién ve qué siguen en la base (RLS), igual que las funciones `consultorio_libre` y `turnos_ocupacion`. Cambiar de base sería reescribir los repositorios **y** esas reglas.
 
 ### Los dos clientes de Supabase (importante)
 
 Definidos en [config/supabase.js](../server/src/config/supabase.js):
 
-- **`supabase` / cliente autenticado** (`getAuthenticatedClient(req)`): lleva el JWT del usuario, así que **respeta RLS**. Es el que usan casi todos los servicios (se pasa como parámetro `db`).
-- **`supabaseAdmin`** (service role): **ignora RLS**. Solo para casos puntuales (validar el token, leer el profesional, escribir logs, algunas operaciones del chat). Usarlo de más rompe el aislamiento entre profesionales.
+- **`supabase` / cliente autenticado** (`getAuthenticatedClient(req)`): lleva el JWT del usuario, así que **respeta RLS**. La ruta lo crea y lo pasa como parámetro `db` al servicio, que lo pasa al repositorio.
+- **`supabaseAdmin`** (service role): **ignora RLS**. Solo para casos puntuales (validar el token, leer el profesional, escribir logs, algunas operaciones del chat). En los repositorios, las funciones que lo usan terminan en `ComoAdmin`, y el servicio las llama después de verificar el permiso. Usarlo de más rompe el aislamiento entre profesionales.
 
 ### Autenticación
 
@@ -113,16 +118,17 @@ client/src/
 
 ## 6. Receta: agregar un endpoint
 
-1. **Regla de negocio** en un método de `services/XService.js`: recibe `db` primero, lanza errores con `status`.
-2. **Ruta** en `routes/X.js`: `requireAuth`, validaciones con `express-validator` (422 con mensajes en español), llamada al servicio con `getAuthenticatedClient(req)`.
-3. Si toca historias clínicas, sumá `registrarAcceso('ver'|'editar', 'recurso')`.
-4. Si la tabla es nueva, **política RLS en una migración nueva** (`008_...sql`); sin política, nadie puede leer.
-5. **Test unitario** del servicio con `crearDb({...})`: casos felices y cada error.
-6. En el front, una función con `useQuery`/`useMutation` y errores con `getErrorMessage`.
+1. **Consulta** en `repositories/XRepository.js`: recibe `db` primero y devuelve `datosDe(await ...)`.
+2. **Regla de negocio** en un método de `services/XService.js`: recibe `db` primero, le pide los datos al repositorio y lanza errores con `status`.
+3. **Ruta** en `routes/X.js`: `requireAuth`, validaciones con `express-validator` (422 con mensajes en español), llamada al servicio con `getAuthenticatedClient(req)`.
+4. Si toca historias clínicas, sumá `registrarAcceso('ver'|'editar', 'recurso')`.
+5. Si la tabla es nueva, **política RLS en una migración nueva** (`008_...sql`); sin política, nadie puede leer.
+6. **Test unitario** del servicio con `crearDb({...})`: casos felices y cada error.
+7. En el front, una función con `useQuery`/`useMutation` y errores con `getErrorMessage`.
 
 ## 7. Por dónde empezar a leer
 
 1. `server/src/index.js` y `routes/pacientes.js` (el patrón se repite en todas las rutas).
-2. `services/PacienteService.js` y `migrations/002_rls_policies.sql` + `004_pacientes_privados.sql`.
+2. `services/PacienteService.js`, `repositories/PacienteRepository.js` y `migrations/002_rls_policies.sql` + `004_pacientes_privados.sql`.
 3. `client/src/App.jsx`, `MainShell.jsx` y `store/authStore.js`.
 4. `IAService.js` (es el archivo más grande, 600 líneas): primero `SYSTEM_PROMPT_BASE`, `chat()` y `ejecutarTool()`.
