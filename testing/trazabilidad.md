@@ -339,6 +339,9 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U335 | IAService, informes y extracción comparten una única conexión a OpenRouter | Cohesión del módulo de IA | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
 | CP-U336 | el chat y las sugerencias esperan como mucho 25 s por respuesta | Cohesión del módulo de IA | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
 | CP-U337 | los informes usan la misma conexión sin el límite de 25 s | Cohesión del módulo de IA | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U338 | crear un turno para un paciente dado de baja → 404 sin insertar | Acceso a pacientes centralizado | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U339 | un turno sin paciente no consulta pacientes | Acceso a pacientes centralizado | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U340 | crear una sesión para un paciente dado de baja → 404 sin insertar | Acceso a pacientes centralizado | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
 | CP-A01 | GET /health responde ok | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A02 | POST /auth/login como profesional | Autenticación (necesita credenciales de un proyecto de test) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A03 | POST /auth/login con email inválido → 422 | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
@@ -400,4 +403,4 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-E17 | el historial se abre desde el menú y no muestra la ocupación de otros profesionales | Historial de turnos | E2E | `client/e2e/navegabilidad.e2e.js` |  |
 | CP-E18 | historial sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
 
-Totales: 335 IDs unitarios, 42 de API y 18 E2E.
+Totales: 338 IDs unitarios, 42 de API y 18 E2E.

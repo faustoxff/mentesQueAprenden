@@ -144,3 +144,31 @@ describe('DEF-A22: archivos de un paciente dado de baja', () => {
     expect(firmador.createSignedUploadUrl).not.toHaveBeenCalled();
   });
 });
+
+describe('crear turno o sesión para un paciente dado de baja (formulario o chat)', () => {
+  test('CP-U338 TurnoService.crear con un paciente dado de baja → 404 y no inserta el turno', async () => {
+    const { db, enTabla } = crearDb({ pacientes: ok(null) });
+
+    await expect(turnoService.crear(db, PROF.id, { paciente_id: P1, fecha_inicio: '2026-11-02T13:00:00.000Z' }))
+      .rejects.toMatchObject({ status: 404, message: 'Paciente no encontrado' });
+    expect(enTabla('pacientes', 'is')).toContainEqual(['deleted_at', null]);
+    expect(enTabla('turnos', 'insert')).toHaveLength(0);
+  });
+
+  test('CP-U339 un turno sin paciente no consulta pacientes', async () => {
+    const { db, enTabla } = crearDb({ turnos: ok({ id: 't1' }) });
+
+    await turnoService.crear(db, PROF.id, { fecha_inicio: '2026-11-02T13:00:00.000Z' });
+
+    expect(enTabla('pacientes', 'select')).toHaveLength(0);
+    expect(enTabla('turnos', 'insert')).toHaveLength(1);
+  });
+
+  test('CP-U340 SesionService.crear con un paciente dado de baja → 404 y no inserta la sesión', async () => {
+    const { db, enTabla } = crearDb({ pacientes: ok(null) });
+
+    await expect(sesionService.crear(db, PROF.id, { paciente_id: P1, fecha: '2026-11-02T13:00:00.000Z', tipo: 'tratamiento' }))
+      .rejects.toMatchObject({ status: 404, message: 'Paciente no encontrado' });
+    expect(enTabla('sesiones', 'insert')).toHaveLength(0);
+  });
+});

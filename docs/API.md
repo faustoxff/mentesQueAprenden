@@ -72,7 +72,7 @@ Superado el límite → `429`.
 | Método | Ruta | Descripción |
 |---|---|---|
 | GET | `/` | Lista (query: `fecha_inicio`, `fecha_fin`, `profesional_id`; incluye sesiones asociadas). Los cancelados no vienen, salvo con `incluir_cancelados=true` (lo usa el historial; otro valor que no sea `true`/`false` → `422`) |
-| POST | `/` | `fecha_inicio`, `fecha_fin` (ISO 8601), `profesional_id` obligatorios; `paciente_id?`, `tipo?`, `consultorio?` (1–3) |
+| POST | `/` | `fecha_inicio`, `fecha_fin` (ISO 8601), `profesional_id` obligatorios; `paciente_id?`, `tipo?`, `consultorio?` (1–3). Si `paciente_id` no existe, está dado de baja o no tenés acceso → `404` |
 | PATCH | `/:id` | Cualquier campo anterior + `estado` |
 | DELETE | `/:id` | Cancela el turno (`estado = cancelado`) |
 
@@ -83,7 +83,7 @@ Superado el límite → `429`.
 | Método | Ruta | Descripción |
 |---|---|---|
 | GET | `/:id` | Detalle |
-| POST | `/` | `paciente_id`, `fecha`, `tipo` obligatorios; `duracion_minutos` (1–480), `notas_libres`, `notas_estructuradas` (objeto), `monto` (≥0), `turno_id`, `consultorio` (1–3) |
+| POST | `/` | `paciente_id`, `fecha`, `tipo` obligatorios; `duracion_minutos` (1–480), `notas_libres`, `notas_estructuradas` (objeto), `monto` (≥0), `turno_id`, `consultorio` (1–3). Si el paciente no existe, está dado de baja o no tenés acceso → `404` |
 | PATCH | `/:id` | Anteriores + `resumen_ia`, `pagado` (bool), `fecha_pago` |
 | GET | `/:id/versiones` | Historial de versiones de las notas |
 
@@ -167,7 +167,7 @@ El modelo no usa `tools` nativas: responde un bloque ` ```json {"action": "...",
 | `listar_mis_pacientes`, `buscar_pacientes`, `ver_paciente` | Consulta |
 | `ver_agenda`, `listar_mis_sesiones`, `listar_profesionales` | Consulta |
 | `mostrar_formulario_paciente`, `mostrar_formulario_turno` | Abre formulario en el cliente (corta el loop, sin texto) |
-| `crear_paciente`, `crear_turno`, `registrar_sesion` | Escritura. Aplican las mismas validaciones (mismos mensajes, `422`) y la misma lógica que `POST /pacientes`, `/turnos` y `/sesiones`: el chat llama a los mismos services. `registrar_sesion` no reserva consultorio ni vincula turno: eso se completa después desde la sesión |
+| `crear_paciente`, `crear_turno`, `registrar_sesion` | Escritura. Aplican las mismas validaciones (mismos mensajes, `422`) y la misma lógica que `POST /pacientes`, `/turnos` y `/sesiones`: el chat llama a los mismos services, que también verifican el acceso al paciente (`404`). `registrar_sesion` no reserva consultorio ni vincula turno: eso se completa después desde la sesión |
 | `eliminar_paciente` | Escritura (el prompt exige confirmación explícita) |
 
 `tool_results` es `[{ name, result }]`; el cliente lo usa para renderizar tarjetas (`ChatToolResults.jsx`).

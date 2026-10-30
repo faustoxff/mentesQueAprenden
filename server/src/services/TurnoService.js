@@ -1,5 +1,6 @@
 const turnoRepository = require('../repositories/TurnoRepository');
 const sesionRepository = require('../repositories/SesionRepository');
+const pacienteService = require('./PacienteService');
 
 class TurnoService {
   // Trae los turnos propios (o accesibles por derivación) con todos los
@@ -92,6 +93,10 @@ class TurnoService {
   }
 
   async crear(db, profesionalId, body) {
+    // El paciente (si el turno tiene uno) tiene que existir, estar activo y ser visible:
+    // 404 claro, igual venga del formulario o del chat. La base también lo impide (RLS).
+    if (body.paciente_id) await pacienteService.asegurarAcceso(db, body.paciente_id);
+
     try {
       return await turnoRepository.crear(db, { ...body, created_by: profesionalId });
     } catch (error) {

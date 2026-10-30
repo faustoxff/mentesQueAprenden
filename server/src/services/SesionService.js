@@ -1,6 +1,7 @@
 const sesionRepository = require('../repositories/SesionRepository');
 const turnoRepository = require('../repositories/TurnoRepository');
 const logAccesoRepository = require('../repositories/LogAccesoRepository');
+const pacienteService = require('./PacienteService');
 
 // Un turno de una sesión futura todavía no ocurrió.
 const estadoSegunFecha = (fecha) => (new Date(fecha) > new Date() ? 'confirmado' : 'realizado');
@@ -60,6 +61,9 @@ class SesionService {
     const inicio = new Date(datosSesion.fecha);
     const fin = new Date(inicio.getTime() + (datosSesion.duracion_minutos || 50) * 60000);
 
+    // El paciente tiene que existir, estar activo y ser visible: 404 claro, igual venga
+    // del formulario o del chat. La base también lo impide (RLS).
+    await pacienteService.asegurarAcceso(db, datosSesion.paciente_id);
     if (consultorio) await this.verificarConsultorioLibre(db, consultorio, inicio, fin, turno_id);
 
     const data = await sesionRepository.crear(db, {

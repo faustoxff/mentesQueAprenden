@@ -126,10 +126,12 @@ describe('TurnoService: turnos ajenos', () => {
 });
 
 describe('SesionService.crear: consultorio y turno vinculado', () => {
+  // El paciente de la sesión existe y está activo (crear verifica el acceso primero).
+  const PACIENTE_ACTIVO = ok({ id: 'p' });
   beforeEach(() => mockAdmin.from.mockReset());
 
   test('CP-U85 si el consultorio está ocupado no se inserta la sesión', async () => {
-    const { db, enTabla } = crearDb({ 'rpc:consultorio_libre': ok(false) });
+    const { db, enTabla } = crearDb({ pacientes: PACIENTE_ACTIVO, 'rpc:consultorio_libre': ok(false) });
 
     await expect(SesionService.crear(db, 'prof', { paciente_id: 'p', fecha: '2026-11-02T13:00:00Z', tipo: 'tratamiento', consultorio: 1 }))
       .rejects.toMatchObject({ status: 409 });
@@ -139,7 +141,7 @@ describe('SesionService.crear: consultorio y turno vinculado', () => {
   test('CP-U86 si no se puede crear el turno, la sesión recién insertada se deshace', async () => {
     const admin = crearDb({ sesiones: ok(null) });
     mockAdmin.from.mockImplementation(admin.db.from);
-    const { db } = crearDb({ 'rpc:consultorio_libre': ok(true), sesiones: ok({ id: 's-nueva', paciente_id: 'p', profesional_id: 'prof' }), turnos: { error: { code: '23P01', message: 'Consultorio 1 ocupado' } } });
+    const { db } = crearDb({ pacientes: PACIENTE_ACTIVO, 'rpc:consultorio_libre': ok(true), sesiones: ok({ id: 's-nueva', paciente_id: 'p', profesional_id: 'prof' }), turnos: { error: { code: '23P01', message: 'Consultorio 1 ocupado' } } });
 
     await expect(SesionService.crear(db, 'prof', { paciente_id: 'p', fecha: '2026-11-02T13:00:00Z', tipo: 'tratamiento', consultorio: 1 }))
       .rejects.toMatchObject({ status: 409 });
@@ -148,7 +150,7 @@ describe('SesionService.crear: consultorio y turno vinculado', () => {
   });
 
   test('CP-U87 sin duración, el turno creado dura 50 minutos', async () => {
-    const { db, enTabla } = crearDb({ 'rpc:consultorio_libre': ok(true), sesiones: ok({ id: 's1' }), turnos: ok(null) });
+    const { db, enTabla } = crearDb({ pacientes: PACIENTE_ACTIVO, 'rpc:consultorio_libre': ok(true), sesiones: ok({ id: 's1' }), turnos: ok(null) });
 
     await SesionService.crear(db, 'prof', { paciente_id: 'p', fecha: '2026-11-02T13:00:00.000Z', tipo: 'tratamiento', consultorio: 2 });
 
@@ -156,7 +158,7 @@ describe('SesionService.crear: consultorio y turno vinculado', () => {
   });
 
   test('CP-U88 la sesión se registra a nombre de quien la crea, aunque el body diga otro profesional', async () => {
-    const { db, enTabla } = crearDb({ sesiones: ok({ id: 's1' }) });
+    const { db, enTabla } = crearDb({ pacientes: PACIENTE_ACTIVO, sesiones: ok({ id: 's1' }) });
 
     await SesionService.crear(db, 'prof', { paciente_id: 'p', fecha: '2026-11-02T13:00:00Z', tipo: 'tratamiento', profesional_id: 'otro' });
 

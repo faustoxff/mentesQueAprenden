@@ -181,7 +181,6 @@ class ChatService {
           consultorio: args.consultorio,
           notas: args.notas
         });
-        if (datos.paciente_id) await pacienteService.asegurarAcceso(db, datos.paciente_id);
         return turnoService.crear(db, profesional.id, datos);
       }
 
@@ -200,7 +199,6 @@ class ChatService {
           notas_libres: args.notas_libres,
           monto: args.monto
         });
-        await pacienteService.asegurarAcceso(db, datos.paciente_id);
         return sesionService.crear(db, profesional.id, datos);
       }
 
