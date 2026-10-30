@@ -88,6 +88,7 @@ Aplicación web para un centro de salud interdisciplinario (psicopedagogía, psi
 ```
 MentesQueAprenden/
 ├── package.json              # Monorepo (npm workspaces): scripts para correr todo junto
+├── AGENTS.md / CLAUDE.md     # Decisiones de diseño y reglas: leer (o que lo lea tu IA) antes de modificar
 ├── docs/                     # API.md (endpoints) y GUIA-DEL-CODIGO.md (cómo está armado)
 ├── .github/workflows/        # CI/CD: tests, cobertura, build y deploy en cada push/PR a master
 ├── client/                   # Frontend React + Vite
