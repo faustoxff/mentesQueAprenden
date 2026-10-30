@@ -5,6 +5,7 @@ const mockAdmin = { from: jest.fn(), storage: { from: jest.fn() } };
 jest.mock('../../src/config/supabase', () => ({ supabaseAdmin: mockAdmin, supabase: {} }));
 
 const iaService = require('../../src/services/IAService');
+const clienteIA = require('../../src/services/clienteIA');
 const { crearDb } = require('./helpers/fakeDb');
 
 const ok = (data) => ({ data, error: null });
@@ -23,7 +24,7 @@ describe('acceso a pacientes ajenos (IDOR)', () => {
 
   test('sugerirNotas sobre un paciente ajeno falla antes de leer sesiones o llamar a la IA', async () => {
     const { db, enTabla } = crearDb({ pacientes: ok(null) });
-    const completar = jest.spyOn(iaService, 'completar');
+    const completar = jest.spyOn(clienteIA, 'completar');
     await expect(iaService.sugerirNotas({ notas_parciales: 'x', paciente_id: 'ajeno', tipo_sesion: 't', especialidad: 'e' }, db))
       .rejects.toMatchObject({ status: 404 });
     expect(enTabla('sesiones', 'select')).toHaveLength(0);
@@ -167,7 +168,7 @@ describe('chat: mensajes del cliente', () => {
 
   test('chat: un { role: "system" } del cliente no llega al modelo, y la baja queda pendiente de confirmación', async () => {
     const { db, enTabla } = crearDb({ pacientes: ok({ id: 'p1', nombre: 'Luz', apellido: 'Gil' }) });
-    const crear = jest.spyOn(iaService, 'crearCompletion').mockResolvedValue({
+    const crear = jest.spyOn(clienteIA, 'crearCompletion').mockResolvedValue({
       choices: [{ message: { content: '```json\n{"action":"eliminar_paciente","params":{"paciente_id":"p1"}}\n```' } }]
     });
 

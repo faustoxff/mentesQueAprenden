@@ -1,15 +1,6 @@
-const OpenAI = require('openai');
-
-// Cliente separado del de ia.js: mismo proveedor (OpenRouter) pero con un
-// único propósito — extraer texto crudo de un documento, sin interpretarlo.
-const openrouter = new OpenAI({
-  baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: process.env.OPENROUTER_API_KEY,
-  defaultHeaders: {
-    'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:5173',
-    'X-Title': 'Centro de Salud Interdisciplinario'
-  }
-});
+// Misma conexión a OpenRouter que el resto (clienteIA), con un único propósito:
+// extraer texto crudo de un documento, sin interpretarlo.
+const { openrouter } = require('./clienteIA');
 
 // Dos modelos Google (únicos con soporte de PDF nativo en el tier gratuito de
 // OpenRouter) — si el primero está saturado (429), se prueba el segundo antes

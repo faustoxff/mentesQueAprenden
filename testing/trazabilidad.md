@@ -336,6 +336,9 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U332 | la ocupación pide el rango a la función de la base | Capa de repositorios | Unitaria | `server/__tests__/unit/repositorios.test.js` |  |
 | CP-U333 | obras sociales: solo activas, por nombre, con el cliente de servicio | Capa de repositorios | Unitaria | `server/__tests__/unit/repositorios.test.js` |  |
 | CP-U334 | un error de la base llega como ErrorDeDatos con el mensaje original | Capa de repositorios | Unitaria | `server/__tests__/unit/repositorios.test.js` |  |
+| CP-U335 | IAService, informes y extracción comparten una única conexión a OpenRouter | Cohesión del módulo de IA | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U336 | el chat y las sugerencias esperan como mucho 25 s por respuesta | Cohesión del módulo de IA | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U337 | los informes usan la misma conexión sin el límite de 25 s | Cohesión del módulo de IA | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
 | CP-A01 | GET /health responde ok | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A02 | POST /auth/login como profesional | Autenticación (necesita credenciales de un proyecto de test) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A03 | POST /auth/login con email inválido → 422 | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
@@ -397,4 +400,4 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-E17 | el historial se abre desde el menú y no muestra la ocupación de otros profesionales | Historial de turnos | E2E | `client/e2e/navegabilidad.e2e.js` |  |
 | CP-E18 | historial sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
 
-Totales: 332 IDs unitarios, 42 de API y 18 E2E.
+Totales: 335 IDs unitarios, 42 de API y 18 E2E.

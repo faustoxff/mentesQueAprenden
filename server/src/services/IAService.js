@@ -1,4 +1,4 @@
-const OpenAI = require('openai');
+const clienteIA = require('./clienteIA');
 const { extraerTextoDocumento } = require('./geminiExtractor');
 const pacienteService = require('./PacienteService');
 const turnoService = require('./TurnoService');
@@ -19,12 +19,6 @@ const MODELO_CHAT = 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
 
 
 const PATRON_FECHA = /^\d{4}-\d{2}-\d{2}$/;
-
-// Los modelos ":free" de OpenRouter corren en un pool de workers compartido
-// entre todos los usuarios de OpenRouter, así que se saturan de forma
-// transitoria y ajena a nuestro tráfico. Este patrón detecta esos casos para
-// reintentar en vez de mostrarle el error al profesional en el primer intento.
-const PATRON_SATURACION = /resourceexhausted|rate.?limit|too many requests|limit reached/i;
 
 const SYSTEM_PROMPT_BASE = `Te llamás Menta. Sos el asistente de un centro de salud interdisciplinario argentino. Si te preguntan cómo te llamás, decí que sos Menta, el asistente del centro.
 
@@ -59,63 +53,6 @@ REGLAS CRÍTICAS SOBRE PRECISIÓN (tenés modelo de lenguaje chico, propenso a i
 - NUNCA inventes datos clínicos de un paciente particular (diagnósticos, resultados de evaluaciones, fechas, historial) que no vengan de una tool ejecutada en esta conversación (buscar_pacientes, ver_paciente, ver_agenda, etc). Si no tenés el dato porque no lo consultaste, ejecutá la acción correspondiente o decí que no lo sabés. Esto no aplica al conocimiento técnico general, solo a datos específicos de pacientes reales del sistema.`;
 
 class IAService {
-  constructor() {
-    this.openrouter = new OpenAI({
-      baseURL: 'https://openrouter.ai/api/v1',
-      apiKey: process.env.OPENROUTER_API_KEY,
-      timeout: 25000,
-      maxRetries: 2,
-      defaultHeaders: {
-        'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:5173',
-        'X-Title': 'Centro de Salud Interdisciplinario'
-      }
-    });
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // Helpers
-  // ─────────────────────────────────────────────────────────────
-
-  async completar(modelo, mensajes, maxTokens = 500) {
-    const res = await this.crearCompletion({ model: modelo, max_tokens: maxTokens, messages: mensajes });
-    return this.extraerContenido(res).trim();
-  }
-
-  // OpenRouter a veces responde HTTP 200 con un error embebido en vez de tirar
-  // una excepción (ej: el worker del modelo gratuito está saturado). El SDK de
-  // OpenAI no lo detecta como error porque el status HTTP es 2xx, así que su
-  // maxRetries no se activa acá: por eso reintentamos nosotros a mano cuando
-  // el error embebido es de saturación transitoria del pool gratuito.
-  async crearCompletion(params, intentos = 3) {
-    let ultimaResponse;
-    for (let i = 0; i < intentos; i++) {
-      ultimaResponse = await this.openrouter.chat.completions.create(params);
-      const detalle = ultimaResponse?.error?.message;
-      if (!detalle || !PATRON_SATURACION.test(detalle) || i === intentos - 1) return ultimaResponse;
-      await new Promise(r => setTimeout(r, 700 * (i + 1)));
-    }
-    return ultimaResponse;
-  }
-
-  // El texto de "detalle" es el error crudo del proveedor upstream (ej: "Upstream
-  // error from Nvidia: ResourceExhausted..."), un detalle de implementación (qué
-  // proveedor sirve el modelo gratuito por debajo de OpenRouter) que no debe
-  // filtrarse a la UI. Se guarda en err.upstreamDetail solo para logs de servidor.
-  extraerContenido(response) {
-    const contenido = response?.choices?.[0]?.message?.content;
-    if (contenido === undefined) {
-      const detalle = response?.error?.message || 'la IA no devolvió una respuesta válida';
-      const saturado = PATRON_SATURACION.test(detalle);
-      const err = new Error(saturado
-        ? 'El modelo de IA está saturado en este momento. Probá de nuevo en unos segundos.'
-        : 'Modelo de IA no disponible ahora mismo. Probá de nuevo en unos minutos.');
-      err.status = 502;
-      err.upstreamDetail = detalle;
-      throw err;
-    }
-    return contenido;
-  }
-
   // Todo lo que se lee o escribe en nombre de la persona va con SU cliente (`db`,
   // autenticado con su JWT), así RLS aplica la regla de acceso: titular del paciente
   // o derivación aceptada. Estos helpers dan un 404 (no un 403) para no revelar si el
@@ -161,7 +98,7 @@ Reglas, en orden de importancia:
 
 Redactá en primera persona del profesional. Máximo 300 palabras, lenguaje clínico de ${especialidad} en Argentina. Solo las notas (o el mensaje de falta de información), sin títulos.`;
 
-    return this.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }]);
+    return clienteIA.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }]);
   }
 
   async resumirSesion({ sesion_id, notas_libres }, db, profesional) {
@@ -179,7 +116,7 @@ Redactá en primera persona del profesional. Máximo 300 palabras, lenguaje clí
 
 Notas:\n${notas_libres}`;
 
-    const resumen = await this.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }], 200);
+    const resumen = await clienteIA.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }], 200);
     await sesionRepository.actualizarSinDevolver(db, sesion_id, { resumen_ia: resumen, ia_utilizada: true });
     return resumen;
   }
@@ -208,7 +145,7 @@ Si SÍ hay información clínica real y coherente, indicá brevemente:
 
 Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
 
-    return this.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }], 300);
+    return clienteIA.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }], 300);
   }
 
   async analizarPDF({ archivo_id, pregunta }, db) {
@@ -246,7 +183,7 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
 
     // Etapa 2 — análisis: el modelo de texto interpreta el contenido ya transcripto.
     const prompt = `Sos un asistente médico. A continuación el texto transcripto de un documento (${archivo.nombre_original}, tipo: ${archivo.tipo}).\n\n"""\n${textoExtraido}\n"""\n\n${instruccion}`;
-    const analisis = await this.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }], 600);
+    const analisis = await clienteIA.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }], 600);
 
     // Guardar el análisis como metadata del archivo (solo si no tenía descripción previa)
     await archivoRepository.describirSiNoTieneComoAdmin(archivo_id, `[Análisis IA]\n${analisis}`);
@@ -506,13 +443,13 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
 
     // Hasta 5 acciones encadenadas por mensaje
     for (let i = 0; i < 5; i++) {
-      const response = await this.crearCompletion({
+      const response = await clienteIA.crearCompletion({
         model: MODELO_CHAT,
         messages: historial,
         max_tokens: 500
       });
 
-      const rawText = this.extraerContenido(response).trim();
+      const rawText = clienteIA.extraerContenido(response).trim();
       const accion = this.parsearAccion(rawText);
 
       if (!accion) {
@@ -546,12 +483,12 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
     }
 
     if (!mensajeFinal && !sinMensaje) {
-      const resumenResp = await this.crearCompletion({
+      const resumenResp = await clienteIA.crearCompletion({
         model: MODELO_CHAT,
         messages: [...historial, { role: 'user', content: 'Resumí en lenguaje natural todo lo que hiciste, sin JSON.' }],
         max_tokens: 400
       });
-      mensajeFinal = this.limpiarTexto(this.extraerContenido(resumenResp).trim());
+      mensajeFinal = this.limpiarTexto(clienteIA.extraerContenido(resumenResp).trim());
     }
 
     return { message: mensajeFinal, tool_results: toolResults };

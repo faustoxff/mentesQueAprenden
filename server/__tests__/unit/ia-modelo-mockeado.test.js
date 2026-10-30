@@ -12,6 +12,9 @@ const mockPdfTexto = jest.fn();
 jest.mock('pdf-parse', () => ({ PDFParse: jest.fn().mockImplementation(() => ({ getText: () => mockPdfTexto(), destroy: async () => {} })) }));
 
 const iaService = require('../../src/services/IAService');
+const clienteIA = require('../../src/services/clienteIA');
+// Cuántas conexiones a OpenRouter se crearon al cargar IAService, informes y extractor.
+const conexionesCreadas = require('openai').mock.calls.length;
 const { generarInformeTexto } = require('../../src/services/informeGenerator');
 const { extraerTextoDocumento } = require('../../src/services/geminiExtractor');
 const { crearToken } = require('../../src/utils/confirmacion');
@@ -63,7 +66,7 @@ describe('parsearAccion: lo que devuelve el modelo', () => {
 describe('respuestas raras del modelo', () => {
   test('CP-U169 un error embebido de saturación → 502 con mensaje amable, sin el detalle del proveedor', () => {
     let error;
-    try { iaService.extraerContenido({ error: { message: 'Upstream error from Nvidia: ResourceExhausted' } }); } catch (e) { error = e; }
+    try { clienteIA.extraerContenido({ error: { message: 'Upstream error from Nvidia: ResourceExhausted' } }); } catch (e) { error = e; }
 
     expect(error).toMatchObject({ status: 502 });
     expect(error.message).toMatch(/saturado/);
@@ -72,14 +75,14 @@ describe('respuestas raras del modelo', () => {
   });
 
   test('CP-U170 sin choices ni error → 502 "no disponible"', () => {
-    expect(() => iaService.extraerContenido({})).toThrow(/no disponible/);
+    expect(() => clienteIA.extraerContenido({})).toThrow(/no disponible/);
   });
 
   // DEF-A12: con content null, extraerContenido devuelve null y completar() hace null.trim() (TypeError).
   test.failing('CP-U171 contenido nulo del modelo → error 502 claro, no un TypeError', async () => {
     mockCreate.mockResolvedValue(respuesta(null));
 
-    await expect(iaService.completar('m', [{ role: 'user', content: 'x' }])).rejects.toMatchObject({ status: 502 });
+    await expect(clienteIA.completar('m', [{ role: 'user', content: 'x' }])).rejects.toMatchObject({ status: 502 });
   });
 
   test('CP-U172 ante saturación (límite de uso) reintenta hasta 3 veces y usa la respuesta buena', async () => {
@@ -89,7 +92,7 @@ describe('respuestas raras del modelo', () => {
       .mockResolvedValueOnce({ error: { message: 'Too Many Requests' } })
       .mockResolvedValueOnce(respuesta('ok'));
 
-    const texto = await iaService.completar('m', []);
+    const texto = await clienteIA.completar('m', []);
 
     expect(texto).toBe('ok');
     expect(mockCreate).toHaveBeenCalledTimes(3);
@@ -98,7 +101,7 @@ describe('respuestas raras del modelo', () => {
   test('CP-U173 un error que no es de saturación no se reintenta', async () => {
     mockCreate.mockResolvedValue({ error: { message: 'model not found' } });
 
-    await expect(iaService.completar('m', [])).rejects.toMatchObject({ status: 502 });
+    await expect(clienteIA.completar('m', [])).rejects.toMatchObject({ status: 502 });
     expect(mockCreate).toHaveBeenCalledTimes(1);
   });
 
@@ -106,14 +109,14 @@ describe('respuestas raras del modelo', () => {
     sinEsperas();
     mockCreate.mockResolvedValue({ error: { message: 'ResourceExhausted' } });
 
-    await expect(iaService.completar('m', [])).rejects.toMatchObject({ status: 502 });
+    await expect(clienteIA.completar('m', [])).rejects.toMatchObject({ status: 502 });
     expect(mockCreate).toHaveBeenCalledTimes(3);
   });
 });
 
 describe('chat: loop de acciones', () => {
   test('CP-U175 con JSON mal formado del modelo no se ejecuta ninguna acción', async () => {
-    jest.spyOn(iaService, 'crearCompletion').mockResolvedValue(respuesta('Te ayudo.\n```json\n{"action": "eliminar_paciente", params}\n```'));
+    jest.spyOn(clienteIA, 'crearCompletion').mockResolvedValue(respuesta('Te ayudo.\n```json\n{"action": "eliminar_paciente", params}\n```'));
     const ejecutar = jest.spyOn(iaService, 'ejecutarTool');
 
     const res = await iaService.chat({ messages: [{ role: 'user', content: 'borrá a Luz' }], profesional, db: crearDb().db });
@@ -123,7 +126,7 @@ describe('chat: loop de acciones', () => {
   });
 
   test('CP-U176 encadena como máximo 5 acciones y después pide un resumen en texto', async () => {
-    const crear = jest.spyOn(iaService, 'crearCompletion')
+    const crear = jest.spyOn(clienteIA, 'crearCompletion')
       .mockResolvedValueOnce(accion('ver_agenda')).mockResolvedValueOnce(accion('ver_agenda'))
       .mockResolvedValueOnce(accion('ver_agenda')).mockResolvedValueOnce(accion('ver_agenda'))
       .mockResolvedValueOnce(accion('ver_agenda')).mockResolvedValueOnce(respuesta('Resumen final'));
@@ -137,7 +140,7 @@ describe('chat: loop de acciones', () => {
   });
 
   test('CP-U177 si una acción falla, el error queda en tool_results y el chat sigue', async () => {
-    jest.spyOn(iaService, 'crearCompletion').mockResolvedValueOnce(accion('ver_paciente', { paciente_id: 'x' })).mockResolvedValueOnce(respuesta('No lo encontré.'));
+    jest.spyOn(clienteIA, 'crearCompletion').mockResolvedValueOnce(accion('ver_paciente', { paciente_id: 'x' })).mockResolvedValueOnce(respuesta('No lo encontré.'));
     jest.spyOn(iaService, 'ejecutarTool').mockRejectedValue(new Error('Paciente no encontrado'));
 
     const res = await iaService.chat({ messages: [{ role: 'user', content: 'ver x' }], profesional, db: crearDb().db });
@@ -147,7 +150,7 @@ describe('chat: loop de acciones', () => {
   });
 
   test('CP-U178 un formulario corta el loop sin texto del modelo', async () => {
-    jest.spyOn(iaService, 'crearCompletion').mockResolvedValue(accion('mostrar_formulario_turno'));
+    jest.spyOn(clienteIA, 'crearCompletion').mockResolvedValue(accion('mostrar_formulario_turno'));
     jest.spyOn(iaService, 'ejecutarTool').mockResolvedValue({ type: 'form' });
 
     const res = await iaService.chat({ messages: [{ role: 'user', content: 'nuevo turno' }], profesional, db: crearDb().db });
@@ -197,7 +200,7 @@ describe('baja de paciente: siempre con confirmación explícita', () => {
 
   test('CP-U183 aunque el modelo pida la baja 5 veces seguidas, nunca se ejecuta sin el botón', async () => {
     const ok = (data) => ({ data, error: null });
-    jest.spyOn(iaService, 'crearCompletion').mockResolvedValue(accion('eliminar_paciente', { paciente_id: 'p1' }));
+    jest.spyOn(clienteIA, 'crearCompletion').mockResolvedValue(accion('eliminar_paciente', { paciente_id: 'p1' }));
     const { db, enTabla } = crearDb({ pacientes: ok({ id: 'p1', nombre: 'Luz', apellido: 'Gil' }) });
 
     const res = await iaService.chat({ messages: [{ role: 'user', content: 'borrala ya' }], profesional, db });
@@ -320,5 +323,27 @@ describe('extracción de texto de documentos', () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: false });
 
     await expect(extraerTextoDocumento('https://firmada', 'x.pdf', 'application/pdf')).rejects.toThrow('No se pudo descargar el archivo');
+  });
+});
+
+describe('clienteIA: una sola conexión a OpenRouter', () => {
+  test('CP-U335 IAService, informes y extracción de documentos comparten una única conexión', () => {
+    expect(conexionesCreadas).toBe(1);
+  });
+
+  test('CP-U336 el chat y las sugerencias esperan como mucho 25 s por respuesta', async () => {
+    mockCreate.mockResolvedValue(respuesta('ok'));
+
+    await clienteIA.completar('m', []);
+
+    expect(mockCreate.mock.calls[0][1]).toEqual({ timeout: 25000, maxRetries: 2 });
+  });
+
+  test('CP-U337 los informes usan la misma conexión sin el límite de 25 s (textos largos)', async () => {
+    mockCreate.mockResolvedValue(respuesta('Informe'));
+
+    await generarInformeTexto({ paciente: {}, pruebas: [] });
+
+    expect(mockCreate.mock.calls[0][1]).toBeUndefined();
   });
 });

@@ -1,14 +1,5 @@
-const OpenAI = require('openai');
+const { openrouter } = require('./clienteIA');
 const { calcularEdad } = require('../utils/fechas');
-
-const openrouter = new OpenAI({
-  baseURL: 'https://openrouter.ai/api/v1',
-  apiKey: process.env.OPENROUTER_API_KEY,
-  defaultHeaders: {
-    'HTTP-Referer': process.env.FRONTEND_URL || 'http://localhost:5173',
-    'X-Title': 'Centro de Salud Interdisciplinario'
-  }
-});
 
 const MODELO = 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
 
