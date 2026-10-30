@@ -6,7 +6,7 @@ process.env.CONFIRM_SECRET = 'secreto-de-test';
 const mockAdmin = { from: jest.fn(), storage: { from: jest.fn() } };
 jest.mock('../../src/config/supabase', () => ({ supabaseAdmin: mockAdmin, supabase: {} }));
 
-const iaService = require('../../src/services/IAService');
+const chatService = require('../../src/services/ChatService');
 const pacienteService = require('../../src/services/PacienteService');
 const sesionService = require('../../src/services/SesionService');
 const turnoService = require('../../src/services/TurnoService');
@@ -38,7 +38,7 @@ describe('registrar_sesion desde el chat', () => {
     const crear = jest.spyOn(sesionService, 'crear');
     const { db, enTabla } = crearDb({ pacientes: ok({ id: P1 }) });
 
-    await expect(iaService.ejecutarTool('registrar_sesion', sesion(extra), PROF, db)).rejects.toMatchObject({ status: 422, message: mensaje });
+    await expect(chatService.ejecutarTool('registrar_sesion', sesion(extra), PROF, db)).rejects.toMatchObject({ status: 422, message: mensaje });
     expect(crear).not.toHaveBeenCalled();
     expect(enTabla('sesiones', 'insert')).toHaveLength(0);
   });
@@ -47,7 +47,7 @@ describe('registrar_sesion desde el chat', () => {
     const crear = jest.spyOn(sesionService, 'crear').mockResolvedValue({ id: 's1' });
     const { db } = crearDb({ pacientes: ok({ id: P1 }) });
 
-    await iaService.ejecutarTool('registrar_sesion', sesion({ duracion_minutos: 60, monto: 5000 }), PROF, db);
+    await chatService.ejecutarTool('registrar_sesion', sesion({ duracion_minutos: 60, monto: 5000 }), PROF, db);
 
     expect(crear).toHaveBeenCalledWith(db, PROF.id, expect.objectContaining({ paciente_id: P1, tipo: 'tratamiento', duracion_minutos: 60, monto: 5000 }));
     expect(crear.mock.calls[0][2]).not.toHaveProperty('consultorio');
@@ -58,7 +58,7 @@ describe('registrar_sesion desde el chat', () => {
     const errorRuta = await exigirDatosValidos(reglasCrearSesion, datos).catch((e) => e);
     const { db } = crearDb({ pacientes: ok({ id: P1 }) });
 
-    const errorChat = await iaService.ejecutarTool('registrar_sesion', datos, PROF, db).catch((e) => e);
+    const errorChat = await chatService.ejecutarTool('registrar_sesion', datos, PROF, db).catch((e) => e);
 
     expect(errorChat.errores).toEqual(errorRuta.errores);
   });
@@ -69,7 +69,7 @@ describe('crear_paciente y crear_turno desde el chat', () => {
     const crear = jest.spyOn(pacienteService, 'crear').mockResolvedValue({ id: 'p9' });
     const { db } = crearDb({});
 
-    await iaService.ejecutarTool('crear_paciente', { nombre: ' ZZ-TEST ', apellido: 'Chat', dni: '1234567', fecha_nacimiento: '10/03/2015' }, PROF, db);
+    await chatService.ejecutarTool('crear_paciente', { nombre: ' ZZ-TEST ', apellido: 'Chat', dni: '1234567', fecha_nacimiento: '10/03/2015' }, PROF, db);
 
     expect(crear).toHaveBeenCalledWith(db, expect.objectContaining({ nombre: 'ZZ-TEST', fecha_nacimiento: '2015-03-10' }), PROF);
   });
@@ -77,7 +77,7 @@ describe('crear_paciente y crear_turno desde el chat', () => {
   test('CP-U322 crear_paciente sin fecha de nacimiento → 422 con el mensaje del formulario', async () => {
     const { db, enTabla } = crearDb({});
 
-    await expect(iaService.ejecutarTool('crear_paciente', { nombre: 'A', apellido: 'B', dni: '1234567' }, PROF, db))
+    await expect(chatService.ejecutarTool('crear_paciente', { nombre: 'A', apellido: 'B', dni: '1234567' }, PROF, db))
       .rejects.toMatchObject({ status: 422, message: 'La fecha de nacimiento es obligatoria y debe ser una fecha válida' });
     expect(enTabla('pacientes', 'insert')).toHaveLength(0);
   });
@@ -86,7 +86,7 @@ describe('crear_paciente y crear_turno desde el chat', () => {
     const crear = jest.spyOn(turnoService, 'crear').mockResolvedValue({ id: 't1' });
     const { db } = crearDb({ pacientes: ok({ id: P1 }) });
 
-    await iaService.ejecutarTool('crear_turno', { paciente_id: P1, fecha_inicio: '2026-11-02T13:00:00.000Z', duracion_minutos: 50 }, PROF, db);
+    await chatService.ejecutarTool('crear_turno', { paciente_id: P1, fecha_inicio: '2026-11-02T13:00:00.000Z', duracion_minutos: 50 }, PROF, db);
 
     expect(crear).toHaveBeenCalledWith(db, PROF.id, expect.objectContaining({
       profesional_id: PROF.id, paciente_id: P1, fecha_inicio: '2026-11-02T13:00:00.000Z', fecha_fin: '2026-11-02T13:50:00.000Z', tipo: 'tratamiento'
@@ -97,7 +97,7 @@ describe('crear_paciente y crear_turno desde el chat', () => {
     const crear = jest.spyOn(turnoService, 'crear');
     const { db } = crearDb({ pacientes: ok({ id: P1 }) });
 
-    await expect(iaService.ejecutarTool('crear_turno', { paciente_id: P1, fecha_inicio: '2026-11-02T13:00:00.000Z', consultorio: 4 }, PROF, db))
+    await expect(chatService.ejecutarTool('crear_turno', { paciente_id: P1, fecha_inicio: '2026-11-02T13:00:00.000Z', consultorio: 4 }, PROF, db))
       .rejects.toMatchObject({ status: 422 });
     expect(crear).not.toHaveBeenCalled();
   });
@@ -123,8 +123,8 @@ describe('lecturas de pacientes desde otros services', () => {
     const buscar = jest.spyOn(pacienteService, 'buscar').mockResolvedValue([]);
     const { db } = crearDb({});
 
-    await iaService.ejecutarTool('ver_paciente', { paciente_id: P1 }, PROF, db);
-    await iaService.ejecutarTool('buscar_pacientes', { busqueda: 'Gil' }, PROF, db);
+    await chatService.ejecutarTool('ver_paciente', { paciente_id: P1 }, PROF, db);
+    await chatService.ejecutarTool('buscar_pacientes', { busqueda: 'Gil' }, PROF, db);
 
     expect(obtener).toHaveBeenCalledWith(db, P1, expect.stringContaining('motivo_consulta'));
     expect(buscar).toHaveBeenCalledWith(db, 'Gil', expect.objectContaining({ limite: 5 }));

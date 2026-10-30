@@ -132,7 +132,7 @@ Totales: 22 defectos (5 alta, 3 media, 14 baja), 7 con impacto en seguridad. **C
 - **Probabilidad:** baja · **Impacto:** medio (carga innecesaria; solo pacientes propios por RLS) · **Prioridad:** baja · **Seguridad:** sí, bajo (abuso de recursos).
 
 ## DEF-A12 — Si el modelo devuelve `content: null`, la IA falla con TypeError
-- **Dónde:** `server/src/services/IAService.js:137` solo contempla `undefined`; `completar` (`:112`) y `chat` hacen `.trim()` sobre `null`. `informeGenerator.js` sí lo maneja.
+- **Dónde:** `server/src/services/clienteIA.js` (`extraerContenido`) solo contempla `undefined`; `completar` y `ChatService.chat` hacen `.trim()` sobre `null`. `informeGenerator.js` sí lo maneja.
 - **Pasos:** el modelo responde `{ choices: [{ message: { content: null } }] }` (pasa con modelos de razonamiento gratuitos).
 - **Esperado:** 502 con el mensaje de "modelo no disponible".
 - **Obtenido:** `TypeError`; la ruta lo convierte en el 502 genérico, sin el mensaje específico ni el detalle para los logs.
@@ -169,7 +169,7 @@ Totales: 22 defectos (5 alta, 3 media, 14 baja), 7 con impacto en seguridad. **C
 - **Probabilidad:** media (cualquier monto que no dé centavos exactos) · **Impacto:** medio · **Prioridad:** media · **Seguridad:** no.
 
 ## DEF-A15 — La edad del paciente suma el año un día antes (zona horaria)
-- **Dónde:** `server/src/services/IAService.js:100` y `server/src/services/informeGenerator.js:14` (`calcularEdad`).
+- **Dónde:** `server/src/utils/fechas.js` (`calcularEdad`, que usan `IAService` e `informeGenerator`).
 - **Pasos:** con el servidor en hora argentina, pedir un informe de un paciente que cumple años mañana.
 - **Esperado:** la edad actual.
 - **Obtenido:** `new Date('AAAA-MM-DD')` se interpreta en UTC y se compara con `getDate()` local: ya suma el año. En Vercel (UTC) pasa entre las 21 y las 24 h de Argentina.

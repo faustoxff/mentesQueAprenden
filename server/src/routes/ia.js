@@ -3,6 +3,7 @@ const { body, validationResult } = require('express-validator');
 const { erroresDeValidacion } = require('../utils/validacion');
 const { requireAuth, getAuthenticatedClient } = require('../middleware/auth');
 const iaService = require('../services/IAService');
+const chatService = require('../services/ChatService');
 
 const router = express.Router();
 
@@ -103,7 +104,7 @@ router.post('/chat',
     if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
-      const resultado = await iaService.chat({ messages: req.body.messages, profesional: req.profesional, db: getAuthenticatedClient(req) });
+      const resultado = await chatService.chat({ messages: req.body.messages, profesional: req.profesional, db: getAuthenticatedClient(req) });
       res.json(resultado);
     } catch (err) {
       responderError(res, err, 'Error al conectar con la IA');
@@ -122,7 +123,7 @@ router.post('/confirmar',
     if (!errors.isEmpty()) return res.status(422).json({ errors: erroresDeValidacion(errors) });
 
     try {
-      const resultado = await iaService.confirmarEliminacion(req.body.token, req.profesional, getAuthenticatedClient(req));
+      const resultado = await chatService.confirmarEliminacion(req.body.token, req.profesional, getAuthenticatedClient(req));
       res.json(resultado);
     } catch (err) {
       responderError(res, err, 'No se pudo completar la acción', 500);

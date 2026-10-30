@@ -68,12 +68,19 @@ Trampa conocida: al crear con `insert(...).select()` la fila tiene que pasar la 
 
 ## 3. El asistente de IA (Menta)
 
-Todo en [services/IAService.js](../server/src/services/IAService.js), expuesto por `routes/ia.js`.
+Expuesto por `routes/ia.js` y repartido en archivos que hacen una sola cosa cada uno:
 
-- **Chat** (`chat()`): manda a OpenRouter el `SYSTEM_PROMPT_BASE` más el historial. El modelo responde con texto y, si hace falta, un bloque JSON `{"action": "...", "params": {...}}`. El servidor lo detecta, ejecuta la herramienta con `ejecutarTool()` (por ejemplo `ver_agenda`, `buscar_pacientes`) y devuelve el texto más `tool_results`, que el front dibuja como tarjetas ([ChatToolResults.jsx](../client/src/components/chat/ChatToolResults.jsx)).
+| Archivo | Qué hace |
+|---|---|
+| [ChatService.js](../server/src/services/ChatService.js) | El chat: el prompt de Menta (`SYSTEM_PROMPT_BASE`), la conversación y sus herramientas (`ejecutarTool`) |
+| [IAService.js](../server/src/services/IAService.js) | Funciones clínicas: sugerir notas, resumir una sesión, sugerir derivación, analizar un documento |
+| [clienteIA.js](../server/src/services/clienteIA.js) | La única conexión a OpenRouter, los reintentos por saturación y la lectura de la respuesta |
+| [utils/fechas.js](../server/src/utils/fechas.js) | `calcularEdad` y las fechas en hora argentina que se le pasan al modelo |
+
+- **Chat** (`chatService.chat()`): manda a OpenRouter el `SYSTEM_PROMPT_BASE` más el historial. El modelo responde con texto y, si hace falta, un bloque JSON `{"action": "...", "params": {...}}`. El servidor lo detecta, ejecuta la herramienta con `ejecutarTool()` (por ejemplo `ver_agenda`, `buscar_pacientes`) y devuelve el texto más `tool_results`, que el front dibuja como tarjetas ([ChatToolResults.jsx](../client/src/components/chat/ChatToolResults.jsx)).
 - Las acciones que escriben datos (crear paciente o turno) **no se ejecutan directo**: el chat abre un formulario y el usuario confirma. La baja de un paciente funciona igual: la herramienta solo devuelve una solicitud con un **token firmado** ([utils/confirmacion.js](../server/src/utils/confirmacion.js), vence a los 5 minutos y es de esa persona) y la baja la ejecuta el botón de la tarjeta (`POST /ia/confirmar`). El modelo no puede borrar aunque alguien le inyecte instrucciones.
 - **Todo con el cliente del usuario:** las herramientas y los endpoints de IA leen y escriben con el `db` del profesional (RLS aplica). `supabaseAdmin` solo queda para pasos ya autorizados (firmar una URL, crear un paciente asignado a otro siendo admin). El historial que manda el navegador se filtra: solo roles `user` y `assistant`.
-- **Funciones sueltas**: sugerir notas, resumir una sesión, sugerir derivación, analizar PDF.
+- **Funciones clínicas** (`IAService`): sugerir notas, resumir una sesión, sugerir derivación, analizar PDF.
 - **Archivos**: [geminiExtractor.js](../server/src/services/geminiExtractor.js) saca el texto de PDFs e imágenes. `pdf-parse` se carga bajo demanda porque en Vercel no existe `DOMMatrix` y al cargarlo al inicio tiraba abajo toda la API; si no carga, se usa la IA.
 - **Informes**: [informeGenerator.js](../server/src/services/informeGenerator.js) redacta con IA a partir de datos provistos, sin inventar puntajes. El front los exporta a PDF ([exportarInformePdf.js](../client/src/utils/exportarInformePdf.js)).
 
@@ -131,4 +138,4 @@ client/src/
 1. `server/src/index.js` y `routes/pacientes.js` (el patrón se repite en todas las rutas).
 2. `services/PacienteService.js`, `repositories/PacienteRepository.js` y `migrations/002_rls_policies.sql` + `004_pacientes_privados.sql`.
 3. `client/src/App.jsx`, `MainShell.jsx` y `store/authStore.js`.
-4. `IAService.js` (es el archivo más grande, 600 líneas): primero `SYSTEM_PROMPT_BASE`, `chat()` y `ejecutarTool()`.
+4. `ChatService.js`: primero `SYSTEM_PROMPT_BASE`, `chat()` y `ejecutarTool()`; después `IAService.js` (funciones clínicas).
