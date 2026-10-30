@@ -43,6 +43,17 @@ class TurnoRepository {
     return datosDe(await q);
   }
 
+  async listarDePaciente(db, pacienteId) {
+    return datosDe(await db
+      .from('turnos')
+      .select(`
+        id, fecha_inicio, fecha_fin, estado, tipo, notas,
+        profesional:profesionales!profesional_id(id, nombre, apellido)
+      `)
+      .eq('paciente_id', pacienteId)
+      .order('fecha_inicio', { ascending: false }));
+  }
+
   async crear(db, turno) {
     return datosDe(await db
       .from('turnos')

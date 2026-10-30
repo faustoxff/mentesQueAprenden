@@ -1,5 +1,4 @@
 const OpenAI = require('openai');
-const { supabaseAdmin } = require('../config/supabase');
 const { extraerTextoDocumento } = require('./geminiExtractor');
 const pacienteService = require('./PacienteService');
 const turnoService = require('./TurnoService');
@@ -9,6 +8,10 @@ const { reglasCrearPaciente } = require('../validaciones/pacientes');
 const { reglasCrearSesion } = require('../validaciones/sesiones');
 const { reglasCrearTurno } = require('../validaciones/turnos');
 const sesionService = require('./SesionService');
+const sesionRepository = require('../repositories/SesionRepository');
+const archivoRepository = require('../repositories/ArchivoRepository');
+const almacenamientoRepository = require('../repositories/AlmacenamientoRepository');
+const profesionalRepository = require('../repositories/ProfesionalRepository');
 
 const MODELO_TEXTO = 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
 const MODELO_CHAT = 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
@@ -151,9 +154,9 @@ class IAService {
 
   async sugerirNotas({ notas_parciales, paciente_id, tipo_sesion, especialidad }, db) {
     await this.asegurarAccesoPaciente(db, paciente_id);
-    const [paciente, { data: anteriores }] = await Promise.all([
+    const [paciente, anteriores] = await Promise.all([
       pacienteService.obtenerDatosBasicos(db, paciente_id, 'fecha_nacimiento, motivo_consulta'),
-      db.from('sesiones').select('fecha, tipo, resumen_ia, notas_libres').eq('paciente_id', paciente_id).order('fecha', { ascending: false }).limit(3)
+      sesionRepository.ultimasDePaciente(db, paciente_id, { campos: 'fecha, tipo, resumen_ia, notas_libres', limite: 3 })
     ]);
 
     const edad = this.calcularEdad(paciente?.fecha_nacimiento);
@@ -186,11 +189,8 @@ Redactá en primera persona del profesional. Máximo 300 palabras, lenguaje clí
   }
 
   async resumirSesion({ sesion_id, notas_libres }, db, profesional) {
-    const { data: sesion } = await db
-      .from('sesiones')
-      .select('tipo, profesional_id, paciente:pacientes(fecha_nacimiento), profesional:profesionales!profesional_id(especialidad)')
-      .eq('id', sesion_id)
-      .maybeSingle();
+    const sesion = await sesionRepository.obtenerSiExiste(db, sesion_id,
+      'tipo, profesional_id, paciente:pacientes(fecha_nacimiento), profesional:profesionales!profesional_id(especialidad)');
     // Solo la autora de la sesión (o un admin) puede escribirle el resumen.
     if (!sesion || (sesion.profesional_id !== profesional.id && profesional.rol !== 'admin')) {
       throw Object.assign(new Error('Sesión no encontrada'), { status: 404 });
@@ -204,16 +204,15 @@ Redactá en primera persona del profesional. Máximo 300 palabras, lenguaje clí
 Notas:\n${notas_libres}`;
 
     const resumen = await this.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }], 200);
-    const { error } = await db.from('sesiones').update({ resumen_ia: resumen, ia_utilizada: true }).eq('id', sesion_id);
-    if (error) throw new Error(error.message);
+    await sesionRepository.actualizarSinDevolver(db, sesion_id, { resumen_ia: resumen, ia_utilizada: true });
     return resumen;
   }
 
   async sugerirDerivacion({ paciente_id, contexto_adicional }, db) {
     await this.asegurarAccesoPaciente(db, paciente_id);
-    const [paciente, { data: sesiones }] = await Promise.all([
+    const [paciente, sesiones] = await Promise.all([
       pacienteService.obtenerDatosBasicos(db, paciente_id, 'motivo_consulta, fecha_nacimiento'),
-      db.from('sesiones').select('tipo, resumen_ia, notas_libres').eq('paciente_id', paciente_id).order('fecha', { ascending: false }).limit(5)
+      sesionRepository.ultimasDePaciente(db, paciente_id, { campos: 'tipo, resumen_ia, notas_libres', limite: 5 })
     ]);
 
     const historial = sesiones?.map(s => s.resumen_ia || s.notas_libres?.slice(0, 200)).filter(Boolean).join('\n\n') || 'Sin historial.';
@@ -237,13 +236,9 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
   }
 
   async analizarPDF({ archivo_id, pregunta }, db) {
-    const { data: archivo, error: archErr } = await db
-      .from('archivos_adjuntos')
-      .select('storage_path, nombre_original, mime_type, paciente_id, tipo')
-      .eq('id', archivo_id)
-      .maybeSingle();
+    const archivo = await archivoRepository.obtener(db, archivo_id, 'storage_path, nombre_original, mime_type, paciente_id, tipo');
 
-    if (archErr || !archivo) {
+    if (!archivo) {
       const notFound = new Error('Archivo no encontrado');
       notFound.status = 404;
       throw notFound;
@@ -257,11 +252,10 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
       throw invalidType;
     }
 
-    const { data: urlData, error: urlErr } = await supabaseAdmin.storage
-      .from('historias-clinicas')
-      .createSignedUrl(archivo.storage_path, 300);
-
-    if (urlErr) {
+    let urlFirmada;
+    try {
+      urlFirmada = await almacenamientoRepository.urlDeDescarga(archivo.storage_path, 300);
+    } catch {
       const storageError = new Error('No se pudo acceder al archivo');
       storageError.status = 500;
       throw storageError;
@@ -272,18 +266,14 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
       : 'Resumí la información clínica más relevante: diagnósticos, resultados, recomendaciones y fechas importantes. Usá viñetas. Máximo 400 palabras.';
 
     // Etapa 1 — extracción: Gemini transcribe el documento sin interpretarlo.
-    const textoExtraido = await extraerTextoDocumento(urlData.signedUrl, archivo.nombre_original, archivo.mime_type);
+    const textoExtraido = await extraerTextoDocumento(urlFirmada, archivo.nombre_original, archivo.mime_type);
 
     // Etapa 2 — análisis: el modelo de texto interpreta el contenido ya transcripto.
     const prompt = `Sos un asistente médico. A continuación el texto transcripto de un documento (${archivo.nombre_original}, tipo: ${archivo.tipo}).\n\n"""\n${textoExtraido}\n"""\n\n${instruccion}`;
     const analisis = await this.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }], 600);
 
     // Guardar el análisis como metadata del archivo (solo si no tenía descripción previa)
-    await supabaseAdmin
-      .from('archivos_adjuntos')
-      .update({ descripcion: `[Análisis IA]\n${analisis}` })
-      .eq('id', archivo_id)
-      .is('descripcion', null);
+    await archivoRepository.describirSiNoTieneComoAdmin(archivo_id, `[Análisis IA]\n${analisis}`);
 
     return { analisis, texto_extraido: textoExtraido, modelo: MODELO_TEXTO };
   }
@@ -324,11 +314,10 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
           'id, nombre, apellido, dni, fecha_nacimiento, genero, telefono, email, motivo_consulta, estado, obra_social_id, profesional_principal_id');
         if (!pac) return { error: 'Paciente no encontrado' };
 
-        const { data: sesiones } = await db.from('sesiones')
-          .select('id, fecha, tipo, resumen_ia, notas_libres, monto, pagado')
-          .eq('paciente_id', args.paciente_id)
-          .order('fecha', { ascending: false })
-          .limit(5);
+        const sesiones = await sesionRepository.ultimasDePaciente(db, args.paciente_id, {
+          campos: 'id, fecha, tipo, resumen_ia, notas_libres, monto, pagado',
+          limite: 5
+        });
         return { paciente: pac, sesiones_recientes: sesiones };
       }
 
@@ -427,11 +416,7 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
       }
 
       case 'listar_profesionales': {
-        const { data } = await db
-          .from('profesionales')
-          .select('id, nombre, apellido, especialidad, rol')
-          .eq('activo', true);
-        return data || [];
+        return (await profesionalRepository.listarActivos(db)) || [];
       }
 
       case 'registrar_sesion': {

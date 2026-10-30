@@ -10,6 +10,14 @@ class ProfesionalRepository {
     return datosOpcionales(await db.from('profesionales').select('id, activo').eq('id', id).single());
   }
 
+  // Con el cliente del usuario: los activos que RLS deja ver, o null si no se pudo leer.
+  async listarActivos(db) {
+    return datosOpcionales(await db
+      .from('profesionales')
+      .select('id, nombre, apellido, especialidad, rol')
+      .eq('activo', true));
+  }
+
   async listarActivosComoAdmin() {
     return datosDe(await supabaseAdmin
       .from('profesionales')

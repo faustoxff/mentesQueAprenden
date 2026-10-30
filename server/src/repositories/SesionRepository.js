@@ -38,6 +38,21 @@ class SesionRepository {
     return datosDe(await q);
   }
 
+  // Columnas pedidas de la sesión, o null si no está (o no se pudo leer).
+  async obtenerSiExiste(db, id, campos) {
+    return datosOpcionales(await db.from('sesiones').select(campos).eq('id', id).maybeSingle());
+  }
+
+  // Las últimas sesiones del paciente, o null si no se pudieron leer.
+  async ultimasDePaciente(db, pacienteId, { campos, limite }) {
+    return datosOpcionales(await db
+      .from('sesiones')
+      .select(campos)
+      .eq('paciente_id', pacienteId)
+      .order('fecha', { ascending: false })
+      .limit(limite));
+  }
+
   async crear(db, sesion) {
     return datosDe(await db.from('sesiones').insert(sesion).select().single());
   }
@@ -46,9 +61,28 @@ class SesionRepository {
     return datosDe(await db.from('sesiones').update(cambios).eq('id', id).select().single());
   }
 
+  async actualizarSinDevolver(db, id, cambios) {
+    datosDe(await db.from('sesiones').update(cambios).eq('id', id));
+  }
+
   // Deshace una sesión recién creada. No lanza: se usa mientras ya se está reportando otro error.
   async eliminarComoAdmin(id) {
     await supabaseAdmin.from('sesiones').delete().eq('id', id);
+  }
+
+  // Una página de sesiones del paciente, de la más nueva a la más vieja: { data, count }.
+  async listarDePaciente(db, pacienteId, { desde, hasta }) {
+    const respuesta = await db
+      .from('sesiones')
+      .select(`
+        id, fecha, tipo, duracion_minutos, notas_libres, resumen_ia,
+        monto, pagado, fecha_pago,
+        profesional:profesionales!profesional_id(id, nombre, apellido, especialidad)
+      `, { count: 'exact' })
+      .eq('paciente_id', pacienteId)
+      .order('fecha', { ascending: false })
+      .range(desde, hasta);
+    return { data: datosDe(respuesta), count: respuesta.count };
   }
 
   async listarVersionesDeNotas(db, sesionId) {

@@ -39,6 +39,18 @@ class DerivacionRepository {
       .order('created_at', { ascending: false }));
   }
 
+  async listarDePaciente(db, pacienteId) {
+    return datosDe(await db
+      .from('derivaciones')
+      .select(`
+        *,
+        origen:profesionales!profesional_origen_id(id, nombre, apellido, especialidad),
+        destino:profesionales!profesional_destino_id(id, nombre, apellido, especialidad)
+      `)
+      .eq('paciente_id', pacienteId)
+      .order('created_at', { ascending: false }));
+  }
+
   async listarPendientesDe(db, profesionalDestinoId) {
     return datosDe(await db
       .from('derivaciones')

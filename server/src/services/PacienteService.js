@@ -1,5 +1,9 @@
-const { supabaseAdmin } = require('../config/supabase');
 const { sanitizarBusqueda } = require('../utils/busqueda');
+const pacienteRepository = require('../repositories/PacienteRepository');
+const sesionRepository = require('../repositories/SesionRepository');
+const turnoRepository = require('../repositories/TurnoRepository');
+const derivacionRepository = require('../repositories/DerivacionRepository');
+const archivoRepository = require('../repositories/ArchivoRepository');
 
 const CAMPOS_UUID = ['obra_social_id', 'profesional_principal_id'];
 
@@ -9,28 +13,13 @@ class PacienteService {
   // ─────────────────────────────────────────────────────────────
 
   async listar(db, { busqueda, estado, profesional_id, page = 1, limit = 20 }, profesionalActualId) {
-    let query = db
-      .from('pacientes')
-      .select(`
-        id, nombre, apellido, dni, fecha_nacimiento, estado,
-        telefono, email,
-        profesional_principal:profesionales!profesional_principal_id(id, nombre, apellido, especialidad),
-        obra_social:obras_sociales(id, nombre),
-        created_at
-      `, { count: 'exact' })
-      .is('deleted_at', null)
-      .order('apellido', { ascending: true })
-      .range((page - 1) * limit, page * limit - 1);
-
-    const termino = sanitizarBusqueda(busqueda);
-    if (termino) {
-      query = query.or(`nombre.ilike.%${termino}%,apellido.ilike.%${termino}%,dni.ilike.%${termino}%`);
-    }
-    if (estado) query = query.eq('estado', estado);
-    if (profesional_id) query = query.eq('profesional_principal_id', profesional_id);
-
-    const { data, error, count } = await query;
-    if (error) throw new Error(error.message);
+    const { data, count } = await pacienteRepository.listarActivos(db, {
+      termino: sanitizarBusqueda(busqueda),
+      estado,
+      profesionalPrincipalId: profesional_id,
+      desde: (page - 1) * limit,
+      hasta: page * limit - 1
+    });
 
     const dataConDerivado = data.map(p => ({
       ...p,
@@ -58,47 +47,23 @@ class PacienteService {
 
   // Columnas pedidas de un paciente activo y visible, o null.
   async obtenerDatosBasicos(db, id, campos = 'id, nombre, apellido') {
-    const { data } = await db
-      .from('pacientes')
-      .select(campos)
-      .eq('id', id)
-      .is('deleted_at', null)
-      .maybeSingle();
-    return data || null;
+    return pacienteRepository.obtenerActivo(db, id, campos);
   }
 
   // Búsqueda rápida por nombre, apellido o DNI (sin paginar), para el chat.
   async buscar(db, busqueda, { limite = 5, campos = 'id, nombre, apellido, dni' } = {}) {
     const termino = sanitizarBusqueda(busqueda);
     if (!termino) return [];
-    const { data } = await db
-      .from('pacientes')
-      .select(campos)
-      .or(`nombre.ilike.%${termino}%,apellido.ilike.%${termino}%,dni.ilike.%${termino}%`)
-      .is('deleted_at', null)
-      .limit(limite);
-    return data || [];
+    return (await pacienteRepository.buscarActivos(db, termino, { limite, campos })) || [];
   }
 
   async obtener(db, id) {
-    const { data, error } = await db
-      .from('pacientes')
-      .select(`
-        *,
-        profesional_principal:profesionales!profesional_principal_id(id, nombre, apellido, especialidad, email),
-        obra_social:obras_sociales(id, nombre, codigo),
-        creado_por:profesionales!created_by(id, nombre, apellido)
-      `)
-      .eq('id', id)
-      .is('deleted_at', null)
-      .single();
-
-    if (error) {
-      const err = new Error(error.message);
-      err.status = error.code === 'PGRST116' ? 404 : 500;
-      throw err;
+    try {
+      return await pacienteRepository.obtenerDetalle(db, id);
+    } catch (error) {
+      error.status = error.tipo === 'NO_ENCONTRADO' ? 404 : 500;
+      throw error;
     }
-    return data;
   }
 
   async crear(db, body, profesional) {
@@ -124,30 +89,21 @@ class PacienteService {
     // Con otro titular el insert pasa (es admin) pero el .select() posterior no, porque
     // RLS no deja ver pacientes ajenos ("new row violates row-level security policy"):
     // ese caso va con el cliente admin, ya autorizado arriba.
-    const cliente = principal === profesional.id ? db : supabaseAdmin;
+    const paciente = { ...insertData, profesional_principal_id: principal, created_by: profesional.id };
 
-    const { data, error } = await cliente
-      .from('pacientes')
-      .insert({
-        ...insertData,
-        profesional_principal_id: principal,
-        created_by: profesional.id
-      })
-      .select()
-      .single();
-
-    if (error) {
-      if (error.code === '23505') {
+    try {
+      return principal === profesional.id
+        ? await pacienteRepository.crear(db, paciente)
+        : await pacienteRepository.crearComoAdmin(paciente);
+    } catch (error) {
+      if (error.tipo === 'DUPLICADO') {
         const err = new Error('Ya existe un paciente con ese DNI');
         err.status = 409;
         throw err;
       }
-      const err = new Error(error.message);
-      err.status = 500;
-      throw err;
+      error.status = 500;
+      throw error;
     }
-
-    return data;
   }
 
   async actualizar(db, id, body, profesional) {
@@ -168,47 +124,26 @@ class PacienteService {
     // Reasignar la titularidad: solo admin (la base también lo impide con un trigger).
     if (profesional?.rol !== 'admin') delete updateData.profesional_principal_id;
 
-    const { data, error } = await db
-      .from('pacientes')
-      .update(updateData)
-      .eq('id', id)
-      .is('deleted_at', null)
-      .select()
-      .single();
-
-    if (error) {
-      const err = new Error(error.message);
-      err.status = error.code === 'PGRST116' ? 404 : 500;
-      throw err;
+    try {
+      return await pacienteRepository.actualizarActivo(db, id, updateData);
+    } catch (error) {
+      error.status = error.tipo === 'NO_ENCONTRADO' ? 404 : 500;
+      throw error;
     }
-    return data;
   }
 
   async eliminar(db, id) {
     // Verificación manual de permiso (RLS de UPDATE sobre esta tabla da falso
     // negativo en este entorno) antes de usar el cliente admin.
-    const { data: paciente, error: fetchError } = await db
-      .from('pacientes')
-      .select('id, nombre, apellido')
-      .eq('id', id)
-      .is('deleted_at', null)
-      .single();
+    const paciente = await pacienteRepository.obtenerActivo(db, id, 'id, nombre, apellido');
 
-    if (fetchError || !paciente) {
+    if (!paciente) {
       const err = new Error('Paciente no encontrado');
       err.status = 404;
       throw err;
     }
 
-    const { data, error } = await supabaseAdmin
-      .from('pacientes')
-      .update({ deleted_at: new Date().toISOString() })
-      .eq('id', id)
-      .is('deleted_at', null)
-      .select('id, nombre, apellido')
-      .single();
-
-    if (error) throw new Error(error.message);
+    const data = await pacienteRepository.darDeBajaComoAdmin(id, new Date().toISOString());
     return { message: `Paciente ${data.apellido}, ${data.nombre} eliminado`, id: data.id };
   }
 
@@ -217,62 +152,20 @@ class PacienteService {
   // ─────────────────────────────────────────────────────────────
 
   async listarSesiones(db, pacienteId, { page = 1, limit = 20 }) {
-    const { data, error, count } = await db
-      .from('sesiones')
-      .select(`
-        id, fecha, tipo, duracion_minutos, notas_libres, resumen_ia,
-        monto, pagado, fecha_pago,
-        profesional:profesionales!profesional_id(id, nombre, apellido, especialidad)
-      `, { count: 'exact' })
-      .eq('paciente_id', pacienteId)
-      .order('fecha', { ascending: false })
-      .range((page - 1) * limit, page * limit - 1);
-
-    if (error) throw new Error(error.message);
+    const { data, count } = await sesionRepository.listarDePaciente(db, pacienteId, { desde: (page - 1) * limit, hasta: page * limit - 1 });
     return { data, pagination: { total: count, page: Number(page), limit: Number(limit) } };
   }
 
   async listarTurnos(db, pacienteId) {
-    const { data, error } = await db
-      .from('turnos')
-      .select(`
-        id, fecha_inicio, fecha_fin, estado, tipo, notas,
-        profesional:profesionales!profesional_id(id, nombre, apellido)
-      `)
-      .eq('paciente_id', pacienteId)
-      .order('fecha_inicio', { ascending: false });
-
-    if (error) throw new Error(error.message);
-    return data;
+    return turnoRepository.listarDePaciente(db, pacienteId);
   }
 
   async listarDerivaciones(db, pacienteId) {
-    const { data, error } = await db
-      .from('derivaciones')
-      .select(`
-        *,
-        origen:profesionales!profesional_origen_id(id, nombre, apellido, especialidad),
-        destino:profesionales!profesional_destino_id(id, nombre, apellido, especialidad)
-      `)
-      .eq('paciente_id', pacienteId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw new Error(error.message);
-    return data;
+    return derivacionRepository.listarDePaciente(db, pacienteId);
   }
 
   async listarArchivos(db, pacienteId) {
-    const { data, error } = await db
-      .from('archivos_adjuntos')
-      .select(`
-        id, nombre_original, tipo, mime_type, tamanio_bytes, descripcion, created_at,
-        subido_por:profesionales!subido_por(id, nombre, apellido)
-      `)
-      .eq('paciente_id', pacienteId)
-      .order('created_at', { ascending: false });
-
-    if (error) throw new Error(error.message);
-    return data;
+    return archivoRepository.listarDePaciente(db, pacienteId);
   }
 }
 
