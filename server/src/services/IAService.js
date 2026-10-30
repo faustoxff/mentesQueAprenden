@@ -57,7 +57,7 @@ Reglas, en orden de importancia:
 
 Redactá en primera persona del profesional. Máximo 300 palabras, lenguaje clínico de ${especialidad} en Argentina. Solo las notas (o el mensaje de falta de información), sin títulos.`;
 
-    return clienteIA.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }]);
+    return clienteIA.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }], 2000);
   }
 
   async resumirSesion({ sesion_id, notas_libres }, db, profesional) {
@@ -75,7 +75,7 @@ Redactá en primera persona del profesional. Máximo 300 palabras, lenguaje clí
 
 Notas:\n${notas_libres}`;
 
-    const resumen = await clienteIA.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }], 200);
+    const resumen = await clienteIA.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }], 1000);
     await sesionRepository.actualizarSinDevolver(db, sesion_id, { resumen_ia: resumen, ia_utilizada: true });
     return resumen;
   }
@@ -104,7 +104,7 @@ Si SÍ hay información clínica real y coherente, indicá brevemente:
 
 Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
 
-    return clienteIA.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }], 300);
+    return clienteIA.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }], 1500);
   }
 
   async analizarPDF({ archivo_id, pregunta }, db) {
@@ -142,7 +142,7 @@ Respondé en 4-6 oraciones, lenguaje clínico profesional.`;
 
     // Etapa 2 — análisis: el modelo de texto interpreta el contenido ya transcripto.
     const prompt = `Sos un asistente médico. A continuación el texto transcripto de un documento (${archivo.nombre_original}, tipo: ${archivo.tipo}).\n\n"""\n${textoExtraido}\n"""\n\n${instruccion}`;
-    const analisis = await clienteIA.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }], 600);
+    const analisis = await clienteIA.completar(MODELO_TEXTO, [{ role: 'user', content: prompt }], 2500);
 
     // Guardar el análisis como metadata del archivo (solo si no tenía descripción previa)
     await archivoRepository.describirSiNoTieneComoAdmin(archivo_id, `[Análisis IA]\n${analisis}`);

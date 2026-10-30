@@ -60,7 +60,8 @@ Más detalle en [docs/GUIA-DEL-CODIGO.md](docs/GUIA-DEL-CODIGO.md) (cómo está 
 - **El chat hace lo mismo que la app:** sus herramientas llaman a los mismos services y validaciones que los formularios. No metas lógica de negocio ni consultas en una herramienta.
 - **El chat no borra:** `eliminar_paciente` solo devuelve una solicitud con un token firmado (`utils/confirmacion.js`, vence a los 5 minutos). La baja la ejecuta el botón (`POST /ia/confirmar`). Así nadie puede hacer borrar algo inyectándole instrucciones al modelo.
 - **Una sesión creada desde el chat no lleva consultorio ni turno** a propósito: es para agendar rápido; después se completa desde la pantalla de la sesión.
-- **Tiempos:** el chat y las funciones clínicas esperan como mucho 25 s por respuesta. Los informes y la lectura de documentos usan el tiempo por defecto (textos largos), y cada uno conserva su propia lógica de reintentos.
+- **El modelo es de razonamiento:** piensa antes de responder y eso cuenta dentro de `max_tokens`. No bajes los límites (chat 2000, resumen 1000, etc.): con 500 el razonamiento se comía todo y la respuesta llegaba vacía ("Error al conectar con la IA"). El largo de la respuesta se controla desde el prompt.
+- **Tiempos:** el chat y las funciones clínicas esperan como mucho 25 s por intento, con 1 reintento, para no pasar los 60 s del navegador y de Vercel. Los informes y la lectura de documentos usan el tiempo por defecto (textos largos), y cada uno conserva su propia lógica de reintentos.
 - **Regla fija para los prompts clínicos:** todo prompt que le pida al modelo texto clínico sobre un paciente (notas, resúmenes, informes, sugerencias) tiene que prohibir explícitamente inventar datos que no estén en lo que se le pasa, y separar claramente lo pasado (historial) de lo que hay que redactar. El modelo gratuito es chico e inventa con facilidad.
 
 ## Pendientes conocidos (no son errores de diseño)

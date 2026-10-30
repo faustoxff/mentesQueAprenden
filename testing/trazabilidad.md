@@ -344,6 +344,10 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U340 | crear una sesión para un paciente dado de baja → 404 sin insertar | Acceso a pacientes centralizado | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
 | CP-U341 | cuando Menta responde, el input del chat queda enfocado | Chat (usabilidad) | Unitaria | `client/src/components/chat/ChatSidebar.test.jsx` |  |
 | CP-U342 | si la IA falla, el input del chat también queda enfocado | Chat (usabilidad) | Unitaria | `client/src/components/chat/ChatSidebar.test.jsx` |  |
+| CP-U343 | respuesta cortada por el límite de tokens (content null) → 502 claro | IA: respuestas cortadas | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` | DEF-A12 |
+| CP-U344 | un resumen cortado a la mitad no se guarda en la sesión | IA: respuestas cortadas | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` | DEF-A12 |
+| CP-U345 | en el chat, una respuesta vacía llega como 502 con mensaje claro | IA: respuestas cortadas | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` | DEF-A12 |
+| CP-U346 | el chat le deja margen al razonamiento (max_tokens 2000) | IA: respuestas cortadas | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` | DEF-A12 |
 | CP-A01 | GET /health responde ok | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A02 | POST /auth/login como profesional | Autenticación (necesita credenciales de un proyecto de test) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A03 | POST /auth/login con email inválido → 422 | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
@@ -405,4 +409,4 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-E17 | el historial se abre desde el menú y no muestra la ocupación de otros profesionales | Historial de turnos | E2E | `client/e2e/navegabilidad.e2e.js` |  |
 | CP-E18 | historial sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
 
-Totales: 340 IDs unitarios, 42 de API y 18 E2E.
+Totales: 344 IDs unitarios, 42 de API y 18 E2E.

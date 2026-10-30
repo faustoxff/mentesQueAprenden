@@ -12,16 +12,35 @@ const openrouter = new OpenAI({
   }
 });
 
-// El chat y las sugerencias esperan como mucho 25 s por respuesta (con 2 reintentos del
-// SDK ante errores de red). Los informes y la extracción de documentos usan el tiempo
-// por defecto del SDK, porque generan textos largos.
-const OPCIONES_RESPUESTA_RAPIDA = { timeout: 25000, maxRetries: 2 };
+// El chat y las sugerencias esperan como mucho 25 s por intento, con 1 reintento del SDK
+// ante errores de red: así un pedido nunca pasa los 60 s que esperan el navegador y
+// Vercel (con 2 reintentos podían ser 75 s y el usuario veía "sin conexión"). Los informes
+// y la extracción de documentos usan el tiempo por defecto del SDK (textos largos).
+const OPCIONES_RESPUESTA_RAPIDA = { timeout: 25000, maxRetries: 1 };
+
+// El modelo es "de razonamiento": piensa antes de responder y ese razonamiento cuenta
+// dentro de max_tokens. Por eso los límites de quien llama son holgados: el largo de la
+// respuesta lo marcan las instrucciones del prompt, no max_tokens.
 
 // Los modelos ":free" de OpenRouter corren en un pool de workers compartido
 // entre todos los usuarios de OpenRouter, así que se saturan de forma
 // transitoria y ajena a nuestro tráfico. Este patrón detecta esos casos para
 // reintentar en vez de mostrarle el error al profesional en el primer intento.
 const PATRON_SATURACION = /resourceexhausted|rate.?limit|too many requests|limit reached/i;
+
+const MENSAJE_SATURADO = 'El modelo de IA está saturado en este momento. Probá de nuevo en unos segundos.';
+const MENSAJE_NO_DISPONIBLE = 'Modelo de IA no disponible ahora mismo. Probá de nuevo en unos minutos.';
+const MENSAJE_INCOMPLETO = 'La IA no llegó a completar la respuesta. Probá de nuevo.';
+
+// Error 502 para el usuario; el detalle técnico queda solo para los logs del servidor.
+const errorDeIA = (mensaje, detalle) => Object.assign(new Error(mensaje), { status: 502, upstreamDetail: detalle });
+
+// Si el razonamiento se come todo max_tokens, el modelo corta (finish_reason "length") y
+// devuelve content null o un texto a medias: no se usa ni se guarda una respuesta así.
+function respuestaIncompleta(eleccion) {
+  const contenido = eleccion.message?.content;
+  return typeof contenido !== 'string' || !contenido.trim() || eleccion.finish_reason === 'length';
+}
 
 const clienteIA = {
   openrouter,
@@ -52,18 +71,15 @@ const clienteIA = {
   // proveedor sirve el modelo gratuito por debajo de OpenRouter) que no debe
   // filtrarse a la UI. Se guarda en err.upstreamDetail solo para logs de servidor.
   extraerContenido(response) {
-    const contenido = response?.choices?.[0]?.message?.content;
-    if (contenido === undefined) {
+    const eleccion = response?.choices?.[0];
+    if (!eleccion) {
       const detalle = response?.error?.message || 'la IA no devolvió una respuesta válida';
-      const saturado = PATRON_SATURACION.test(detalle);
-      const err = new Error(saturado
-        ? 'El modelo de IA está saturado en este momento. Probá de nuevo en unos segundos.'
-        : 'Modelo de IA no disponible ahora mismo. Probá de nuevo en unos minutos.');
-      err.status = 502;
-      err.upstreamDetail = detalle;
-      throw err;
+      throw errorDeIA(PATRON_SATURACION.test(detalle) ? MENSAJE_SATURADO : MENSAJE_NO_DISPONIBLE, detalle);
     }
-    return contenido;
+    if (respuestaIncompleta(eleccion)) {
+      throw errorDeIA(MENSAJE_INCOMPLETO, `finish_reason=${eleccion.finish_reason}, content=${String(eleccion.message?.content).slice(0, 20)}`);
+    }
+    return eleccion.message.content;
   }
 };
 

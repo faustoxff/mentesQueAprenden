@@ -313,7 +313,7 @@ class ChatService {
       const response = await clienteIA.crearCompletion({
         model: MODELO_CHAT,
         messages: historial,
-        max_tokens: 500
+        max_tokens: 2000
       });
 
       const rawText = clienteIA.extraerContenido(response).trim();
@@ -353,7 +353,7 @@ class ChatService {
       const resumenResp = await clienteIA.crearCompletion({
         model: MODELO_CHAT,
         messages: [...historial, { role: 'user', content: 'Resumí en lenguaje natural todo lo que hiciste, sin JSON.' }],
-        max_tokens: 400
+        max_tokens: 1500
       });
       mensajeFinal = this.limpiarTexto(clienteIA.extraerContenido(resumenResp).trim());
     }

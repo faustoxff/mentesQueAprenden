@@ -30,14 +30,14 @@ Relevamiento del 2026-10-27 sobre `master` (commit `a6d110b` más los tests de e
 | DEF-A09 | `/auth/refresh` ignora su propia validación | Baja | No | Abierto |
 | DEF-A10 | Un `mes` mal formado en pagos/liquidación da 500 | Baja | No | Abierto |
 | DEF-A11 | Paginado de pacientes sin normalizar `page` ni tope para `limit` | Baja | Sí (bajo) | Abierto |
-| DEF-A12 | Si el modelo devuelve `content: null`, la IA falla con TypeError | Baja | No | Abierto |
+| DEF-A12 | Si el modelo devuelve `content: null`, la IA falla con TypeError | Baja | No | **Corregido** (ver detalle) |
 | DEF-A13 | Una fecha inexistente (30/02) pasa la validación y da 500 | Baja | No | Abierto |
 | DEF-A15 | La edad del paciente suma el año un día antes (zona horaria) | Baja | No | Abierto |
 | DEF-A16 | `/admin` no tiene guarda de rol en el cliente | Baja | No (el backend bloquea) | Abierto |
 | DEF-A21 | `docs/API.md` no coincide con el código | Baja | No | Abierto |
 | DEF-A22 | Se puede pedir una URL para subir un archivo a un paciente dado de baja | Baja | Sí (bajo) | **Corregido** (sin commitear) |
 
-Totales: 22 defectos (5 alta, 3 media, 14 baja), 7 con impacto en seguridad. **Corregidos: 8** (las 5 de prioridad alta, DEF-A14, DEF-A18 y DEF-A22). **Abiertos: 14** (DEF-A03 de prioridad media y 13 de prioridad baja).
+Totales: 22 defectos (5 alta, 3 media, 14 baja), 7 con impacto en seguridad. **Corregidos: 9** (las 5 de prioridad alta, DEF-A12, DEF-A14, DEF-A18 y DEF-A22). **Abiertos: 13** (DEF-A03 de prioridad media y 12 de prioridad baja).
 
 ---
 
@@ -138,6 +138,7 @@ Totales: 22 defectos (5 alta, 3 media, 14 baja), 7 con impacto en seguridad. **C
 - **Obtenido:** `TypeError`; la ruta lo convierte en el 502 genérico, sin el mensaje específico ni el detalle para los logs.
 - **Evidencia:** CP-U171.
 - **Probabilidad:** media · **Impacto:** bajo · **Prioridad:** baja · **Seguridad:** no.
+- **Corrección (2026-10-29):** en la app publicada el chat respondía "Error al conectar con la IA". Causa: el modelo es de razonamiento y su razonamiento cuenta dentro de `max_tokens`; con 500 tokens usaba entre 309 y 480, y al pasarse devolvía `content: null` (`finish_reason: "length"`). Se subieron los límites (chat 2000, notas 2000, resumen 1000, derivación 1500, PDF 2500) y `extraerContenido` ahora responde 502 "La IA no llegó a completar la respuesta" ante contenido nulo, vacío o cortado, así tampoco se guarda un resumen a medias. Tests CP-U171 (sin marca de falla), CP-U343…U346.
 
 ## DEF-A13 — Una fecha inexistente (30/02) pasa la validación y da 500
 - **Dónde:** `server/src/routes/turnos.js:27` (`isISO8601()` sin `{ strict: true }`); se repite en sesiones y evaluaciones.

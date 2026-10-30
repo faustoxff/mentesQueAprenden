@@ -11,7 +11,7 @@ jest.mock('../../src/config/supabase', () => ({ supabaseAdmin: mockAdmin, supaba
 const mockPdfTexto = jest.fn();
 jest.mock('pdf-parse', () => ({ PDFParse: jest.fn().mockImplementation(() => ({ getText: () => mockPdfTexto(), destroy: async () => {} })) }));
 
-require('../../src/services/IAService');
+const iaService = require('../../src/services/IAService');
 const chatService = require('../../src/services/ChatService');
 const clienteIA = require('../../src/services/clienteIA');
 const { generarInformeTexto } = require('../../src/services/informeGenerator');
@@ -79,8 +79,8 @@ describe('respuestas raras del modelo', () => {
     expect(() => clienteIA.extraerContenido({})).toThrow(/no disponible/);
   });
 
-  // DEF-A12: con content null, extraerContenido devuelve null y completar() hace null.trim() (TypeError).
-  test.failing('CP-U171 contenido nulo del modelo → error 502 claro, no un TypeError', async () => {
+  // DEF-A12 (corregido): antes content null terminaba en null.trim() (TypeError).
+  test('CP-U171 contenido nulo del modelo → error 502 claro, no un TypeError', async () => {
     mockCreate.mockResolvedValue(respuesta(null));
 
     await expect(clienteIA.completar('m', [{ role: 'user', content: 'x' }])).rejects.toMatchObject({ status: 502 });
@@ -332,12 +332,12 @@ describe('clienteIA: una sola conexión a OpenRouter', () => {
     expect(conexionesCreadas).toBe(1);
   });
 
-  test('CP-U336 el chat y las sugerencias esperan como mucho 25 s por respuesta', async () => {
+  test('CP-U336 el chat y las sugerencias esperan como mucho 25 s por intento y reintentan 1 vez (no pasan los 60 s)', async () => {
     mockCreate.mockResolvedValue(respuesta('ok'));
 
     await clienteIA.completar('m', []);
 
-    expect(mockCreate.mock.calls[0][1]).toEqual({ timeout: 25000, maxRetries: 2 });
+    expect(mockCreate.mock.calls[0][1]).toEqual({ timeout: 25000, maxRetries: 1 });
   });
 
   test('CP-U337 los informes usan la misma conexión sin el límite de 25 s (textos largos)', async () => {
@@ -346,5 +346,40 @@ describe('clienteIA: una sola conexión a OpenRouter', () => {
     await generarInformeTexto({ paciente: {}, pruebas: [] });
 
     expect(mockCreate.mock.calls[0][1]).toBeUndefined();
+  });
+});
+
+describe('respuestas cortadas por el límite de tokens (modelo de razonamiento)', () => {
+  const cortada = (content) => ({ choices: [{ message: { content }, finish_reason: 'length' }] });
+
+  test('CP-U343 si el razonamiento se come el límite (content null, finish_reason "length") → 502 claro', async () => {
+    mockCreate.mockResolvedValue(cortada(null));
+
+    await expect(clienteIA.completar('m', [])).rejects.toMatchObject({ status: 502, message: 'La IA no llegó a completar la respuesta. Probá de nuevo.' });
+  });
+
+  test('CP-U344 un resumen cortado a la mitad no se guarda en la sesión', async () => {
+    mockCreate.mockResolvedValue(cortada('El paciente mejoró la decodificación de sílabas d'));
+    const { db, enTabla } = crearDb({ sesiones: { data: { tipo: 'tratamiento', profesional_id: 'prof', paciente: {}, profesional: {} }, error: null } });
+
+    await expect(iaService.resumirSesion({ sesion_id: 's1', notas_libres: 'notas' }, db, { id: 'prof', rol: 'profesional' })).rejects.toMatchObject({ status: 502 });
+    expect(enTabla('sesiones', 'update')).toHaveLength(0);
+  });
+
+  test('CP-U345 en el chat, una respuesta vacía llega como 502 con mensaje claro (no "Error al conectar con la IA")', async () => {
+    mockCreate.mockResolvedValue(cortada(null));
+    const { db } = crearDb({});
+
+    await expect(chatService.chat({ messages: [{ role: 'user', content: 'hola' }], profesional: { id: 'p', nombre: 'A', apellido: 'B', rol: 'profesional' }, db }))
+      .rejects.toMatchObject({ status: 502, message: 'La IA no llegó a completar la respuesta. Probá de nuevo.' });
+  });
+
+  test('CP-U346 el chat le deja margen al razonamiento (max_tokens 2000)', async () => {
+    mockCreate.mockResolvedValue(respuesta('¡Hola!'));
+    const { db } = crearDb({});
+
+    await chatService.chat({ messages: [{ role: 'user', content: 'hola' }], profesional: { id: 'p', nombre: 'A', apellido: 'B', rol: 'profesional' }, db });
+
+    expect(mockCreate.mock.calls[0][0].max_tokens).toBe(2000);
   });
 });

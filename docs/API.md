@@ -198,13 +198,15 @@ API compatible con OpenAI, consumida con el SDK `openai` apuntando a `https://op
 
 | Función | Archivo | Modelo | `max_tokens` |
 |---|---|---|---|
-| Sugerir notas | `IAService.js` | `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` | 500 |
-| Resumir sesión | `IAService.js` | ídem | 200 |
-| Sugerir derivación | `IAService.js` | ídem | 300 |
-| Análisis de PDF (etapa 2) | `IAService.js` | ídem | 600 |
-| Chat | `ChatService.js` | ídem | 500 (400 para el resumen final) |
+| Sugerir notas | `IAService.js` | `nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free` | 2000 |
+| Resumir sesión | `IAService.js` | ídem | 1000 |
+| Sugerir derivación | `IAService.js` | ídem | 1500 |
+| Análisis de PDF (etapa 2) | `IAService.js` | ídem | 2500 |
+| Chat | `ChatService.js` | ídem | 2000 (1500 para el resumen final) |
 | Informe de evaluación | `informeGenerator.js` | ídem | 3500 |
 | OCR de PDF escaneado / imagen | `geminiExtractor.js` | `google/gemma-4-26b-a4b-it:free` → `google/gemma-4-31b-it:free` (alternados) | 2000 |
+
+El modelo de texto es **de razonamiento**: piensa antes de responder y ese razonamiento cuenta dentro de `max_tokens`. Por eso los límites son holgados; el largo de la respuesta lo marcan las instrucciones del prompt. Si el modelo igual se queda sin tokens, devuelve `content: null` o una respuesta cortada, y el servidor responde `502` "La IA no llegó a completar la respuesta" en vez de usarla.
 
 #### Pipeline de `analizar-pdf`
 
@@ -220,7 +222,7 @@ Los modelos `:free` comparten pool entre todos los usuarios de OpenRouter y se s
 
 | Mecanismo | Detalle |
 |---|---|
-| Conexión única (`clienteIA.js`) | Una sola conexión a OpenRouter para todo. El chat y las funciones clínicas piden `timeout: 25000`, `maxRetries: 2`; informes y OCR usan el tiempo por defecto del SDK (textos largos) |
+| Conexión única (`clienteIA.js`) | Una sola conexión a OpenRouter para todo. El chat y las funciones clínicas piden `timeout: 25000`, `maxRetries: 1` (un pedido no pasa los 60 s del navegador y de Vercel); informes y OCR usan el tiempo por defecto del SDK (textos largos) |
 | Error embebido en HTTP 200 | OpenRouter a veces devuelve `200` con `error` en el body, que el SDK no reintenta. `crearCompletion` reintenta hasta **3 veces** (espera 700 ms × intento) si el mensaje coincide con `resourceexhausted`, `rate limit`, `too many requests` o `limit reached` |
 | OCR | Hasta **3 intentos** ante `429`, esperando 3 s y alternando modelo |
 | Respuesta al usuario | `502` con mensaje genérico ("modelo saturado" / "no disponible"). El detalle crudo del proveedor queda en `err.upstreamDetail` solo para logs, nunca se envía a la UI |
