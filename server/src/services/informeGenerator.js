@@ -1,4 +1,5 @@
 const OpenAI = require('openai');
+const { calcularEdad } = require('../utils/fechas');
 
 const openrouter = new OpenAI({
   baseURL: 'https://openrouter.ai/api/v1',
@@ -10,16 +11,6 @@ const openrouter = new OpenAI({
 });
 
 const MODELO = 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
-
-function calcularEdad(fechaNac) {
-  if (!fechaNac) return '?';
-  const hoy = new Date();
-  const nac = new Date(fechaNac);
-  let edad = hoy.getFullYear() - nac.getFullYear();
-  if (hoy.getMonth() < nac.getMonth() ||
-     (hoy.getMonth() === nac.getMonth() && hoy.getDate() < nac.getDate())) edad--;
-  return edad;
-}
 
 // Redacta el informe psicopedagógico completo a partir de los datos cargados
 // por la profesional (motivo, antecedentes, pruebas con resultados en texto

@@ -15,6 +15,7 @@ const iaService = require('../../src/services/IAService');
 const { generarInformeTexto } = require('../../src/services/informeGenerator');
 const { extraerTextoDocumento } = require('../../src/services/geminiExtractor');
 const { crearToken } = require('../../src/utils/confirmacion');
+const { calcularEdad } = require('../../src/utils/fechas');
 const { crearDb } = require('./helpers/fakeDb');
 
 const respuesta = (content) => ({ choices: [{ message: { content } }] });
@@ -219,13 +220,13 @@ describe('calcularEdad (valores límite del cumpleaños, hora de Argentina)', ()
     ['el día posterior ya los cumplió', '2016-10-26', 10],
     ['sin fecha de nacimiento devuelve "?"', null, '?']
   ])('CP-U184 %s', (_caso, nacimiento, edad) => {
-    expect(iaService.calcularEdad(nacimiento)).toBe(edad);
+    expect(calcularEdad(nacimiento)).toBe(edad);
   });
 
   // DEF-A15: la fecha 'AAAA-MM-DD' se interpreta en UTC y se compara con getDate() local:
   // en Argentina el día anterior al cumpleaños ya suma el año.
   test.failing('CP-U194 el día anterior al cumpleaños todavía no los cumplió', () => {
-    expect(iaService.calcularEdad('2016-10-28')).toBe(9);
+    expect(calcularEdad('2016-10-28')).toBe(9);
   });
 });
 

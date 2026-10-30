@@ -4,6 +4,7 @@ const pacienteService = require('./PacienteService');
 const turnoService = require('./TurnoService');
 const { crearToken, verificarToken } = require('../utils/confirmacion');
 const { exigirDatosValidos } = require('../utils/validacion');
+const { calcularEdad, hoyArgentina, formatearFechaHora } = require('../utils/fechas');
 const { reglasCrearPaciente } = require('../validaciones/pacientes');
 const { reglasCrearSesion } = require('../validaciones/sesiones');
 const { reglasCrearTurno } = require('../validaciones/turnos');
@@ -17,22 +18,7 @@ const MODELO_TEXTO = 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
 const MODELO_CHAT = 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
 
 
-const ZONA_HORARIA = 'America/Argentina/Buenos_Aires';
 const PATRON_FECHA = /^\d{4}-\d{2}-\d{2}$/;
-
-// Fecha de hoy en Argentina como YYYY-MM-DD. toISOString() daría la fecha UTC,
-// que a partir de las 21 hs ya es "mañana".
-function hoyArgentina() {
-  return new Date().toLocaleDateString('en-CA', { timeZone: ZONA_HORARIA });
-}
-
-// Los turnos se guardan en UTC; al modelo se los damos ya en hora local y
-// legibles, para que no tenga que convertir zonas horarias (se equivoca).
-function formatearFechaHora(iso) {
-  return new Date(iso).toLocaleString('es-AR', {
-    timeZone: ZONA_HORARIA, weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'
-  });
-}
 
 // Los modelos ":free" de OpenRouter corren en un pool de workers compartido
 // entre todos los usuarios de OpenRouter, así que se saturan de forma
@@ -89,16 +75,6 @@ class IAService {
   // ─────────────────────────────────────────────────────────────
   // Helpers
   // ─────────────────────────────────────────────────────────────
-
-  calcularEdad(fechaNac) {
-    if (!fechaNac) return '?';
-    const hoy = new Date();
-    const nac = new Date(fechaNac);
-    let edad = hoy.getFullYear() - nac.getFullYear();
-    if (hoy.getMonth() < nac.getMonth() ||
-       (hoy.getMonth() === nac.getMonth() && hoy.getDate() < nac.getDate())) edad--;
-    return edad;
-  }
 
   async completar(modelo, mensajes, maxTokens = 500) {
     const res = await this.crearCompletion({ model: modelo, max_tokens: maxTokens, messages: mensajes });
@@ -159,7 +135,7 @@ class IAService {
       sesionRepository.ultimasDePaciente(db, paciente_id, { campos: 'fecha, tipo, resumen_ia, notas_libres', limite: 3 })
     ]);
 
-    const edad = this.calcularEdad(paciente?.fecha_nacimiento);
+    const edad = calcularEdad(paciente?.fecha_nacimiento);
     const esPrimeraSesion = !anteriores?.length;
     const historial = esPrimeraSesion
       ? '(No hay sesiones anteriores registradas: esta es la primera sesión del paciente.)'
@@ -196,7 +172,7 @@ Redactá en primera persona del profesional. Máximo 300 palabras, lenguaje clí
       throw Object.assign(new Error('Sesión no encontrada'), { status: 404 });
     }
 
-    const edad = this.calcularEdad(sesion?.paciente?.fecha_nacimiento);
+    const edad = calcularEdad(sesion?.paciente?.fecha_nacimiento);
     const especialidad = sesion?.profesional?.especialidad || 'salud';
 
     const prompt = `Resumí en máximo 3 oraciones esta sesión clínica de ${especialidad} con un paciente de ${edad} años. En tercera persona, capturando los puntos clínicos más relevantes. Usá únicamente lo que dicen las notas de abajo, sin agregar observaciones, síntomas o datos que no estén escritos ahí. Si las notas son muy breves, el resumen puede ser igual de breve. Solo el resumen.
@@ -217,7 +193,7 @@ Notas:\n${notas_libres}`;
 
     const historial = sesiones?.map(s => s.resumen_ia || s.notas_libres?.slice(0, 200)).filter(Boolean).join('\n\n') || 'Sin historial.';
 
-    const prompt = `Analizá este caso clínico de un paciente de ${this.calcularEdad(paciente?.fecha_nacimiento)} años.
+    const prompt = `Analizá este caso clínico de un paciente de ${calcularEdad(paciente?.fecha_nacimiento)} años.
 
 Motivo: ${paciente?.motivo_consulta || 'no registrado'}
 Historial reciente:\n${historial}
