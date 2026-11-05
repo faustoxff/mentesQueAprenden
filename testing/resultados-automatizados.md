@@ -49,6 +49,17 @@ Lint: 0 errores; 33 avisos en el client y 9 en el server. Los avisos nuevos son 
 
 ### API (Postman + Newman)
 
+**Corrida con credenciales del 2026-11-05 (pacientes):** contra el server local conectado a la base compartida, con una cuenta descartable (`zz-test-api-…@example.test`) que se borró al terminar junto con su paciente y sus registros de acceso. Script propio (no Newman), mismos casos que la tabla del informe; evidencia en `EV-RUN-2026-11-05-pacientes-api.json`.
+
+| Caso (informe) | En la colección | Resultado obtenido | ¿Pasa? |
+|---|---|---|---|
+| Crear paciente | CP-A13 | 201, con id y el DNI enviado | Sí |
+| DNI de 6 dígitos | — (unitario CP-U311) | 422, "El DNI debe tener 7 u 8 dígitos, sin puntos ni espacios" | Sí |
+| GET /pacientes sin token | CP-A09 / CP-A10 | 401, "Token requerido" | Sí |
+| Mismo DNI dos veces | CP-A14 + CP-A18 | 409, "Ya existe un paciente con ese DNI"; la búsqueda muestra 1 solo paciente | Sí |
+| Baja lógica | CP-A30 + CP-A40 | 200; en la base queda `deleted_at`; después el GET da 404 y no aparece en el listado | Sí |
+
+
 Unidad: request de la colección (46 requests, CP-A01…CP-A42; CP-A41 son las 5 limpiezas).
 
 | Aplicables | Pasa | Falla | Bloqueado | No ejecutado | % ejecución | % aprobación |

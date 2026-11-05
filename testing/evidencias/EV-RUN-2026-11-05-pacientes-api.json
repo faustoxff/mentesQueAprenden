@@ -1,0 +1,80 @@
+{
+  "fecha": "2026-11-05T22:40:08.855Z",
+  "servidor": "local (base Supabase compartida)",
+  "paciente_id": "eb1638b6-ec99-4caf-baa6-20f6edf76cb8",
+  "resultados": [
+    {
+      "cp": "CP-A01",
+      "endpoint": "POST /api/pacientes",
+      "tipo": "Camino feliz",
+      "esperado": "201 con id y datos",
+      "obtenido": {
+        "status": 201,
+        "tiene_id": true,
+        "dni_ok": true
+      },
+      "pasa": true
+    },
+    {
+      "cp": "CP-A02",
+      "endpoint": "POST /api/pacientes",
+      "tipo": "DNI de 6 dígitos",
+      "esperado": "4xx con mensaje del DNI",
+      "obtenido": {
+        "status": 422,
+        "respuesta": {
+          "errors": [
+            {
+              "path": "dni",
+              "msg": "El DNI debe tener 7 u 8 dígitos, sin puntos ni espacios"
+            }
+          ]
+        }
+      },
+      "pasa": true
+    },
+    {
+      "cp": "CP-A03",
+      "endpoint": "GET /api/pacientes",
+      "tipo": "Sin token",
+      "esperado": "401 \"Token requerido\"",
+      "obtenido": {
+        "status": 401,
+        "respuesta": {
+          "error": "Token requerido"
+        }
+      },
+      "pasa": true
+    },
+    {
+      "cp": "CP-A04",
+      "endpoint": "POST /api/pacientes",
+      "tipo": "Mismo DNI dos veces",
+      "esperado": "409 + un solo paciente con ese DNI",
+      "obtenido": {
+        "status": 409,
+        "respuesta": {
+          "error": "Ya existe un paciente con ese DNI"
+        },
+        "pacientes_con_ese_dni": 1
+      },
+      "pasa": true
+    },
+    {
+      "cp": "CP-A05",
+      "endpoint": "DELETE /api/pacientes/:id",
+      "tipo": "Baja lógica",
+      "esperado": "200; deleted_at y deja de aparecer",
+      "obtenido": {
+        "status": 200,
+        "respuesta": {
+          "message": "Paciente Paciente API, ZZ-TEST eliminado",
+          "id": "eb1638b6-ec99-4caf-baa6-20f6edf76cb8"
+        },
+        "get_despues": 404,
+        "sigue_en_listado": false
+      },
+      "pasa": true
+    }
+  ]
+}
