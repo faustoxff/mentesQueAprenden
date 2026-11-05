@@ -366,6 +366,19 @@ describe('pacientes: validación y estados', () => {
   });
 
   test.each([
+    ['POST', 'futura', (r) => r.post('/api/pacientes').send(paciente({ fecha_nacimiento: '2999-01-01' }))],
+    ['PATCH', 'futura', (r) => r.patch(`/api/pacientes/${UUID}`).send({ fecha_nacimiento: '2999-01-01' })],
+    ['PATCH', 'de hace más de 150 años', (r) => r.patch(`/api/pacientes/${UUID}`).send({ fecha_nacimiento: '1800-01-01' })]
+  ])('CP-U353 %s /pacientes con fecha de nacimiento %s → 422 con el mensaje de la regla', async (_metodo, _caso, pedir) => {
+    const { FECHA_NACIMIENTO_MENSAJE } = require('../../src/utils/fechaNacimiento');
+
+    const res = await comoProf(pedir(request(app)));
+
+    expect(res.status).toBe(422);
+    expect(res.body.errors).toContainEqual({ path: 'fecha_nacimiento', msg: FECHA_NACIMIENTO_MENSAJE });
+  });
+
+  test.each([
     ['DNI de 7 dígitos', { dni: '1234567' }],
     ['DNI de 8 dígitos', { dni: '12345678' }],
     ['teléfono de 8 caracteres', { telefono: '11223344' }],

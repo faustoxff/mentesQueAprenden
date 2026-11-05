@@ -351,6 +351,14 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U347 | cada pedido 2xx se anota en la consola con método, ruta y código | Pedidos en la consola | Unitaria | `client/src/services/api.anotar.test.js` |  |
 | CP-U348 | un 4xx se anota como advertencia y un 5xx o sin respuesta como error | Pedidos en la consola | Unitaria | `client/src/services/api.anotar.test.js` |  |
 | CP-U349 | la anotación incluye la demora en milisegundos | Pedidos en la consola | Unitaria | `client/src/services/api.anotar.test.js` |  |
+| CP-U350 | fecha de nacimiento: valores límite (hoy, mañana, 150 años justos y un día antes) | Fecha de nacimiento | Unitaria | `server/__tests__/unit/fecha-nacimiento.test.js` |  |
+| CP-U351 | el rango va de hoy a la misma fecha 150 años antes | Fecha de nacimiento | Unitaria | `server/__tests__/unit/fecha-nacimiento.test.js` |  |
+| CP-U352 | crear un paciente (formulario o chat) con fecha futura o de hace más de 150 años → 422 | Fecha de nacimiento | Unitaria | `server/__tests__/unit/fecha-nacimiento.test.js` |  |
+| CP-U353 | POST y PATCH /pacientes con fecha fuera de rango → 422 con el mensaje de la regla | Fecha de nacimiento | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
+| CP-U354 | fecha de nacimiento en el client: valores límite | Fecha de nacimiento | Unitaria | `client/src/utils/fechaNacimiento.test.js` |  |
+| CP-U355 | client y server tienen el mismo límite, mensaje y rango | Fecha de nacimiento | Unitaria | `client/src/utils/fechaNacimiento.test.js` |  |
+| CP-U356 | formulario del chat con fecha fuera de rango avisa y no envía | Fecha de nacimiento | Unitaria | `client/src/components/chat/PacienteFormCard.test.jsx` |  |
+| CP-U357 | formulario de nuevo paciente con fecha fuera de rango muestra el mensaje y no envía | Fecha de nacimiento | Unitaria | `client/src/pages/NuevoPacientePage.test.jsx` |  |
 | CP-A01 | GET /health responde ok | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A02 | POST /auth/login como profesional | Autenticación (necesita credenciales de un proyecto de test) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A03 | POST /auth/login con email inválido → 422 | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
@@ -412,4 +420,4 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-E17 | el historial se abre desde el menú y no muestra la ocupación de otros profesionales | Historial de turnos | E2E | `client/e2e/navegabilidad.e2e.js` |  |
 | CP-E18 | historial sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
 
-Totales: 347 IDs unitarios, 42 de API y 18 E2E.
+Totales: 355 IDs unitarios, 42 de API y 18 E2E.

@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import api from '../../services/api';
 import { PacienteFormCard } from './ChatToolResults';
 import { DNI_MENSAJE } from '../../utils/dni';
+import { FECHA_NACIMIENTO_MENSAJE } from '../../utils/fechaNacimiento';
 
 vi.mock('../../services/api');
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
@@ -37,5 +38,17 @@ describe('formulario de paciente del chat', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Guardar paciente' }));
 
     await waitFor(() => expect(api.post).toHaveBeenCalledWith('/pacientes', expect.objectContaining({ dni: '1234567' })));
+  });
+});
+
+describe('formulario de paciente del chat: fecha de nacimiento', () => {
+  it.each(['2999-01-01', '1800-01-01'])('CP-U356 con fecha %s avisa con el mensaje de la regla única y no envía', async (fecha) => {
+    const { toast } = await import('sonner');
+    renderizar({ ...datos, dni: '1234567', fecha_nacimiento: fecha });
+
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar paciente' }));
+
+    expect(toast.error).toHaveBeenCalledWith(FECHA_NACIMIENTO_MENSAJE);
+    expect(api.post).not.toHaveBeenCalled();
   });
 });

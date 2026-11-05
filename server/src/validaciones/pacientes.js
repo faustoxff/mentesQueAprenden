@@ -2,6 +2,7 @@
 // así las dos entradas rechazan exactamente lo mismo y con los mismos mensajes.
 const { body } = require('express-validator');
 const { DNI_REGEX, DNI_MENSAJE } = require('../utils/dni');
+const { esFechaNacimientoValida, FECHA_NACIMIENTO_MENSAJE } = require('../utils/fechaNacimiento');
 
 // Los teléfonos son opcionales, pero si vienen deben ser razonables y entrar
 // en la columna (VARCHAR(20)): 8 a 20 caracteres entre dígitos, espacios, + ( ) -.
@@ -20,7 +21,8 @@ const reglasCrearPaciente = [
       return `${y}-${m}-${d}`;
     }
     return v;
-  }).isISO8601().withMessage('La fecha de nacimiento es obligatoria y debe ser una fecha válida'),
+  }).isISO8601().withMessage('La fecha de nacimiento es obligatoria y debe ser una fecha válida').bail()
+    .custom((v) => esFechaNacimientoValida(v)).withMessage(FECHA_NACIMIENTO_MENSAJE),
   body('profesional_principal_id').optional({ checkFalsy: true }).isUUID().withMessage('El profesional asignado no es válido'),
   body('obra_social_id').optional({ checkFalsy: true }).isUUID().withMessage('La obra social no es válida'),
   body('estado').optional().isIn(['activo', 'derivado', 'alta', 'inactivo']).withMessage('El estado no es válido'),

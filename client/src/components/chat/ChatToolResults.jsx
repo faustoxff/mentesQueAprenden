@@ -10,6 +10,7 @@ import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 import { getErrorMessage } from '../../utils/errores';
 import { validarDni } from '../../utils/dni';
+import { validarFechaNacimiento } from '../../utils/fechaNacimiento';
 
 export function PacienteFormCard({ prefill = {} }) {
   const queryClient = useQueryClient();
@@ -33,9 +34,9 @@ export function PacienteFormCard({ prefill = {} }) {
       toast.error('Nombre, apellido, DNI y fecha de nacimiento son obligatorios');
       return;
     }
-    const errorDni = validarDni(form.dni);
-    if (errorDni) {
-      toast.error(errorDni);
+    const errorDato = validarDni(form.dni) || validarFechaNacimiento(form.fecha_nacimiento);
+    if (errorDato) {
+      toast.error(errorDato);
       return;
     }
     setSaving(true);

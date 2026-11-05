@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import api from '../services/api';
 import NuevoPacientePage from './NuevoPacientePage';
+import { FECHA_NACIMIENTO_MENSAJE } from '../utils/fechaNacimiento';
 
 vi.mock('../services/api');
 vi.mock('sonner', () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
@@ -124,5 +125,19 @@ describe('formulario de nuevo paciente', () => {
     await guardar();
 
     expect(await screen.findByText('El email no es válido')).toBeInTheDocument();
+  });
+});
+
+describe('formulario de nuevo paciente: fecha de nacimiento', () => {
+  it.each(['2999-01-01', '1800-01-01'])('CP-U357 con fecha %s muestra el mensaje de la regla y no se envía', async (fecha) => {
+    renderizar();
+    await completarObligatorios();
+    await userEvent.clear(porLabel('Fecha de nacimiento'));
+    await userEvent.type(porLabel('Fecha de nacimiento'), fecha);
+
+    await guardar();
+
+    expect(await screen.findByText(FECHA_NACIMIENTO_MENSAJE)).toBeInTheDocument();
+    expect(api.post).not.toHaveBeenCalled();
   });
 });

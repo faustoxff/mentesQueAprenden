@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import api from '../services/api';
 import { aplicarErroresAlForm, getErrorMessage } from '../utils/errores';
 import { PATRON_DNI } from '../utils/dni';
+import { validarFechaNacimiento } from '../utils/fechaNacimiento';
 
 export default function EditarPacientePage() {
   const { id } = useParams();
@@ -117,7 +118,14 @@ export default function EditarPacientePage() {
               />
             </Field>
             <Field label="Fecha de nacimiento" required error={errors.fecha_nacimiento}>
-              <input type="date" {...register('fecha_nacimiento', { required: 'La fecha de nacimiento es obligatoria' })} className={inputClass(errors.fecha_nacimiento)} />
+              <input
+                type="date"
+                {...register('fecha_nacimiento', {
+                  required: 'La fecha de nacimiento es obligatoria',
+                  validate: (v) => validarFechaNacimiento(v) ?? true
+                })}
+                className={inputClass(errors.fecha_nacimiento)}
+              />
             </Field>
             <Field label="Género">
               <select {...register('genero')} className={inputClass(false)}>

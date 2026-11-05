@@ -46,6 +46,7 @@ Más detalle en [docs/GUIA-DEL-CODIGO.md](docs/GUIA-DEL-CODIGO.md) (cómo está 
 
 - **El front y el back validan las mismas cosas a propósito:** el front da una respuesta rápida sin esperar al servidor; el back vuelve a validar todo antes de guardar. No borres ninguna de las dos.
 - La **regla del DNI** (7 u 8 dígitos) vive en `server/src/utils/dni.js` y `client/src/utils/dni.js`. Un test (`client/src/utils/dni.test.js`) verifica que las dos digan lo mismo: si cambiás una, cambiá la otra.
+- La **fecha de nacimiento** no puede ser futura ni de hace más de 150 años (con "hoy" en hora argentina). Mismo esquema que el DNI: `server/src/utils/fechaNacimiento.js` y `client/src/utils/fechaNacimiento.js`, comparadas por `client/src/utils/fechaNacimiento.test.js`. Los campos de fecha **no** usan `min`/`max`: el navegador frenaba el formulario con su propio cartel y no se veía el mensaje de la regla.
 - Las reglas de crear paciente, sesión y turno están en `server/src/validaciones/`. Las usan **las rutas y el chat** (con `exigirDatosValidos`), así los dos dan los mismos errores.
 
 ## Asistente de IA (Menta)
