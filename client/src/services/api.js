@@ -25,6 +25,39 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Cada pedido al servidor queda anotado en la consola del navegador (F12 → Consola) con
+// su método, ruta, código de respuesta y demora: verde los 2xx, amarillo los 4xx, rojo los
+// 5xx o sin respuesta. En los tests no se anota, para no llenar la salida.
+const METODOS_ANOTADOS = ['get', 'post', 'put', 'patch', 'delete'];
+const ANOTAR = import.meta.env.MODE !== 'test';
+
+export function anotarPedido(config, status) {
+  const metodo = config?.method?.toLowerCase();
+  if (!METODOS_ANOTADOS.includes(metodo)) return;
+  const demora = config.inicio ? ` (${Math.round(performance.now() - config.inicio)} ms)` : '';
+  const texto = `${metodo.toUpperCase()} ${config.url} → ${status ?? 'sin respuesta'}${demora}`;
+  if (status >= 200 && status < 400) console.info(`%c${texto}`, 'color: #16a34a');
+  else if (status >= 400 && status < 500) console.warn(texto);
+  else console.error(texto);
+}
+
+if (ANOTAR) {
+  api.interceptors.request.use((config) => {
+    config.inicio = performance.now();
+    return config;
+  });
+  api.interceptors.response.use(
+    (res) => {
+      anotarPedido(res.config, res.status);
+      return res;
+    },
+    (error) => {
+      anotarPedido(error.config, error.response?.status);
+      return Promise.reject(error);
+    }
+  );
+}
+
 // Rutas donde un 401 no significa "token vencido" (credenciales incorrectas, refresh
 // token inválido, etc.): no se intenta renovar la sesión y el error llega tal cual.
 const RUTAS_SIN_REFRESH = ['/auth/login', '/auth/signup', '/auth/refresh', '/auth/forgot-password', '/auth/logout'];

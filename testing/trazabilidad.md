@@ -348,6 +348,9 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U344 | un resumen cortado a la mitad no se guarda en la sesión | IA: respuestas cortadas | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` | DEF-A12 |
 | CP-U345 | en el chat, una respuesta vacía llega como 502 con mensaje claro | IA: respuestas cortadas | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` | DEF-A12 |
 | CP-U346 | el chat le deja margen al razonamiento (max_tokens 2000) | IA: respuestas cortadas | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` | DEF-A12 |
+| CP-U347 | cada pedido 2xx se anota en la consola con método, ruta y código | Pedidos en la consola | Unitaria | `client/src/services/api.anotar.test.js` |  |
+| CP-U348 | un 4xx se anota como advertencia y un 5xx o sin respuesta como error | Pedidos en la consola | Unitaria | `client/src/services/api.anotar.test.js` |  |
+| CP-U349 | la anotación incluye la demora en milisegundos | Pedidos en la consola | Unitaria | `client/src/services/api.anotar.test.js` |  |
 | CP-A01 | GET /health responde ok | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A02 | POST /auth/login como profesional | Autenticación (necesita credenciales de un proyecto de test) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A03 | POST /auth/login con email inválido → 422 | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
@@ -409,4 +412,4 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-E17 | el historial se abre desde el menú y no muestra la ocupación de otros profesionales | Historial de turnos | E2E | `client/e2e/navegabilidad.e2e.js` |  |
 | CP-E18 | historial sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
 
-Totales: 344 IDs unitarios, 42 de API y 18 E2E.
+Totales: 347 IDs unitarios, 42 de API y 18 E2E.
