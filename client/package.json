@@ -18,7 +18,6 @@
     "@fullcalendar/list": "^6.1.15",
     "@fullcalendar/react": "^6.1.15",
     "@fullcalendar/timegrid": "^6.1.15",
-    "@supabase/supabase-js": "^2.45.0",
     "@tanstack/react-query": "^5.56.2",
     "axios": "^1.7.7",
     "date-fns": "^3.6.0",
