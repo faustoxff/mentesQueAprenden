@@ -172,3 +172,53 @@ describe('crear turno o sesión para un paciente dado de baja (formulario o chat
     expect(enTabla('sesiones', 'insert')).toHaveLength(0);
   });
 });
+
+describe('búsqueda de pacientes: nombre y apellido juntos, y con errores de tipeo', () => {
+  const pacienteService = require('../../src/services/PacienteService');
+  const fausto = { id: 'p2', nombre: 'fausto', apellido: 'zacanti', dni: '1231234' };
+
+  test('CP-U377 con dos palabras, cada una tiene que estar en nombre, apellido o DNI (un filtro por palabra)', async () => {
+    const fake = crearDb({ pacientes: { data: [fausto], error: null } });
+
+    await expect(pacienteService.buscar(fake.db, 'fausto zacanti')).resolves.toEqual([fausto]);
+
+    expect(fake.enTabla('pacientes', 'or').map(([f]) => f)).toEqual([
+      'nombre.ilike.%fausto%,apellido.ilike.%fausto%,dni.ilike.%fausto%',
+      'nombre.ilike.%zacanti%,apellido.ilike.%zacanti%,dni.ilike.%zacanti%'
+    ]);
+  });
+
+  test('CP-U378 si no hay coincidencia exacta, busca parecidos entre los pacientes que la persona puede ver', async () => {
+    const fake = crearDb({ pacientes: [{ data: [], error: null }, { data: [fausto, { id: 'p9', nombre: 'Eva', apellido: 'Sol', dni: '1' }], error: null }] });
+
+    await expect(pacienteService.buscar(fake.db, 'faisto zacanti')).resolves.toEqual([fausto]);
+  });
+
+  test('CP-U379 el listado de pacientes también filtra palabra por palabra', async () => {
+    const fake = crearDb({ pacientes: { data: [], error: null, count: 0 } });
+
+    await pacienteService.listar(fake.db, { busqueda: 'zacanti fausto' }, 'prof-1');
+
+    expect(fake.enTabla('pacientes', 'or')).toHaveLength(2);
+  });
+});
+
+describe('formulario de turno desde el chat', () => {
+  const P = '11111111-1111-4111-8111-111111111111';
+
+  test('CP-U381 si el modelo manda solo el paciente_id, el formulario llega con el nombre del paciente', async () => {
+    const fake = crearDb({ pacientes: { data: { id: P, nombre: 'Julio', apellido: 'Iglesias' }, error: null } });
+
+    const r = await chatService.ejecutarTool('mostrar_formulario_turno', { paciente_id: P, tipo: 'tratamiento' }, { id: 'prof-1' }, fake.db);
+
+    expect(r).toEqual({ type: 'form', form: 'crear_turno', prefill: { paciente_id: P, paciente_nombre: 'Iglesias, Julio', tipo: 'tratamiento' } });
+  });
+
+  test('CP-U382 si ese paciente_id no existe (lo inventó el modelo), el formulario llega sin paciente elegido', async () => {
+    const fake = crearDb({ pacientes: { data: null, error: null } });
+
+    const r = await chatService.ejecutarTool('mostrar_formulario_turno', { paciente_id: P, paciente_nombre: 'Julio' }, { id: 'prof-1' }, fake.db);
+
+    expect(r.prefill).toEqual({ paciente_nombre: 'Julio' });
+  });
+});

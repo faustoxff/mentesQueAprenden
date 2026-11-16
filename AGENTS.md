@@ -33,6 +33,8 @@ Más detalle en [docs/GUIA-DEL-CODIGO.md](docs/GUIA-DEL-CODIGO.md) (cómo está 
 **Pacientes:**
 - Todo lo que aplica **reglas de pacientes** (existe, no está dado de baja, RLS lo deja ver) pasa por `PacienteService`: `asegurarAcceso`, `obtenerDatosBasicos`, `buscar`.
 - **Trade-off:** las consultas que traen datos básicos del paciente *junto con* un turno, una sesión, un pago, etc. (joins como `paciente:pacientes(...)`) se quedan como **una sola consulta en su repositorio**. Pasarlas por `PacienteService` obligaría a hacer más consultas y escribir más código, sin ganar nada (no aplican reglas y RLS ya controla el acceso).
+- **Búsqueda de pacientes:** se filtra palabra por palabra (cada palabra en nombre, apellido o DNI), en el listado y en el chat. `PacienteService.buscar` (chat) además, si no hay coincidencia exacta, busca parecidos con `buscarParecidos` (`utils/busqueda.js`: un error de tipeo por palabra, acentos, mayúsculas) entre los pacientes que RLS deja ver. Se hace en el server y no en la base para no depender de una extensión de Postgres.
+- **Menta nunca le pide ni le muestra un ID a la persona:** el `paciente_id` lo consigue con `buscar_pacientes`. El formulario de turno del chat completa el nombre a partir del id.
 - Un service puede usar el repositorio de otra tabla para **lecturas simples** (por ejemplo, la IA lee sesiones con `SesionRepository`). Las escrituras y las reglas van por el service dueño.
 - Crear un turno o una sesión verifica el acceso al paciente adentro de `TurnoService.crear` / `SesionService.crear` (404), venga del formulario o del chat.
 

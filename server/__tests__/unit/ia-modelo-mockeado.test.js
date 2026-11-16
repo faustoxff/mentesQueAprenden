@@ -497,3 +497,12 @@ describe('chat: el modelo se queda sin tokens razonando', () => {
     expect(mockCreate).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('chat: el prompt y los identificadores internos', () => {
+  test('CP-U380 el prompt prohíbe pedirle o mostrarle un ID a la persona y manda a buscar por nombre', () => {
+    const prompt = chatService.construirSystemPrompt(profesional);
+
+    expect(prompt).toMatch(/NUNCA le pidas ni le muestres un ID/);
+    expect(prompt).not.toMatch(/nombre o ID/i);
+  });
+});

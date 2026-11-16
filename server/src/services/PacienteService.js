@@ -1,4 +1,4 @@
-const { sanitizarBusqueda } = require('../utils/busqueda');
+const { sanitizarBusqueda, buscarParecidos } = require('../utils/busqueda');
 const pacienteRepository = require('../repositories/PacienteRepository');
 const sesionRepository = require('../repositories/SesionRepository');
 const turnoRepository = require('../repositories/TurnoRepository');
@@ -50,11 +50,17 @@ class PacienteService {
     return pacienteRepository.obtenerActivo(db, id, campos);
   }
 
-  // Búsqueda rápida por nombre, apellido o DNI (sin paginar), para el chat.
+  // Búsqueda rápida por nombre, apellido o DNI (sin paginar), para el chat. Si no hay
+  // coincidencia exacta, busca parecidos (errores de tipeo, acentos) entre los pacientes
+  // que la persona puede ver. `campos` tiene que incluir nombre, apellido y dni.
   async buscar(db, busqueda, { limite = 5, campos = 'id, nombre, apellido, dni' } = {}) {
     const termino = sanitizarBusqueda(busqueda);
     if (!termino) return [];
-    return (await pacienteRepository.buscarActivos(db, termino, { limite, campos })) || [];
+    const exactos = (await pacienteRepository.buscarActivos(db, termino, { limite, campos })) || [];
+    if (exactos.length) return exactos;
+
+    const visibles = (await pacienteRepository.listarActivosParaComparar(db, { campos, limite: 1000 })) || [];
+    return buscarParecidos(visibles, termino).slice(0, limite);
   }
 
   async obtener(db, id) {

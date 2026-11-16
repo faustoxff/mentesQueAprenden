@@ -1,8 +1,11 @@
 const { supabaseAdmin } = require('../config/supabase');
 const { datosDe, datosOpcionales } = require('./errores');
 
-// Filtro por nombre, apellido o DNI. `termino` ya viene saneado (utils/busqueda).
-const filtroBusqueda = (termino) => `nombre.ilike.%${termino}%,apellido.ilike.%${termino}%,dni.ilike.%${termino}%`;
+// Filtro por nombre, apellido o DNI. `termino` ya viene saneado (utils/busqueda). Se filtra
+// palabra por palabra (cada una tiene que estar en alguna de las tres columnas): con el
+// término entero, "fausto zacanti" no coincidía ni con el nombre ni con el apellido.
+const filtroDePalabra = (palabra) => `nombre.ilike.%${palabra}%,apellido.ilike.%${palabra}%,dni.ilike.%${palabra}%`;
+const filtrarPorTermino = (query, termino) => termino.split(' ').filter(Boolean).reduce((q, palabra) => q.or(filtroDePalabra(palabra)), query);
 
 // Consultas a la tabla `pacientes`. Las que reciben `db` usan el cliente con el token del
 // profesional (RLS decide qué pacientes ve); las que terminan en `ComoAdmin` usan el
@@ -25,7 +28,7 @@ class PacienteRepository {
       .order('apellido', { ascending: true })
       .range(desde, hasta);
 
-    if (termino) query = query.or(filtroBusqueda(termino));
+    if (termino) query = filtrarPorTermino(query, termino);
     if (estado) query = query.eq('estado', estado);
     if (profesionalPrincipalId) query = query.eq('profesional_principal_id', profesionalPrincipalId);
 
@@ -45,10 +48,17 @@ class PacienteRepository {
 
   // Pacientes activos que coinciden con el término, o null si no se pudo leer.
   async buscarActivos(db, termino, { limite, campos }) {
+    return datosOpcionales(await filtrarPorTermino(db.from('pacientes').select(campos), termino)
+      .is('deleted_at', null)
+      .limit(limite));
+  }
+
+  // Los pacientes activos que la persona puede ver (RLS), para buscar parecidos cuando la
+  // búsqueda exacta no encuentra nada. null si no se pudo leer.
+  async listarActivosParaComparar(db, { campos, limite }) {
     return datosOpcionales(await db
       .from('pacientes')
       .select(campos)
-      .or(filtroBusqueda(termino))
       .is('deleted_at', null)
       .limit(limite));
   }

@@ -374,6 +374,16 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U370 | tarjeta de agenda de varios días muestra también el día de cada turno | Asistente de IA (chat) | Unitaria | `client/src/components/chat/ChatToolResults.agenda.test.jsx` |  |
 | CP-U371 | respuesta vacía por el límite de tokens: el chat la pide de nuevo una vez con el doble de margen | Asistente de IA (chat) | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
 | CP-U372 | si vuelve a llegar vacía no se insiste más: 502 | Asistente de IA (chat) | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U373 | búsqueda aproximada: un error de tipeo igual encuentra al paciente, primero el más parecido | Búsqueda de pacientes y chat | Unitaria | `server/__tests__/unit/busqueda.test.js` |  |
+| CP-U374 | búsqueda aproximada: no distingue mayúsculas, acentos ni el orden de las palabras | Búsqueda de pacientes y chat | Unitaria | `server/__tests__/unit/busqueda.test.js` |  |
+| CP-U375 | búsqueda aproximada: todas las palabras tienen que coincidir con el mismo paciente | Búsqueda de pacientes y chat | Unitaria | `server/__tests__/unit/busqueda.test.js` |  |
+| CP-U376 | búsqueda aproximada: las palabras de hasta 3 letras y los números no se aproximan | Búsqueda de pacientes y chat | Unitaria | `server/__tests__/unit/busqueda.test.js` |  |
+| CP-U377 | buscar pacientes con dos palabras arma un filtro por palabra | Búsqueda de pacientes y chat | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U378 | si no hay coincidencia exacta, busca parecidos entre los pacientes visibles | Búsqueda de pacientes y chat | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U379 | el listado de pacientes también filtra palabra por palabra | Búsqueda de pacientes y chat | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U380 | el prompt prohíbe pedir o mostrar un ID y manda a buscar por nombre | Búsqueda de pacientes y chat | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U381 | formulario de turno del chat: con solo paciente_id llega con el nombre del paciente | Búsqueda de pacientes y chat | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U382 | formulario de turno del chat: un paciente_id inexistente se saca | Búsqueda de pacientes y chat | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
 | CP-A01 | GET /health responde ok | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A02 | POST /auth/login como profesional | Autenticación (necesita credenciales de un proyecto de test) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A03 | POST /auth/login con email inválido → 422 | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |

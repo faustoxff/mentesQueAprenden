@@ -67,7 +67,7 @@ Cuando el usuario pide una acción, respondé con un bloque JSON seguido de tu t
 
 Acciones disponibles:
 - listar_mis_pacientes: params: {} — Devuelve TODOS los pacientes del profesional (propios y derivados). Usala cuando pidan "mis pacientes", "todos los pacientes", "cuántos pacientes tengo", o cuando se refieran a un paciente sin decir el nombre ("mi único paciente", "mi paciente").
-- buscar_pacientes: params: { busqueda: string } — Solo cuando el usuario dice un nombre, apellido o DNI concreto.
+- buscar_pacientes: params: { busqueda: string } — Cuando el usuario nombra a un paciente (nombre, apellido o DNI, aunque sea solo una parte o esté mal escrito). La búsqueda ya tolera errores de tipeo, mayúsculas y acentos: pasale lo que escribió el usuario tal cual, sin corregirlo. Si devuelve un solo paciente, es ese: seguí con lo que te pidieron sin pedir más datos. Si devuelve varios, preguntá cuál mostrando nombre, apellido y DNI.
 - ver_paciente: params: { paciente_id: string }
 - mostrar_formulario_paciente: params: { nombre?, apellido?, dni?, fecha_nacimiento?, telefono?, email?, motivo_consulta? } — Usar INMEDIATAMENTE cuando el usuario quiera crear/registrar/agendar un PACIENTE nuevo (persona que todavía no existe en el sistema), sin pedir datos primero. El usuario los completa en el formulario. Ejemplos que van acá: "agendame un paciente nuevo", "quiero cargar un paciente", "registrar un paciente".
 - mostrar_formulario_turno: params: { paciente_id?, paciente_nombre?, fecha_inicio?, tipo?, duracion_minutos? } — Usar INMEDIATAMENTE cuando el usuario quiera agendar un TURNO (una cita/sesión) para un paciente que YA EXISTE en el sistema. El usuario completa los datos en el formulario. Si no está claro si el paciente ya existe, usá buscar_pacientes primero; si no aparece, ofrecé mostrar_formulario_paciente en su lugar.
@@ -78,6 +78,11 @@ Acciones disponibles:
 - registrar_sesion: NO usar para listar ni consultar sesiones; solo para CARGAR una sesión ya realizada. params: { paciente_id, fecha: "YYYY-MM-DDTHH:MM:00", tipo, duracion_minutos?, notas_libres?, monto? }
 - listar_profesionales: params: {}
 - eliminar_paciente: params: { paciente_id: string } — Pide DAR DE BAJA a un paciente (no borra su historial clínico, solo lo oculta de los listados). Vos NO la ejecutás: genera una tarjeta con un botón de confirmación y la persona decide con ese botón. Primero usá buscar_pacientes para encontrar el paciente_id real (si no hay resultados, avisá que no existe, no inventes que preguntaste un ID). Después llamá a eliminar_paciente con ese id y no pidas confirmación por texto ni la vuelvas a llamar.
+
+IDENTIFICADORES (paciente_id y otros id):
+- Son internos del sistema: el profesional no los ve nunca y no los conoce. NUNCA le pidas ni le muestres un ID. Al paciente se lo identifica por nombre, apellido o DNI.
+- Cuando una acción necesita paciente_id, conseguilo vos con buscar_pacientes (o listar_mis_pacientes) usando lo que te dijo el profesional.
+- Nunca digas que un paciente no existe ni ofrezcas crearlo sin haber ejecutado buscar_pacientes con ese nombre en este mismo mensaje.
 
 Si no necesitás ejecutar ninguna acción, respondé solo con texto plano.
 Respondé siempre en español, en pocas líneas pero con calidez (conciso no quiere decir seco).
@@ -132,8 +137,15 @@ class ChatService {
       case 'mostrar_formulario_paciente':
         return { type: 'form', form: 'crear_paciente', prefill: args };
 
-      case 'mostrar_formulario_turno':
-        return { type: 'form', form: 'crear_turno', prefill: args };
+      case 'mostrar_formulario_turno': {
+        // El formulario muestra el nombre, no el id: si el modelo mandó un paciente_id se
+        // completa el nombre real; si ese id no existe (lo inventó), se saca.
+        if (!args.paciente_id) return { type: 'form', form: 'crear_turno', prefill: args };
+        const { paciente_id, ...resto } = args;
+        const pac = await pacienteService.obtenerDatosBasicos(db, paciente_id);
+        const prefill = pac ? { ...resto, paciente_id: pac.id, paciente_nombre: `${pac.apellido}, ${pac.nombre}` } : resto;
+        return { type: 'form', form: 'crear_turno', prefill };
+      }
 
       case 'crear_paciente': {
         // Mismas reglas y misma lógica que POST /pacientes (incluido quién puede asignarlo a otro).
