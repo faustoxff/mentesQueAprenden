@@ -359,6 +359,21 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U355 | client y server tienen el mismo límite, mensaje y rango | Fecha de nacimiento | Unitaria | `client/src/utils/fechaNacimiento.test.js` |  |
 | CP-U356 | formulario del chat con fecha fuera de rango avisa y no envía | Fecha de nacimiento | Unitaria | `client/src/components/chat/PacienteFormCard.test.jsx` |  |
 | CP-U357 | formulario de nuevo paciente con fecha fuera de rango muestra el mensaje y no envía | Fecha de nacimiento | Unitaria | `client/src/pages/NuevoPacientePage.test.jsx` |  |
+| CP-U358 | una acción inventada pero parecida (listar_agenda) se ejecuta como la real (ver_agenda) | Asistente de IA (chat) | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U359 | una acción que no existe no se muestra: se le avisa al modelo cuáles hay y el chat sigue | Asistente de IA (chat) | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U360 | cada pedido al modelo lleva el límite total del chat (55 s) | Asistente de IA (chat) | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U361 | si el modelo falla al redactar después de una acción, se devuelven los datos con un aviso | Asistente de IA (chat) | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U362 | si el modelo falla sin haber hecho ninguna acción, el error llega tal cual | Asistente de IA (chat) | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U363 | con límite, el intento espera solo el tiempo que queda y no reintenta si no entra otro intento | Asistente de IA (chat) | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U364 | con el límite ya vencido no se llama al modelo: 502 "tardó demasiado" | Asistente de IA (chat) | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U365 | si el proveedor no contesta a tiempo, el error dice "tardó demasiado" | Asistente de IA (chat) | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U366 | "Hoy es" del prompt usa la hora argentina aunque el servidor esté en UTC | Asistente de IA (chat) | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U367 | tarjeta de agenda sin turnos dice para qué día no hay | Asistente de IA (chat) | Unitaria | `client/src/components/chat/ChatToolResults.agenda.test.jsx` |  |
+| CP-U368 | tarjeta de agenda sin turnos en un rango dice entre qué días | Asistente de IA (chat) | Unitaria | `client/src/components/chat/ChatToolResults.agenda.test.jsx` |  |
+| CP-U369 | tarjeta de agenda con turnos muestra hora, paciente, tipo y estado | Asistente de IA (chat) | Unitaria | `client/src/components/chat/ChatToolResults.agenda.test.jsx` |  |
+| CP-U370 | tarjeta de agenda de varios días muestra también el día de cada turno | Asistente de IA (chat) | Unitaria | `client/src/components/chat/ChatToolResults.agenda.test.jsx` |  |
+| CP-U371 | respuesta vacía por el límite de tokens: el chat la pide de nuevo una vez con el doble de margen | Asistente de IA (chat) | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U372 | si vuelve a llegar vacía no se insiste más: 502 | Asistente de IA (chat) | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
 | CP-A01 | GET /health responde ok | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A02 | POST /auth/login como profesional | Autenticación (necesita credenciales de un proyecto de test) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A03 | POST /auth/login con email inválido → 422 | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |

@@ -25,4 +25,4 @@ function formatearFechaHora(iso) {
   });
 }
 
-module.exports = { calcularEdad, hoyArgentina, formatearFechaHora };
+module.exports = { ZONA_HORARIA, calcularEdad, hoyArgentina, formatearFechaHora };

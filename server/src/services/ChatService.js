@@ -6,7 +6,7 @@ const sesionRepository = require('../repositories/SesionRepository');
 const profesionalRepository = require('../repositories/ProfesionalRepository');
 const { crearToken, verificarToken } = require('../utils/confirmacion');
 const { exigirDatosValidos } = require('../utils/validacion');
-const { hoyArgentina, formatearFechaHora } = require('../utils/fechas');
+const { ZONA_HORARIA, hoyArgentina, formatearFechaHora } = require('../utils/fechas');
 const { reglasCrearPaciente } = require('../validaciones/pacientes');
 const { reglasCrearSesion } = require('../validaciones/sesiones');
 const { reglasCrearTurno } = require('../validaciones/turnos');
@@ -16,6 +16,32 @@ const { reglasCrearTurno } = require('../validaciones/turnos');
 // Las funciones clínicas (sugerir notas, resumir, derivación, PDF) están en IAService.
 
 const MODELO_CHAT = 'nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free';
+
+// Todo el chat (todas las llamadas al modelo de un mensaje) tiene que terminar antes de los
+// 60 s que esperan el navegador y Vercel. Medido el 2026-11-16: cada llamada tarda 3 a 8 s
+// cuando el modelo no está saturado, así que 55 s alcanzan para varias acciones encadenadas.
+const LIMITE_TOTAL_MS = 55000;
+
+// El modelo a veces inventa un nombre de acción parecido al real (medido: "listar_agenda" en
+// 2 de 3 pedidos de agenda). Se ejecuta la acción real en vez de gastar otra llamada en corregirlo.
+const ALIAS_ACCIONES = {
+  listar_agenda: 'ver_agenda',
+  ver_turnos: 'ver_agenda',
+  listar_turnos: 'ver_agenda',
+  listar_mis_turnos: 'ver_agenda',
+  listar_pacientes: 'listar_mis_pacientes',
+  ver_pacientes: 'listar_mis_pacientes',
+  buscar_paciente: 'buscar_pacientes',
+  listar_sesiones: 'listar_mis_sesiones',
+  ver_sesiones: 'listar_mis_sesiones',
+  ver_profesionales: 'listar_profesionales'
+};
+
+const ACCIONES = [
+  'listar_mis_pacientes', 'buscar_pacientes', 'ver_paciente', 'mostrar_formulario_paciente',
+  'mostrar_formulario_turno', 'crear_paciente', 'ver_agenda', 'listar_mis_sesiones', 'crear_turno',
+  'listar_profesionales', 'registrar_sesion', 'eliminar_paciente'
+];
 
 const PATRON_FECHA = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -287,7 +313,7 @@ class ChatService {
   }
 
   construirSystemPrompt(profesional) {
-    const hoy = new Date().toLocaleDateString('es-AR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const hoy = new Date().toLocaleDateString('es-AR', { timeZone: ZONA_HORARIA, weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
     const sanitizar = (s) => String(s || '').replace(/[`<>{}[\]]/g, '').slice(0, 100);
     const profNombre = sanitizar(profesional.nombre);
     const profApellido = sanitizar(profesional.apellido);
@@ -298,67 +324,79 @@ class ChatService {
   }
 
   async chat({ messages, profesional, db }) {
-    const chatMessages = [
+    const limite = Date.now() + LIMITE_TOTAL_MS;
+    const pedir = async (mensajes, max_tokens) =>
+      clienteIA.extraerContenido(await clienteIA.crearCompletion({ model: MODELO_CHAT, messages: mensajes, max_tokens }, 3, { limite })).trim();
+    // A veces el modelo gasta todos los tokens razonando y la respuesta llega vacía (medido:
+    // 1 de 3 pedidos el 2026-11-16). Se pide de nuevo una vez, con el doble de margen.
+    const pedirAlModelo = (mensajes, max_tokens) =>
+      pedir(mensajes, max_tokens).catch((err) => {
+        if (!err.incompleta) throw err;
+        return pedir(mensajes, max_tokens * 2);
+      });
+
+    const historial = [
       { role: 'system', content: this.construirSystemPrompt(profesional) },
       ...this.filtrarMensajes(messages)
     ];
-
-    const historial = [...chatMessages];
     const toolResults = [];
-    let mensajeFinal = '';
-    let sinMensaje = false;
 
+    try {
+      const mensaje = await this.conversar(historial, toolResults, pedirAlModelo, profesional, db);
+      return { message: mensaje, tool_results: toolResults };
+    } catch (err) {
+      // El modelo falló o se acabó el tiempo después de haber consultado datos: se devuelven
+      // igual (las tarjetas los muestran) en vez de perder todo el pedido.
+      if (!toolResults.length) throw err;
+      console.error('IA error (respuesta parcial):', err.message, err.upstreamDetail || '');
+      return { message: 'Consulté los datos, pero no llegué a redactar la respuesta. Probá preguntarme de nuevo.', tool_results: toolResults };
+    }
+  }
+
+  // Devuelve el texto final. Va agregando a `toolResults` lo que ejecuta.
+  async conversar(historial, toolResults, pedirAlModelo, profesional, db) {
     // Hasta 5 acciones encadenadas por mensaje
     for (let i = 0; i < 5; i++) {
-      const response = await clienteIA.crearCompletion({
-        model: MODELO_CHAT,
-        messages: historial,
-        max_tokens: 2000
-      });
-
-      const rawText = clienteIA.extraerContenido(response).trim();
+      const rawText = await pedirAlModelo(historial, 2000);
       const accion = this.parsearAccion(rawText);
+      if (!accion) return this.limpiarTexto(rawText);
 
-      if (!accion) {
-        mensajeFinal = this.limpiarTexto(rawText);
-        break;
+      const nombre = ALIAS_ACCIONES[accion.action] || accion.action;
+      historial.push({ role: 'assistant', content: rawText });
+
+      // Una acción que no existe es un error del modelo, no de la persona: no se le
+      // muestra, se le dice al modelo cuáles hay y sigue.
+      if (!ACCIONES.includes(nombre)) {
+        historial.push({
+          role: 'user',
+          content: `La acción "${accion.action}" no existe. Las acciones disponibles son: ${ACCIONES.join(', ')}. Usá una de esas o respondé en texto.`
+        });
+        continue;
       }
 
       let toolResult;
       try {
-        const resultado = await this.ejecutarTool(accion.action, accion.params || {}, profesional, db);
-        toolResult = { name: accion.action, result: resultado };
+        const resultado = await this.ejecutarTool(nombre, accion.params || {}, profesional, db);
+        toolResult = { name: nombre, result: resultado };
       } catch (err) {
-        toolResult = { name: accion.action, result: { error: err.message } };
+        toolResult = { name: nombre, result: { error: err.message } };
       }
       toolResults.push(toolResult);
 
       // Formularios interactivos: el formulario ya explica qué datos pide,
       // así que no hace falta (ni conviene, por latencia) que el modelo
       // también lo describa en texto — se descarta el texto y se corta acá.
-      if (accion.action === 'mostrar_formulario_paciente' || accion.action === 'mostrar_formulario_turno' || toolResult.result?.type === 'confirm') {
-        mensajeFinal = '';
-        sinMensaje = true;
-        break;
+      if (nombre === 'mostrar_formulario_paciente' || nombre === 'mostrar_formulario_turno' || toolResult.result?.type === 'confirm') {
+        return '';
       }
 
-      historial.push({ role: 'assistant', content: rawText });
       historial.push({
         role: 'user',
-        content: `Resultado de "${accion.action}":\n${JSON.stringify(toolResult.result, null, 2)}\n\nSi tenés más acciones pendientes, ejecutalas. Si terminaste, respondé en lenguaje natural resumiendo todo lo que hiciste.`
+        content: `Resultado de "${nombre}":\n${JSON.stringify(toolResult.result, null, 2)}\n\nSi tenés más acciones pendientes, ejecutalas. Si terminaste, respondé en lenguaje natural resumiendo todo lo que hiciste.`
       });
     }
 
-    if (!mensajeFinal && !sinMensaje) {
-      const resumenResp = await clienteIA.crearCompletion({
-        model: MODELO_CHAT,
-        messages: [...historial, { role: 'user', content: 'Resumí en lenguaje natural todo lo que hiciste, sin JSON.' }],
-        max_tokens: 1500
-      });
-      mensajeFinal = this.limpiarTexto(clienteIA.extraerContenido(resumenResp).trim());
-    }
-
-    return { message: mensajeFinal, tool_results: toolResults };
+    return this.limpiarTexto(await pedirAlModelo([...historial, { role: 'user', content: 'Resumí en lenguaje natural todo lo que hiciste, sin JSON.' }], 1500));
   }
 }
 

@@ -383,3 +383,117 @@ describe('respuestas cortadas por el límite de tokens (modelo de razonamiento)'
     expect(mockCreate.mock.calls[0][0].max_tokens).toBe(2000);
   });
 });
+
+describe('chat: acciones que inventa el modelo', () => {
+  test('CP-U358 una acción inventada pero parecida (listar_agenda) se ejecuta como la real (ver_agenda)', async () => {
+    jest.spyOn(clienteIA, 'crearCompletion').mockResolvedValueOnce(accion('listar_agenda', { fecha: '2026-11-16' })).mockResolvedValueOnce(respuesta('Hoy no tenés turnos.'));
+    const ejecutar = jest.spyOn(chatService, 'ejecutarTool').mockResolvedValue({ total: 0, turnos: [] });
+
+    const res = await chatService.chat({ messages: [{ role: 'user', content: 'tengo alguna sesion hoy?' }], profesional, db: crearDb().db });
+
+    expect(ejecutar.mock.calls[0].slice(0, 2)).toEqual(['ver_agenda', { fecha: '2026-11-16' }]);
+    expect(res.tool_results).toEqual([{ name: 'ver_agenda', result: { total: 0, turnos: [] } }]);
+  });
+
+  test('CP-U359 una acción que no existe no se le muestra a la persona: se le avisa al modelo cuáles hay y el chat sigue', async () => {
+    const crear = jest.spyOn(clienteIA, 'crearCompletion').mockResolvedValueOnce(accion('borrar_todo')).mockResolvedValueOnce(respuesta('No puedo hacer eso.'));
+    const ejecutar = jest.spyOn(chatService, 'ejecutarTool');
+
+    const res = await chatService.chat({ messages: [{ role: 'user', content: 'borrá todo' }], profesional, db: crearDb().db });
+
+    expect(ejecutar).not.toHaveBeenCalled();
+    expect(res).toEqual({ message: 'No puedo hacer eso.', tool_results: [] });
+    const avisoAlModelo = crear.mock.calls[1][0].messages.at(-1).content;
+    expect(avisoAlModelo).toMatch(/"borrar_todo" no existe/);
+    expect(avisoAlModelo).toMatch(/ver_agenda/);
+  });
+});
+
+describe('chat: tope de tiempo total', () => {
+  const T0 = 1800000000000;
+
+  test('CP-U360 cada pedido al modelo lleva el límite total del chat (55 s desde que empezó)', async () => {
+    jest.spyOn(Date, 'now').mockReturnValue(T0);
+    const crear = jest.spyOn(clienteIA, 'crearCompletion').mockResolvedValue(respuesta('¡Hola!'));
+
+    await chatService.chat({ messages: [{ role: 'user', content: 'hola' }], profesional, db: crearDb().db });
+
+    expect(crear.mock.calls[0][2]).toEqual({ limite: T0 + 55000 });
+  });
+
+  test('CP-U361 si el modelo falla al redactar después de una acción, se devuelven los datos con un aviso', async () => {
+    jest.spyOn(clienteIA, 'crearCompletion').mockResolvedValueOnce(accion('ver_agenda')).mockRejectedValueOnce(new Error('Request timed out.'));
+    jest.spyOn(chatService, 'ejecutarTool').mockResolvedValue({ total: 0, turnos: [] });
+
+    const res = await chatService.chat({ messages: [{ role: 'user', content: 'agenda' }], profesional, db: crearDb().db });
+
+    expect(res.tool_results).toEqual([{ name: 'ver_agenda', result: { total: 0, turnos: [] } }]);
+    expect(res.message).toMatch(/no llegué a redactar/);
+  });
+
+  test('CP-U362 si el modelo falla sin haber hecho ninguna acción, el error llega tal cual', async () => {
+    jest.spyOn(clienteIA, 'crearCompletion').mockRejectedValue(Object.assign(new Error('saturado'), { status: 502 }));
+
+    await expect(chatService.chat({ messages: [{ role: 'user', content: 'hola' }], profesional, db: crearDb().db }))
+      .rejects.toMatchObject({ status: 502, message: 'saturado' });
+  });
+
+  test('CP-U363 con límite, el intento espera solo el tiempo que queda y no reintenta si no entra otro intento', async () => {
+    jest.spyOn(Date, 'now').mockReturnValue(T0);
+    mockCreate.mockResolvedValue(respuesta('ok'));
+
+    await clienteIA.crearCompletion({}, 3, { limite: T0 + 10000 });
+    await clienteIA.crearCompletion({}, 3, { limite: T0 + 55000 });
+
+    expect(mockCreate.mock.calls[0][1]).toEqual({ timeout: 10000, maxRetries: 0 });
+    expect(mockCreate.mock.calls[1][1]).toEqual({ timeout: 25000, maxRetries: 1 });
+  });
+
+  test('CP-U364 con el límite ya vencido no se llama al modelo: 502 "tardó demasiado"', async () => {
+    jest.spyOn(Date, 'now').mockReturnValue(T0);
+
+    await expect(clienteIA.crearCompletion({}, 3, { limite: T0 + 500 })).rejects.toMatchObject({ status: 502, message: expect.stringMatching(/tardó demasiado/) });
+    expect(mockCreate).not.toHaveBeenCalled();
+  });
+
+  test('CP-U365 si el proveedor no contesta a tiempo, el error dice "tardó demasiado" (no "sin conexión")', async () => {
+    mockCreate.mockRejectedValue(Object.assign(new Error('Request timed out.'), { name: 'APIConnectionTimeoutError' }));
+
+    await expect(clienteIA.completar('m', [])).rejects.toMatchObject({ status: 502, message: expect.stringMatching(/tardó demasiado/) });
+  });
+});
+
+describe('chat: la fecha de hoy que se le dice al modelo', () => {
+  test('CP-U366 "Hoy es" usa la hora argentina aunque el servidor esté en UTC (de noche no dice mañana)', () => {
+    const zona = process.env.TZ;
+    process.env.TZ = 'UTC';
+    jest.useFakeTimers({ now: new Date('2026-11-17T01:00:00Z') }); // 16/11 a las 22 hs en Argentina
+    try {
+      expect(chatService.construirSystemPrompt(profesional)).toMatch(/Hoy es lunes, 16 de noviembre de 2026/);
+    } finally {
+      jest.useRealTimers();
+      process.env.TZ = zona;
+    }
+  });
+});
+
+describe('chat: el modelo se queda sin tokens razonando', () => {
+  const cortada = { choices: [{ message: { content: null }, finish_reason: 'length' }] };
+
+  test('CP-U371 si la respuesta llega vacía por el límite de tokens, se pide de nuevo una vez con el doble de margen', async () => {
+    mockCreate.mockResolvedValueOnce(cortada).mockResolvedValueOnce(respuesta('Hoy no tenés turnos.'));
+
+    const res = await chatService.chat({ messages: [{ role: 'user', content: 'hola' }], profesional, db: crearDb().db });
+
+    expect(res.message).toBe('Hoy no tenés turnos.');
+    expect(mockCreate.mock.calls.map(([p]) => p.max_tokens)).toEqual([2000, 4000]);
+  });
+
+  test('CP-U372 si vuelve a llegar vacía, no se insiste más: 502 "no llegó a completar"', async () => {
+    mockCreate.mockResolvedValue(cortada);
+
+    await expect(chatService.chat({ messages: [{ role: 'user', content: 'hola' }], profesional, db: crearDb().db }))
+      .rejects.toMatchObject({ status: 502, message: expect.stringMatching(/no llegó a completar/) });
+    expect(mockCreate).toHaveBeenCalledTimes(2);
+  });
+});

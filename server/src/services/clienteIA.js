@@ -16,7 +16,17 @@ const openrouter = new OpenAI({
 // ante errores de red: así un pedido nunca pasa los 60 s que esperan el navegador y
 // Vercel (con 2 reintentos podían ser 75 s y el usuario veía "sin conexión"). Los informes
 // y la extracción de documentos usan el tiempo por defecto del SDK (textos largos).
-const OPCIONES_RESPUESTA_RAPIDA = { timeout: 25000, maxRetries: 1 };
+const ESPERA_POR_INTENTO_MS = 25000;
+const OPCIONES_RESPUESTA_RAPIDA = { timeout: ESPERA_POR_INTENTO_MS, maxRetries: 1 };
+
+// Con un `limite` (el momento en que el chat tiene que haber terminado), cada intento espera
+// lo que queda hasta ese momento, y solo reintenta si todavía entra otro intento completo.
+function opcionesHasta(limite) {
+  if (!limite) return OPCIONES_RESPUESTA_RAPIDA;
+  const restante = limite - Date.now();
+  if (restante < 1000) throw errorDeIA(MENSAJE_LENTO, 'se acabó el tiempo total del pedido');
+  return { timeout: Math.min(ESPERA_POR_INTENTO_MS, restante), maxRetries: restante >= 2 * ESPERA_POR_INTENTO_MS ? 1 : 0 };
+}
 
 // El modelo es "de razonamiento": piensa antes de responder y ese razonamiento cuenta
 // dentro de max_tokens. Por eso los límites de quien llama son holgados: el largo de la
@@ -30,6 +40,7 @@ const PATRON_SATURACION = /resourceexhausted|rate.?limit|too many requests|limit
 
 const MENSAJE_SATURADO = 'El modelo de IA está saturado en este momento. Probá de nuevo en unos segundos.';
 const MENSAJE_NO_DISPONIBLE = 'Modelo de IA no disponible ahora mismo. Probá de nuevo en unos minutos.';
+const MENSAJE_LENTO = 'La IA tardó demasiado en responder. Probá de nuevo en un momento.';
 const MENSAJE_INCOMPLETO = 'La IA no llegó a completar la respuesta. Probá de nuevo.';
 
 // Error 502 para el usuario; el detalle técnico queda solo para los logs del servidor.
@@ -55,10 +66,16 @@ const clienteIA = {
   // OpenAI no lo detecta como error porque el status HTTP es 2xx, así que su
   // maxRetries no se activa acá: por eso reintentamos nosotros a mano cuando
   // el error embebido es de saturación transitoria del pool gratuito.
-  async crearCompletion(params, intentos = 3) {
+  async crearCompletion(params, intentos = 3, { limite } = {}) {
     let ultimaResponse;
     for (let i = 0; i < intentos; i++) {
-      ultimaResponse = await openrouter.chat.completions.create(params, OPCIONES_RESPUESTA_RAPIDA);
+      try {
+        ultimaResponse = await openrouter.chat.completions.create(params, opcionesHasta(limite));
+      } catch (err) {
+        // El proveedor no contestó a tiempo: no es "sin conexión", es que tardó.
+        if (err?.name === 'APIConnectionTimeoutError') throw errorDeIA(MENSAJE_LENTO, err.message);
+        throw err;
+      }
       const detalle = ultimaResponse?.error?.message;
       if (!detalle || !PATRON_SATURACION.test(detalle) || i === intentos - 1) return ultimaResponse;
       await new Promise(r => setTimeout(r, 700 * (i + 1)));
@@ -77,7 +94,8 @@ const clienteIA = {
       throw errorDeIA(PATRON_SATURACION.test(detalle) ? MENSAJE_SATURADO : MENSAJE_NO_DISPONIBLE, detalle);
     }
     if (respuestaIncompleta(eleccion)) {
-      throw errorDeIA(MENSAJE_INCOMPLETO, `finish_reason=${eleccion.finish_reason}, content=${String(eleccion.message?.content).slice(0, 20)}`);
+      // `incompleta` le permite a quien llama pedir de nuevo con más margen.
+      throw Object.assign(errorDeIA(MENSAJE_INCOMPLETO, `finish_reason=${eleccion.finish_reason}, content=${String(eleccion.message?.content).slice(0, 20)}`), { incompleta: true });
     }
     return eleccion.message.content;
   }
