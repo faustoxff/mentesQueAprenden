@@ -346,6 +346,11 @@ export function ConfirmCard({ result }) {
   );
 }
 
+// "2026-11-16" → "16/11/2026"
+const diaLegible = (fecha) => String(fecha || '').split('-').reverse().join('/');
+// "lunes, 16/11/2026, 14:00" → "14:00"
+const horaDe = (inicio) => String(inicio || '').match(/\d{1,2}:\d{2}\s*$/)?.[0] ?? inicio;
+
 export function ToolResultCard({ name, result }) {
   const queryClient = useQueryClient();
 
@@ -397,19 +402,26 @@ export function ToolResultCard({ name, result }) {
   }
 
   if (name === 'ver_agenda') {
-    const { fecha, turnos } = result;
-    if (!turnos?.length) return <div className="mt-2 text-sm text-gray-500 italic">Sin turnos para {fecha}.</div>;
+    // Formato de ChatService (server): { desde, hasta, turnos: [{ inicio, paciente: { nombre }, ... }] },
+    // con `inicio` ya en hora argentina y en texto ("lunes, 16/11/2026, 14:00").
+    const { desde, hasta, turnos } = result;
+    const variosDias = desde !== hasta;
+    if (!turnos?.length) {
+      return (
+        <div className="mt-2 text-sm text-gray-500 italic">
+          {variosDias ? `Sin turnos entre el ${diaLegible(desde)} y el ${diaLegible(hasta)}.` : `Sin turnos para el ${diaLegible(desde)}.`}
+        </div>
+      );
+    }
     return (
       <div className="mt-2 space-y-1.5">
         {turnos.map(t => (
           <div key={t.id} className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-3 py-2">
             <span className="text-xs font-mono text-primary-600 flex-shrink-0">
-              {format(new Date(t.fecha_inicio), 'HH:mm')}
+              {variosDias ? t.inicio : horaDe(t.inicio)}
             </span>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-gray-900 truncate">
-                {t.paciente ? `${t.paciente.apellido}, ${t.paciente.nombre}` : 'Sin paciente'}
-              </p>
+              <p className="text-sm font-medium text-gray-900 truncate">{t.paciente?.nombre || 'Sin paciente'}</p>
               <p className="text-xs text-gray-500">{t.tipo} · {t.estado}</p>
             </div>
           </div>
