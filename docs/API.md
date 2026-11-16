@@ -155,6 +155,7 @@ Todas requieren auth. Errores del proveedor → `502`. El cliente usa **timeout 
 | POST | `/analizar-pdf` | `archivo_id`, `pregunta?` (≤500) | `{ analisis, texto_extraido, modelo }`. `404` archivo inexistente, `422` tipo no soportado |
 | POST | `/chat` | `messages` (array de 1 a 100, solo roles `user` y `assistant`; cualquier otro rol se descarta) | `{ message, tool_results }` |
 | POST | `/confirmar` | `token` (el que devolvió una `tool_result` de tipo `confirm`) | Ejecuta la baja pedida por el chat. `400` token inválido o vencido (dura 5 min), `403` token de otra persona, `404` sin acceso al paciente |
+| GET | `/uso` | — | `{ openrouter: { usados, limite, restantes } \| null, respaldo_configurado }`: uso del día (UTC) de la cuota gratuita según OpenRouter; `null` si no se pudo consultar |
 
 Todas las rutas de IA verifican, con el cliente del usuario, que tenga acceso al paciente / sesión / archivo indicado; si no, responden `404` (no `403`, para no revelar si el id existe). `/ia/*` tiene un rate limit propio de 30 pedidos por minuto.
 

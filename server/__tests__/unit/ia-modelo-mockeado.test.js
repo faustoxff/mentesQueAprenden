@@ -506,3 +506,92 @@ describe('chat: el prompt y los identificadores internos', () => {
     expect(prompt).not.toMatch(/nombre o ID/i);
   });
 });
+
+describe('clienteIA: límite de uso del proveedor (429)', () => {
+  const limite = (mensaje) => Object.assign(new Error(mensaje), { status: 429 });
+
+  test('CP-U383 el límite diario del plan gratuito se avisa en castellano, sin el texto ni el link del proveedor', async () => {
+    mockCreate.mockRejectedValue(limite('429 Rate limit exceeded: free-models-per-day. Add 10 credits to unlock 1000 free model requests per day: https://openrouter.ai/settings/credits'));
+
+    const error = await clienteIA.completar('m', []).catch((e) => e);
+
+    expect(error).toMatchObject({ status: 502, message: expect.stringMatching(/límite diario/) });
+    expect(error.message).not.toMatch(/openrouter|credits|429/i);
+  });
+
+  test('CP-U384 un 429 que no es el límite diario se avisa como saturación', async () => {
+    mockCreate.mockRejectedValue(limite('429 Rate limit exceeded: free-models-per-min'));
+
+    await expect(clienteIA.completar('m', [])).rejects.toMatchObject({ status: 502, message: expect.stringMatching(/saturado/) });
+  });
+});
+
+describe('clienteIA: proveedor de respaldo (Groq) cuando OpenRouter no da más', () => {
+  const diario = () => Object.assign(new Error('429 Rate limit exceeded: free-models-per-day'), { status: 429 });
+  const modelos = () => mockCreate.mock.calls.map(([p]) => p.model);
+
+  beforeEach(() => { process.env.GROQ_API_KEY = 'clave-de-test'; clienteIA.openrouterAgotadoHasta = 0; });
+  afterEach(() => { delete process.env.GROQ_API_KEY; delete process.env.GROQ_MODELO; clienteIA.openrouterAgotadoHasta = 0; });
+
+  test('CP-U385 con el límite diario de OpenRouter agotado, responde el proveedor de respaldo con su modelo', async () => {
+    mockCreate.mockRejectedValueOnce(diario()).mockResolvedValueOnce(respuesta('Hola desde el respaldo'));
+
+    await expect(clienteIA.completar('modelo-openrouter', [{ role: 'user', content: 'hola' }], 2000)).resolves.toBe('Hola desde el respaldo');
+
+    expect(modelos()).toEqual(['modelo-openrouter', 'openai/gpt-oss-120b']);
+    expect(mockCreate.mock.calls[1][0]).toMatchObject({ max_tokens: 2000, messages: [{ role: 'user', content: 'hola' }] });
+  });
+
+  test('CP-U386 si OpenRouter sigue saturado después de 3 intentos, responde el respaldo', async () => {
+    sinEsperas();
+    mockCreate.mockResolvedValueOnce({ error: { message: 'ResourceExhausted' } }).mockResolvedValueOnce({ error: { message: 'ResourceExhausted' } })
+      .mockResolvedValueOnce({ error: { message: 'ResourceExhausted' } }).mockResolvedValueOnce(respuesta('ok'));
+
+    await expect(clienteIA.completar('m', [])).resolves.toBe('ok');
+    expect(modelos()).toEqual(['m', 'm', 'm', 'openai/gpt-oss-120b']);
+  });
+
+  test('CP-U387 después de un límite diario, por 10 minutos va directo al respaldo sin volver a probar OpenRouter', async () => {
+    mockCreate.mockRejectedValueOnce(diario()).mockResolvedValue(respuesta('ok'));
+
+    await clienteIA.completar('m', []);
+    await clienteIA.completar('m', []);
+
+    expect(modelos()).toEqual(['m', 'openai/gpt-oss-120b', 'openai/gpt-oss-120b']);
+  });
+
+  test('CP-U388 si el respaldo también rechaza por límite, se avisa en castellano (502)', async () => {
+    mockCreate.mockRejectedValue(diario());
+
+    await expect(clienteIA.completar('m', [])).rejects.toMatchObject({ status: 502, message: expect.stringMatching(/límite diario/) });
+  });
+
+  test('CP-U389 el modelo de respaldo se puede cambiar con GROQ_MODELO', async () => {
+    process.env.GROQ_MODELO = 'otro-modelo';
+    mockCreate.mockRejectedValueOnce(diario()).mockResolvedValueOnce(respuesta('ok'));
+
+    await clienteIA.completar('m', []);
+
+    expect(modelos()[1]).toBe('otro-modelo');
+  });
+});
+
+describe('clienteIA: uso diario de la cuota gratuita', () => {
+  afterEach(() => { delete process.env.GROQ_API_KEY; });
+
+  test('CP-U390 devuelve lo usado, el tope y lo que queda según el proveedor, y si hay respaldo configurado', async () => {
+    process.env.GROQ_API_KEY = 'clave-de-test';
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ data: { free_model_daily_requests: { used: 37, limit: 50, remaining: 13 } } }) });
+
+    await expect(clienteIA.usoDelDia()).resolves.toEqual({ openrouter: { usados: 37, limite: 50, restantes: 13 }, respaldo_configurado: true });
+    expect(global.fetch.mock.calls[0][0]).toBe('https://openrouter.ai/api/v1/key');
+  });
+
+  test('CP-U391 si el proveedor no informa el uso (falla o cambia el formato), devuelve openrouter null sin romper', async () => {
+    global.fetch = jest.fn().mockRejectedValue(new Error('sin red'));
+    await expect(clienteIA.usoDelDia()).resolves.toEqual({ openrouter: null, respaldo_configurado: false });
+
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ data: {} }) });
+    await expect(clienteIA.usoDelDia()).resolves.toEqual({ openrouter: null, respaldo_configurado: false });
+  });
+});

@@ -40,6 +40,7 @@ const PATRON_SATURACION = /resourceexhausted|rate.?limit|too many requests|limit
 
 const MENSAJE_SATURADO = 'El modelo de IA está saturado en este momento. Probá de nuevo en unos segundos.';
 const MENSAJE_NO_DISPONIBLE = 'Modelo de IA no disponible ahora mismo. Probá de nuevo en unos minutos.';
+const MENSAJE_LIMITE_DIARIO = 'Menta llegó al límite diario de consultas del plan gratuito de IA. Vuelve a estar disponible a las 21 hs.';
 const MENSAJE_LENTO = 'La IA tardó demasiado en responder. Probá de nuevo en un momento.';
 const MENSAJE_INCOMPLETO = 'La IA no llegó a completar la respuesta. Probá de nuevo.';
 
@@ -53,6 +54,31 @@ function respuestaIncompleta(eleccion) {
   return typeof contenido !== 'string' || !contenido.trim() || eleccion.finish_reason === 'length';
 }
 
+// ─── Proveedor de respaldo (Groq) ───
+// Se usa solo cuando OpenRouter no da más. Es opcional: sin GROQ_API_KEY no hay respaldo y
+// todo funciona como antes. La conexión se crea recién la primera vez que hace falta.
+const MODELO_RESPALDO = 'openai/gpt-oss-120b';
+const PAUSA_TRAS_LIMITE_DIARIO_MS = 10 * 60 * 1000;
+
+const hayRespaldo = () => Boolean(process.env.GROQ_API_KEY);
+
+let groq = null;
+function conexionDeRespaldo() {
+  if (!groq) groq = new OpenAI({ baseURL: 'https://api.groq.com/openai/v1', apiKey: process.env.GROQ_API_KEY });
+  return groq;
+}
+
+// Mismo pedido, con el modelo del respaldo (los nombres de modelo de OpenRouter no existen en Groq).
+async function pedirAlRespaldo(params, limite) {
+  try {
+    return await conexionDeRespaldo().chat.completions.create({ ...params, model: process.env.GROQ_MODELO || MODELO_RESPALDO }, opcionesHasta(limite));
+  } catch (err) {
+    if (err?.name === 'APIConnectionTimeoutError') throw errorDeIA(MENSAJE_LENTO, err.message);
+    if (err?.status === 429) throw errorDeIA(MENSAJE_LIMITE_DIARIO, `respaldo: ${err.message}`);
+    throw err;
+  }
+}
+
 const clienteIA = {
   openrouter,
 
@@ -61,12 +87,19 @@ const clienteIA = {
     return clienteIA.extraerContenido(res).trim();
   },
 
+  // Hasta cuándo se saltea OpenRouter porque avisó que se agotó el límite diario (0 = no se saltea).
+  openrouterAgotadoHasta: 0,
+
   // OpenRouter a veces responde HTTP 200 con un error embebido en vez de tirar
   // una excepción (ej: el worker del modelo gratuito está saturado). El SDK de
   // OpenAI no lo detecta como error porque el status HTTP es 2xx, así que su
   // maxRetries no se activa acá: por eso reintentamos nosotros a mano cuando
   // el error embebido es de saturación transitoria del pool gratuito.
+  // Si OpenRouter no da más (límite de uso o saturado después de los reintentos) y hay un
+  // proveedor de respaldo configurado, responde el respaldo.
   async crearCompletion(params, intentos = 3, { limite } = {}) {
+    if (Date.now() < clienteIA.openrouterAgotadoHasta && hayRespaldo()) return pedirAlRespaldo(params, limite);
+
     let ultimaResponse;
     for (let i = 0; i < intentos; i++) {
       try {
@@ -74,13 +107,39 @@ const clienteIA = {
       } catch (err) {
         // El proveedor no contestó a tiempo: no es "sin conexión", es que tardó.
         if (err?.name === 'APIConnectionTimeoutError') throw errorDeIA(MENSAJE_LENTO, err.message);
-        throw err;
+        if (err?.status !== 429) throw err;
+        // Límite de uso del proveedor: el mensaje original (en inglés, con el link para
+        // comprar créditos) queda solo en los logs.
+        const diario = /per-day|daily/i.test(err.message);
+        if (diario) clienteIA.openrouterAgotadoHasta = Date.now() + PAUSA_TRAS_LIMITE_DIARIO_MS;
+        if (hayRespaldo()) return pedirAlRespaldo(params, limite);
+        throw errorDeIA(diario ? MENSAJE_LIMITE_DIARIO : MENSAJE_SATURADO, err.message);
       }
       const detalle = ultimaResponse?.error?.message;
-      if (!detalle || !PATRON_SATURACION.test(detalle) || i === intentos - 1) return ultimaResponse;
-      await new Promise(r => setTimeout(r, 700 * (i + 1)));
+      if (!detalle || !PATRON_SATURACION.test(detalle)) return ultimaResponse;
+      if (i < intentos - 1) await new Promise(r => setTimeout(r, 700 * (i + 1)));
     }
-    return ultimaResponse;
+    return hayRespaldo() ? pedirAlRespaldo(params, limite) : ultimaResponse;
+  },
+
+  // Cuánto se usó hoy de la cuota gratuita de OpenRouter, según OpenRouter (cuenta todos
+  // los pedidos hechos con la clave, no solo los de este server; el día es el de UTC).
+  // Consultarlo no gasta cuota. `openrouter` es null si no se pudo saber.
+  async usoDelDia() {
+    let uso = null;
+    try {
+      const res = await fetch('https://openrouter.ai/api/v1/key', {
+        headers: { Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}` },
+        signal: AbortSignal.timeout(5000)
+      });
+      const diario = res.ok ? (await res.json())?.data?.free_model_daily_requests : null;
+      if (diario && Number.isFinite(diario.used) && Number.isFinite(diario.limit)) {
+        uso = { usados: diario.used, limite: diario.limit, restantes: diario.remaining ?? Math.max(0, diario.limit - diario.used) };
+      }
+    } catch (err) {
+      console.error('No se pudo consultar el uso de IA:', err.message);
+    }
+    return { openrouter: uso, respaldo_configurado: hayRespaldo() };
   },
 
   // El texto de "detalle" es el error crudo del proveedor upstream (ej: "Upstream

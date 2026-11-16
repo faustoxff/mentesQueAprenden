@@ -95,6 +95,15 @@ router.post('/analizar-pdf',
   }
 );
 
+// GET /ia/uso — cuánto se usó hoy de la cuota gratuita de IA y si hay proveedor de respaldo
+router.get('/uso', requireAuth, async (req, res) => {
+  try {
+    res.json(await iaService.usoDelDia());
+  } catch (err) {
+    responderError(res, err, 'No se pudo consultar el uso de la IA', 500);
+  }
+});
+
 // POST /ia/chat — chatbot con function calling manual
 router.post('/chat',
   requireAuth,

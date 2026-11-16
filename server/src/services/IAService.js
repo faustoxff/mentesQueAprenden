@@ -24,6 +24,11 @@ class IAService {
   // Sugerencias con IA de texto
   // ─────────────────────────────────────────────────────────────
 
+  // Uso del día de la cuota gratuita de IA (lo ve cualquier profesional: no tiene datos de nadie).
+  async usoDelDia() {
+    return clienteIA.usoDelDia();
+  }
+
   async sugerirNotas({ notas_parciales, paciente_id, tipo_sesion, especialidad }, db) {
     await this.asegurarAccesoPaciente(db, paciente_id);
     const [paciente, anteriores] = await Promise.all([

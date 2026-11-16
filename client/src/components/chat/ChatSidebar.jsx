@@ -37,9 +37,35 @@ function detectarAccionLocal(texto) {
   return null;
 }
 
+// Cuántas consultas de IA se hicieron hoy sobre el tope del plan gratuito (dato del proveedor).
+function UsoIA({ uso }) {
+  const { openrouter, respaldo_configurado: hayRespaldo } = uso || {};
+  if (!openrouter) return null;
+  const agotado = openrouter.restantes <= 0;
+  const porcentaje = Math.min(100, Math.round((openrouter.usados / (openrouter.limite || 1)) * 100));
+  return (
+    <div className="border-t border-gray-100 mt-1 px-3.5 py-2.5">
+      <div className="flex items-center justify-between text-xs text-gray-600">
+        <span>Consultas de IA hoy</span>
+        <span className={`font-semibold ${agotado ? 'text-red-600' : 'text-gray-800'}`}>{openrouter.usados} de {openrouter.limite}</span>
+      </div>
+      <div className="mt-1.5 h-1.5 rounded-full bg-gray-100 overflow-hidden">
+        <div className={`h-full rounded-full ${agotado ? 'bg-red-500' : 'bg-primary-500'}`} style={{ width: `${porcentaje}%` }} />
+      </div>
+      <p className="mt-1.5 text-[11px] leading-tight text-gray-500">
+        {hayRespaldo
+          ? (agotado ? 'Cuota agotada: Menta sigue con respaldo.' : 'Con respaldo si se agota.')
+          : (agotado ? 'Cuota agotada: Menta vuelve a las 21 hs.' : 'Se renueva todos los días a las 21 hs.')}
+      </p>
+    </div>
+  );
+}
+
 export default function ChatSidebar({ className = 'flex' }) {
   const { profesional, logout, isAdmin } = useAuthStore();
   const navigate = useNavigate();
+
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const { data: derivacionesPendientes } = useQuery({
     queryKey: ['derivaciones-pendientes'],
@@ -47,6 +73,14 @@ export default function ChatSidebar({ className = 'flex' }) {
     refetchInterval: 20000
   });
   const cantidadPendientes = derivacionesPendientes?.length || 0;
+  // Uso del día de la cuota gratuita de IA: se consulta cada vez que se abre el menú.
+  const { data: usoIA } = useQuery({
+    queryKey: ['ia-uso'],
+    queryFn: () => api.get('/ia/uso').then(r => r.data),
+    enabled: menuOpen,
+    staleTime: 0
+  });
+
   const [messages, setMessages] = useState(() => {
     try {
       const guardado = sessionStorage.getItem(STORAGE_KEY);
@@ -55,7 +89,6 @@ export default function ChatSidebar({ className = 'flex' }) {
   });
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [archivosAdjuntos, setArchivosAdjuntos] = useState([]); // File[] — no se persisten (no son serializables)
   const [dragOver, setDragOver] = useState(false);
   const bottomRef = useRef(null);
@@ -204,6 +237,7 @@ export default function ChatSidebar({ className = 'flex' }) {
                   <Settings size={16} /> Administración
                 </Link>
               )}
+              <UsoIA uso={usoIA} />
               <div className="border-t border-gray-100 mt-1 pt-1">
                 <button onClick={handleLogout} className="w-full flex items-center gap-2.5 px-3.5 py-2.5 text-sm text-red-600 hover:bg-red-50">
                   <LogOut size={16} /> Cerrar sesión

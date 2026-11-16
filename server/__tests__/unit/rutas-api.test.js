@@ -631,3 +631,20 @@ describe('formato de error y robustez', () => {
     expect(res.body.status).toBe('ok');
   });
 });
+
+describe('GET /ia/uso: uso diario de la IA', () => {
+  const clienteIA = require('../../src/services/clienteIA');
+
+  test('CP-U392 sin sesión → 401; con sesión, cualquier profesional ve el uso del día', async () => {
+    const uso = { openrouter: { usados: 37, limite: 50, restantes: 13 }, respaldo_configurado: true };
+    const espia = jest.spyOn(clienteIA, 'usoDelDia').mockResolvedValue(uso);
+
+    const sinSesion = await request(app).get('/api/ia/uso');
+    const conSesion = await comoProf(request(app).get('/api/ia/uso'));
+    espia.mockRestore();
+
+    expect(sinSesion.status).toBe(401);
+    expect(conSesion.status).toBe(200);
+    expect(conSesion.body).toEqual(uso);
+  });
+});

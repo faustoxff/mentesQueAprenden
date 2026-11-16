@@ -77,3 +77,37 @@ describe('ChatSidebar: foco del input', () => {
     expect(input).toHaveFocus();
   });
 });
+
+describe('ChatSidebar: uso diario de la IA en el menú', () => {
+  const conUso = (uso) => api.get.mockImplementation(async (url) => ({ data: url === '/ia/uso' ? uso : [] }));
+
+  it('CP-U393 el menú muestra cuántas consultas de IA se usaron hoy y que hay respaldo', async () => {
+    conUso({ openrouter: { usados: 37, limite: 50, restantes: 13 }, respaldo_configurado: true });
+    renderizar();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Más opciones' }));
+
+    expect(await screen.findByText('37 de 50')).toBeInTheDocument();
+    expect(screen.getByText(/con respaldo/i)).toBeInTheDocument();
+  });
+
+  it('CP-U394 con la cuota agotada y sin respaldo, avisa que Menta vuelve a las 21 hs', async () => {
+    conUso({ openrouter: { usados: 50, limite: 50, restantes: 0 }, respaldo_configurado: false });
+    renderizar();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Más opciones' }));
+
+    expect(await screen.findByText('50 de 50')).toBeInTheDocument();
+    expect(screen.getByText(/vuelve a las 21 hs/i)).toBeInTheDocument();
+  });
+
+  it('CP-U395 si no se pudo saber el uso, el menú no muestra el bloque', async () => {
+    conUso({ openrouter: null, respaldo_configurado: false });
+    renderizar();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Más opciones' }));
+    await screen.findByText('Nueva conversación');
+
+    expect(screen.queryByText(/Consultas de IA hoy/)).toBeNull();
+  });
+});

@@ -384,6 +384,19 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U380 | el prompt prohíbe pedir o mostrar un ID y manda a buscar por nombre | Búsqueda de pacientes y chat | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
 | CP-U381 | formulario de turno del chat: con solo paciente_id llega con el nombre del paciente | Búsqueda de pacientes y chat | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
 | CP-U382 | formulario de turno del chat: un paciente_id inexistente se saca | Búsqueda de pacientes y chat | Unitaria | `server/__tests__/unit/chat-servicios.test.js` |  |
+| CP-U383 | el límite diario del plan gratuito de IA se avisa en castellano, sin el texto ni el link del proveedor | Asistente de IA (chat) | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U384 | un 429 que no es el límite diario se avisa como saturación | Asistente de IA (chat) | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U385 | con el límite diario de OpenRouter agotado responde el proveedor de respaldo con su modelo | IA: respaldo y uso diario | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U386 | si OpenRouter sigue saturado después de 3 intentos responde el respaldo | IA: respaldo y uso diario | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U387 | después de un límite diario, por 10 minutos va directo al respaldo | IA: respaldo y uso diario | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U388 | si el respaldo también rechaza por límite se avisa en castellano (502) | IA: respaldo y uso diario | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U389 | el modelo de respaldo se puede cambiar con GROQ_MODELO | IA: respaldo y uso diario | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U390 | uso diario: devuelve usado, tope y restante según el proveedor, y si hay respaldo | IA: respaldo y uso diario | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U391 | uso diario: si el proveedor no informa, devuelve null sin romper | IA: respaldo y uso diario | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U392 | GET /ia/uso: 401 sin sesión; con sesión cualquier profesional ve el uso | IA: respaldo y uso diario | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
+| CP-U393 | el menú del chat muestra las consultas de IA usadas hoy y que hay respaldo | IA: respaldo y uso diario | Unitaria | `client/src/components/chat/ChatSidebar.test.jsx` |  |
+| CP-U394 | el menú avisa cuando la cuota está agotada y no hay respaldo | IA: respaldo y uso diario | Unitaria | `client/src/components/chat/ChatSidebar.test.jsx` |  |
+| CP-U395 | si no se pudo saber el uso, el menú no muestra el bloque | IA: respaldo y uso diario | Unitaria | `client/src/components/chat/ChatSidebar.test.jsx` |  |
 | CP-A01 | GET /health responde ok | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A02 | POST /auth/login como profesional | Autenticación (necesita credenciales de un proyecto de test) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A03 | POST /auth/login con email inválido → 422 | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
