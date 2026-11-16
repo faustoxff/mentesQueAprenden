@@ -40,7 +40,7 @@ const PATRON_SATURACION = /resourceexhausted|rate.?limit|too many requests|limit
 
 const MENSAJE_SATURADO = 'El modelo de IA está saturado en este momento. Probá de nuevo en unos segundos.';
 const MENSAJE_NO_DISPONIBLE = 'Modelo de IA no disponible ahora mismo. Probá de nuevo en unos minutos.';
-const MENSAJE_LIMITE_DIARIO = 'Menta llegó al límite diario de consultas del plan gratuito de IA. Vuelve a estar disponible a las 21 hs.';
+const MENSAJE_LIMITE_DIARIO = 'Menta llegó al límite diario de consultas. Vuelve a estar disponible a las 21 hs.';
 const MENSAJE_LENTO = 'La IA tardó demasiado en responder. Probá de nuevo en un momento.';
 const MENSAJE_INCOMPLETO = 'La IA no llegó a completar la respuesta. Probá de nuevo.';
 
