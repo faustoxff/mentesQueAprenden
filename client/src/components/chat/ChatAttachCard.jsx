@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 import api from '../../services/api';
 import MiniMarkdown from '../ui/MiniMarkdown';
 import { getErrorMessage } from '../../utils/errores';
+import { textoDni } from '../../utils/dni';
 
 const TIPO_POR_EXT = { pdf: 'informe', jpg: 'estudio', jpeg: 'estudio', png: 'estudio', webp: 'estudio' };
 
@@ -154,7 +155,7 @@ export function ChatAttachCard({ file }) {
                   onClick={() => seleccionarYSubir(p)}
                   className="w-full text-left px-3 py-2 text-sm hover:bg-primary-50 transition-colors"
                 >
-                  {p.apellido}, {p.nombre} <span className="text-gray-400 text-xs">DNI {p.dni}</span>
+                  {p.apellido}, {p.nombre} <span className="text-gray-400 text-xs">{textoDni(p.dni)}</span>
                 </button>
               ))}
             </div>

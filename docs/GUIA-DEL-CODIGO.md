@@ -56,13 +56,13 @@ Definidos en [config/supabase.js](../server/src/config/supabase.js):
 
 ### Privacidad: quién ve qué
 
-Definido en `server/migrations/` (SQL, 001 → 007), en este orden de importancia:
+Definido en `server/migrations/` (SQL, 001 → 009), en este orden de importancia:
 
 1. Un profesional ve **solo sus pacientes** (`profesional_principal_id = auth.uid()`) **o los que le derivaron y aceptó** (`tiene_acceso_por_derivacion`). Desde la migración 004 **ni el admin** ve pacientes ajenos.
 2. Las derivaciones tienen estados (`pendiente → aceptada/rechazada → completada`). Completar o rechazar cierra el acceso.
 3. `registrarAcceso` (auditoría) deja un registro en `logs_acceso` cada vez que alguien abre una historia clínica (Ley 25.326).
 
-Migración **008** (la más reciente): RLS en todas las tablas, `puede_acceder_paciente()` como condición de los INSERT, protección de rol/honorarios y de la titularidad con triggers, y dos funciones (`turnos_ocupacion`, `consultorio_libre`) para el calendario compartido, que devuelven solo ocupación y nunca `paciente_id` ni `notas`.
+Migración **008**: RLS en todas las tablas, `puede_acceder_paciente()` como condición de los INSERT, protección de rol/honorarios y de la titularidad con triggers, y dos funciones (`turnos_ocupacion`, `consultorio_libre`) para el calendario compartido, que devuelven solo ocupación y nunca `paciente_id` ni `notas`. La **009** (la más reciente) hace opcional el DNI del paciente.
 
 Trampa conocida: al crear con `insert(...).select()` la fila tiene que pasar la política de **insert y la de select**. Un admin que crea un paciente asignado a otro profesional pasa la primera y falla la segunda ("violates row-level security policy"): por eso ese caso puntual se inserta con el cliente admin, ya autorizado.
 
@@ -129,7 +129,7 @@ client/src/
 2. **Regla de negocio** en un método de `services/XService.js`: recibe `db` primero, le pide los datos al repositorio y lanza errores con `status`.
 3. **Ruta** en `routes/X.js`: `requireAuth`, validaciones con `express-validator` (422 con mensajes en español), llamada al servicio con `getAuthenticatedClient(req)`.
 4. Si toca historias clínicas, sumá `registrarAcceso('ver'|'editar', 'recurso')`.
-5. Si la tabla es nueva, **política RLS en una migración nueva** (`008_...sql`); sin política, nadie puede leer.
+5. Si la tabla es nueva, **política RLS en una migración nueva** (`010_...sql`); sin política, nadie puede leer.
 6. **Test unitario** del servicio con `crearDb({...})`: casos felices y cada error.
 7. En el front, una función con `useQuery`/`useMutation` y errores con `getErrorMessage`.
 

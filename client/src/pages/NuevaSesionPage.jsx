@@ -183,7 +183,7 @@ export default function NuevaSesionPage() {
             >
               <option value="">Seleccionar paciente</option>
               {pacientes?.map(p => (
-                <option key={p.id} value={p.id}>{p.apellido}, {p.nombre} — DNI {p.dni}</option>
+                <option key={p.id} value={p.id}>{p.apellido}, {p.nombre}{p.dni ? ` — DNI ${p.dni}` : ''}</option>
               ))}
             </select>
             {errors.paciente_id && <p className="text-xs text-red-500 mt-1">{errors.paciente_id.message}</p>}

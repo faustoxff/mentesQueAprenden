@@ -57,8 +57,8 @@ Superado el límite → `429`.
 |---|---|---|
 | GET | `/` | Lista paginada. Query: `busqueda` (nombre/apellido/DNI), `estado`, `profesional_id`, `page` (def. 1), `limit` (def. 20) |
 | GET | `/:id` | Detalle (registra acceso en `logs_acceso`) |
-| POST | `/` | Crea. Obligatorios: `nombre`, `apellido`, `dni`, `fecha_nacimiento` (no futura ni de hace más de 150 años; también al editar). Opcionales: `profesional_principal_id`, `obra_social_id`, `estado`, `telefono`, `responsable_telefono`, `email`, `motivo_consulta` |
-| PATCH | `/:id` | Actualiza parcial (DNI: 7–8 dígitos sin puntos) |
+| POST | `/` | Crea. Obligatorios: `nombre`, `apellido`, `fecha_nacimiento` (no futura ni de hace más de 150 años; también al editar). Opcionales: `dni` (7–8 dígitos; vacío se guarda como `null`), `profesional_principal_id`, `obra_social_id`, `estado`, `telefono`, `responsable_telefono`, `email`, `motivo_consulta` |
+| PATCH | `/:id` | Actualiza parcial (DNI: 7–8 dígitos sin puntos; vacío lo borra) |
 | DELETE | `/:id` | Baja lógica (`deleted_at`) |
 | GET | `/:pacienteId/sesiones` | Sesiones del paciente (`page`, `limit`) |
 | GET | `/:pacienteId/turnos` | Turnos del paciente |

@@ -41,6 +41,19 @@ describe('formulario de paciente del chat', () => {
   });
 });
 
+describe('formulario de paciente del chat: DNI opcional', () => {
+  it('CP-U398 sin DNI envía el alta', async () => {
+    const { toast } = await import('sonner');
+    api.post.mockResolvedValue({ data: { id: 'p1', ...datos, dni: null } });
+    renderizar(datos);
+
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar paciente' }));
+
+    await waitFor(() => expect(api.post).toHaveBeenCalledWith('/pacientes', expect.objectContaining({ nombre: 'ZZ-TEST', dni: '' })));
+    expect(toast.error).not.toHaveBeenCalled();
+  });
+});
+
 describe('formulario de paciente del chat: fecha de nacimiento', () => {
   it.each(['2999-01-01', '1800-01-01'])('CP-U356 con fecha %s avisa con el mensaje de la regla única y no envía', async (fecha) => {
     const { toast } = await import('sonner');

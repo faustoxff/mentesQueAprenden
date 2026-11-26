@@ -36,7 +36,7 @@ export default function EditarPacientePage() {
       reset({
         nombre: paciente.nombre,
         apellido: paciente.apellido,
-        dni: paciente.dni,
+        dni: paciente.dni || '',
         fecha_nacimiento: paciente.fecha_nacimiento?.slice(0, 10),
         genero: paciente.genero || '',
         estado: paciente.estado,
@@ -110,9 +110,9 @@ export default function EditarPacientePage() {
             <Field label="Apellido" required error={errors.apellido}>
               <input {...register('apellido', { required: 'El apellido es obligatorio' })} className={inputClass(errors.apellido)} />
             </Field>
-            <Field label="DNI" required error={errors.dni}>
+            <Field label="DNI" error={errors.dni}>
               <input
-                {...register('dni', { required: 'El DNI es obligatorio', pattern: PATRON_DNI })}
+                {...register('dni', { pattern: PATRON_DNI })}
                 className={inputClass(errors.dni)}
                 inputMode="numeric"
               />

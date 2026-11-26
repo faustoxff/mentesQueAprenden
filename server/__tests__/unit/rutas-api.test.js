@@ -392,6 +392,19 @@ describe('pacientes: validación y estados', () => {
     expect(res.status).toBe(201);
   });
 
+  test.each([
+    ['POST sin DNI', (r) => r.post('/api/pacientes').send(paciente({ dni: undefined }))],
+    ['POST con DNI vacío', (r) => r.post('/api/pacientes').send(paciente({ dni: '' }))],
+    ['PATCH que borra el DNI', (r) => r.patch(`/api/pacientes/${UUID}`).send({ dni: '' })]
+  ])('CP-U400 %s pasa la validación (el DNI es opcional)', async (_caso, pedir) => {
+    pacienteService.crear.mockResolvedValue({ id: 'pac-1' });
+    pacienteService.actualizar.mockResolvedValue({ id: UUID });
+
+    const res = await comoProf(pedir(request(app)));
+
+    expect(res.status).toBeLessThan(300);
+  });
+
   test('CP-U28 la fecha dd/mm/aaaa se convierte a ISO antes de guardar', async () => {
     pacienteService.crear.mockResolvedValue({ id: 'pac-1' });
 

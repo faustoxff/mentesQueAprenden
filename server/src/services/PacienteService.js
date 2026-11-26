@@ -1,4 +1,5 @@
 const { sanitizarBusqueda, buscarParecidos } = require('../utils/busqueda');
+const { normalizarDni } = require('../utils/dni');
 const pacienteRepository = require('../repositories/PacienteRepository');
 const sesionRepository = require('../repositories/SesionRepository');
 const turnoRepository = require('../repositories/TurnoRepository');
@@ -84,6 +85,8 @@ class PacienteService {
     const insertData = Object.fromEntries(
       Object.entries(body).filter(([k, v]) => CAMPOS_CREABLES.includes(k) && !(CAMPOS_UUID.includes(k) && v === ''))
     );
+    // El DNI es opcional: sin DNI se guarda null.
+    insertData.dni = normalizarDni(insertData.dni);
 
     // Asignar el paciente a otro profesional es cosa de admin.
     const principal = insertData.profesional_principal_id || profesional.id;
@@ -126,6 +129,8 @@ class PacienteService {
     );
     // "" en una columna UUID: sin obra social se guarda null; sin profesional se deja el actual.
     if (updateData.obra_social_id === '') updateData.obra_social_id = null;
+    // Borrar el DNI en la edición lo deja en null (es opcional).
+    if ('dni' in updateData) updateData.dni = normalizarDni(updateData.dni);
     if (updateData.profesional_principal_id === '') delete updateData.profesional_principal_id;
     // Reasignar la titularidad: solo admin (la base también lo impide con un trigger).
     if (profesional?.rol !== 'admin') delete updateData.profesional_principal_id;

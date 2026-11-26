@@ -78,12 +78,9 @@ export default function NuevoPacientePage() {
                 placeholder="Apellido"
               />
             </Field>
-            <Field label="DNI" required error={errors.dni}>
+            <Field label="DNI" error={errors.dni}>
               <input
-                {...register('dni', {
-                  required: 'El DNI es obligatorio',
-                  pattern: PATRON_DNI
-                })}
+                {...register('dni', { pattern: PATRON_DNI })}
                 className={inputClass(errors.dni)}
                 placeholder="30123456"
                 inputMode="numeric"

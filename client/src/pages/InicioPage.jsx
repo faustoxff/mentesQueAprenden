@@ -8,6 +8,7 @@ import {
 } from 'date-fns';
 import api from '../services/api';
 import { useDebounce } from '../hooks/useDebounce';
+import { textoDni } from '../utils/dni';
 
 const MESES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 const DIAS = ['LUN', 'MAR', 'MIE', 'JUE', 'VIE', 'SAB', 'DOM'];
@@ -410,7 +411,7 @@ function PacientesCard({ grow, expanded, onToggle, onOpenPaciente }) {
                     )}
                   </p>
                   <p className="text-xs text-gray-500 truncate mt-0.5">{p.motivo_consulta || p.obra_social?.nombre || '—'}</p>
-                  <p className="text-xs text-gray-400 truncate mt-0.5">DNI {p.dni}</p>
+                  <p className="text-xs text-gray-400 truncate mt-0.5">{textoDni(p.dni)}</p>
                   {expanded && (
                     <span className={`inline-block mt-1.5 text-xs font-semibold px-2 py-0.5 rounded-full ${ESTADO_BADGE[p.estado] || ESTADO_BADGE.inactivo}`}>
                       {ESTADO_LABEL[p.estado] || ESTADO_LABEL.inactivo}

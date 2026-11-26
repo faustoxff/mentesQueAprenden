@@ -9,7 +9,7 @@ import { toast } from 'sonner';
 import api from '../../services/api';
 import { useAuthStore } from '../../store/authStore';
 import { getErrorMessage } from '../../utils/errores';
-import { validarDni } from '../../utils/dni';
+import { validarDni, textoDni } from '../../utils/dni';
 import { validarFechaNacimiento } from '../../utils/fechaNacimiento';
 
 export function PacienteFormCard({ prefill = {} }) {
@@ -30,8 +30,8 @@ export function PacienteFormCard({ prefill = {} }) {
 
   const guardar = async (e) => {
     e.preventDefault();
-    if (!form.nombre || !form.apellido || !form.dni || !form.fecha_nacimiento) {
-      toast.error('Nombre, apellido, DNI y fecha de nacimiento son obligatorios');
+    if (!form.nombre || !form.apellido || !form.fecha_nacimiento) {
+      toast.error('Nombre, apellido y fecha de nacimiento son obligatorios');
       return;
     }
     const errorDato = validarDni(form.dni) || validarFechaNacimiento(form.fecha_nacimiento);
@@ -97,7 +97,7 @@ export function PacienteFormCard({ prefill = {} }) {
       <div className="grid grid-cols-2 gap-2">
         {input('Nombre', 'nombre', 'text', true)}
         {input('Apellido', 'apellido', 'text', true)}
-        {input('DNI', 'dni', 'text', true)}
+        {input('DNI', 'dni')}
         {input('Fecha de nacimiento', 'fecha_nacimiento', 'date', true)}
         {input('Teléfono', 'telefono')}
         {input('Email', 'email', 'email')}
@@ -236,7 +236,7 @@ export function TurnoFormCard({ prefill = {} }) {
             {pacientes.map(p => (
               <button key={p.id} type="button" onClick={() => seleccionarPaciente(p)}
                 className="w-full text-left px-3 py-2 text-sm hover:bg-primary-50 transition-colors">
-                {p.apellido}, {p.nombre} <span className="text-gray-400 text-xs">DNI {p.dni}</span>
+                {p.apellido}, {p.nombre} <span className="text-gray-400 text-xs">{textoDni(p.dni)}</span>
               </button>
             ))}
           </div>
@@ -392,7 +392,7 @@ export function ToolResultCard({ name, result }) {
           >
             <div>
               <p className="font-medium text-sm text-gray-900">{p.apellido}, {p.nombre}</p>
-              <p className="text-xs text-gray-500">DNI {p.dni} · {p.estado}</p>
+              <p className="text-xs text-gray-500">{textoDni(p.dni)} · {p.estado}</p>
             </div>
             <span className="text-xs text-primary-600">Ver →</span>
           </Link>

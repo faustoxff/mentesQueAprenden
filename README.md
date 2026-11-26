@@ -100,7 +100,7 @@ MentesQueAprenden/
 │       ├── store/            # Estado de autenticación (Zustand)
 │       └── utils/            # Exportación de informes a PDF
 └── server/                   # Backend Express
-    ├── migrations/           # Esquema SQL y políticas RLS (001 → 008)
+    ├── migrations/           # Esquema SQL y políticas RLS (001 → 009)
     ├── __tests__/            # Tests de seguridad, validación, IA y end-to-end
     └── src/
         ├── server.js         # Punto de entrada (levanta el servidor)
@@ -136,7 +136,7 @@ cp client/.env.example client/.env
 # …y completar los valores (ver sección siguiente)
 
 # 4. Crear la base de datos: ejecutar en orden, en el SQL Editor de Supabase,
-#    los archivos server/migrations/001_*.sql a 008_*.sql
+#    los archivos server/migrations/001_*.sql a 009_*.sql
 
 # 5. Crear en Supabase Storage un bucket privado llamado "historias-clinicas"
 
@@ -200,6 +200,7 @@ El esquema vive en `server/migrations/` y se aplica en orden:
 | `006_fix_pacientes_update_check.sql` | Corrección de la política de actualización de pacientes |
 | `007_consultorios.sql` | Consultorios compartidos y trigger anti-superposición de turnos |
 | `008_endurecimiento_seguridad.sql` | RLS en `profesionales`, `obras_sociales` y `configuracion_espacio`; protección de rol/estado/honorarios; `turnos_select` restrictivo + funciones `turnos_ocupacion` y `consultorio_libre` para el calendario compartido; los INSERT exigen acceso al paciente; DELETE de archivos; titularidad de pacientes solo admin |
+| `009_dni_opcional.sql` | El DNI del paciente deja de ser obligatorio (sigue siendo único si se carga) |
 
 ---
 

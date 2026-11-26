@@ -44,6 +44,17 @@ describe('PacienteService.crear', () => {
     expect(insert.profesional_principal_id).toBe('prof-1');
   });
 
+  test.each([
+    ['sin DNI', {}],
+    ['con DNI vacío', { dni: '' }],
+    ['con DNI de solo espacios', { dni: '   ' }]
+  ])('CP-U401 %s guarda el DNI como null (no choca con el UNIQUE)', async (_caso, extra) => {
+    const { db, llamadas } = crearDb({ data: { id: 'p1' }, error: null });
+    await PacienteService.crear(db, { nombre: 'Ana', apellido: 'Paz', ...extra }, profesional);
+    const insert = llamadas.find(([m]) => m === 'insert')[1][0];
+    expect(insert.dni).toBeNull();
+  });
+
   test('DNI duplicado (23505) lanza 409 con mensaje claro', async () => {
     const { db } = crearDb({ data: null, error: { code: '23505', message: 'dup' } });
     await expect(PacienteService.crear(db, { nombre: 'Ana' }, profesional))
@@ -128,6 +139,15 @@ describe('PacienteService: titularidad y búsqueda', () => {
     const { db, enTabla } = crearDbCompartido({ pacientes: { data: { id: 'p1' }, error: null } });
     await PacienteService.actualizar(db, 'p1', { profesional_principal_id: 'otro' }, { id: 'adm', rol: 'admin' });
     expect(enTabla('pacientes', 'update')[0][0].profesional_principal_id).toBe('otro');
+  });
+
+  test('CP-U402 actualizar: borrar el DNI lo guarda como null y no tocarlo no lo cambia', async () => {
+    const { db, enTabla } = crearDbCompartido({ pacientes: { data: { id: 'p1' }, error: null } });
+    await PacienteService.actualizar(db, 'p1', { dni: '' }, profesional);
+    await PacienteService.actualizar(db, 'p1', { telefono: '1155555555' }, profesional);
+    const [borrado, otro] = enTabla('pacientes', 'update');
+    expect(borrado[0].dni).toBeNull();
+    expect(otro[0]).not.toHaveProperty('dni');
   });
 
   test('listar: la búsqueda no puede inyectar filtros', async () => {

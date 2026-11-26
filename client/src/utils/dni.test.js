@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { createRequire } from 'node:module';
-import { DNI_REGEX, DNI_MENSAJE, PATRON_DNI, validarDni } from './dni';
+import { DNI_REGEX, DNI_MENSAJE, PATRON_DNI, validarDni, textoDni } from './dni';
 
 // El server es CommonJS: se carga con require para comparar las dos reglas.
 const require = createRequire(import.meta.url);
@@ -13,10 +13,19 @@ describe('regla única del DNI (client)', () => {
     ['6 dígitos (límite inferior - 1)', '123456', DNI_MENSAJE],
     ['9 dígitos (límite superior + 1)', '123456789', DNI_MENSAJE],
     ['con puntos', '12.345.678', DNI_MENSAJE],
-    ['vacío', '', DNI_MENSAJE],
-    ['sin valor', undefined, DNI_MENSAJE]
+    ['vacío (el DNI es opcional)', '', null],
+    ['solo espacios', '   ', null],
+    ['sin valor', undefined, null]
   ])('CP-U313 %s → %s', (_caso, valor, esperado) => {
     expect(validarDni(valor)).toBe(esperado);
+  });
+
+  it.each([
+    ['con DNI', '1234567', 'DNI 1234567'],
+    ['sin DNI (null)', null, 'Sin DNI'],
+    ['sin DNI (vacío)', '', 'Sin DNI']
+  ])('CP-U396 textoDni %s → %s', (_caso, dni, esperado) => {
+    expect(textoDni(dni)).toBe(esperado);
   });
 
   it('CP-U314 el patrón para react-hook-form usa la misma expresión y mensaje', () => {

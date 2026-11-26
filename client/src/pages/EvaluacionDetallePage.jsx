@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import api from '../services/api';
 import MiniMarkdown from '../components/ui/MiniMarkdown';
 import { exportarInformePdf } from '../utils/exportarInformePdf';
+import { textoDni } from '../utils/dni';
 
 const CAMPOS_INFORME = [
   { key: 'motivo_consulta', label: 'Motivo de consulta', rows: 3 },
@@ -168,7 +169,7 @@ export default function EvaluacionDetallePage() {
           </div>
           <div>
             <p className="font-semibold text-gray-900">{evaluacion.paciente.apellido}, {evaluacion.paciente.nombre}</p>
-            <p className="text-xs text-gray-500">DNI {evaluacion.paciente.dni}</p>
+            <p className="text-xs text-gray-500">{textoDni(evaluacion.paciente.dni)}</p>
           </div>
         </Link>
       )}

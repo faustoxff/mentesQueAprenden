@@ -5,7 +5,7 @@ const { requireAuth } = require('../middleware/auth');
 const { registrarAcceso } = require('../middleware/auditLog');
 const { getAuthenticatedClient } = require('../middleware/auth');
 const pacienteService = require('../services/PacienteService');
-const { DNI_REGEX, DNI_MENSAJE } = require('../utils/dni');
+const { DNI_MENSAJE, esDniOpcionalValido } = require('../utils/dni');
 const { esFechaNacimientoValida, FECHA_NACIMIENTO_MENSAJE } = require('../utils/fechaNacimiento');
 const { reglasCrearPaciente, telefonoValido, MSG_TELEFONO } = require('../validaciones/pacientes');
 
@@ -64,7 +64,7 @@ router.patch('/:id',
     param('id').isUUID().withMessage('El identificador del paciente no es válido'),
     body('nombre').optional().trim().notEmpty().withMessage('El nombre no puede quedar vacío'),
     body('apellido').optional().trim().notEmpty().withMessage('El apellido no puede quedar vacío'),
-    body('dni').optional().matches(DNI_REGEX).withMessage(DNI_MENSAJE),
+    body('dni').optional({ values: 'null' }).custom(esDniOpcionalValido).withMessage(DNI_MENSAJE),
     body('fecha_nacimiento').optional().isISO8601().withMessage('La fecha de nacimiento no es válida').bail()
       .custom((v) => esFechaNacimientoValida(v)).withMessage(FECHA_NACIMIENTO_MENSAJE),
     body('estado').optional().isIn(['activo', 'derivado', 'alta', 'inactivo']).withMessage('El estado no es válido'),

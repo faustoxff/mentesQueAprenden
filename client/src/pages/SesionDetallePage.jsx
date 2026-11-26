@@ -11,6 +11,7 @@ import IAAssistant from '../components/ui/IAAssistant';
 import FileUpload from '../components/ui/FileUpload';
 import Modal from '../components/ui/Modal';
 import { aplicarErroresAlForm } from '../utils/errores';
+import { textoDni } from '../utils/dni';
 
 const TIPO_LABEL = {
   evaluacion: 'Evaluación', tratamiento: 'Tratamiento',
@@ -160,7 +161,7 @@ export default function SesionDetallePage() {
           </div>
           <div>
             <p className="font-semibold text-gray-900">{sesion.paciente.apellido}, {sesion.paciente.nombre}</p>
-            <p className="text-xs text-gray-500">DNI {sesion.paciente.dni}</p>
+            <p className="text-xs text-gray-500">{textoDni(sesion.paciente.dni)}</p>
           </div>
         </Link>
       )}

@@ -46,7 +46,6 @@ describe('formulario de nuevo paciente', () => {
 
     expect(await screen.findByText('El nombre es obligatorio')).toBeInTheDocument();
     expect(screen.getByText('El apellido es obligatorio')).toBeInTheDocument();
-    expect(screen.getByText('El DNI es obligatorio')).toBeInTheDocument();
     expect(screen.getByText('La fecha de nacimiento es obligatoria')).toBeInTheDocument();
     expect(api.post).not.toHaveBeenCalled();
   });
@@ -90,6 +89,18 @@ describe('formulario de nuevo paciente', () => {
 
     await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
     expect(api.post.mock.calls[0][1]).toMatchObject({ nombre: 'ZZ-TEST', dni: '1234567', estado: 'activo', profesional_principal_id: PROF_ID });
+  });
+
+  it('CP-U397 sin DNI se crea igual: el DNI es opcional y no tiene asterisco', async () => {
+    api.post.mockResolvedValue({ data: { id: 'nuevo' } });
+    renderizar();
+    await completarObligatorios({ DNI: '' });
+
+    await guardar();
+
+    await waitFor(() => expect(api.post).toHaveBeenCalledTimes(1));
+    expect(api.post.mock.calls[0][1]).toMatchObject({ nombre: 'ZZ-TEST', dni: '' });
+    expect(screen.getByText('DNI', { selector: 'label' }).textContent.trim()).toBe('DNI');
   });
 
   it('CP-U253 mientras guarda, el botón se deshabilita: un doble clic crea un solo paciente', async () => {

@@ -1,7 +1,7 @@
 // Reglas para crear un paciente. Las usan POST /pacientes y el alta desde el chat,
 // así las dos entradas rechazan exactamente lo mismo y con los mismos mensajes.
 const { body } = require('express-validator');
-const { DNI_REGEX, DNI_MENSAJE } = require('../utils/dni');
+const { DNI_MENSAJE, esDniOpcionalValido } = require('../utils/dni');
 const { esFechaNacimientoValida, FECHA_NACIMIENTO_MENSAJE } = require('../utils/fechaNacimiento');
 
 // Los teléfonos son opcionales, pero si vienen deben ser razonables y entrar
@@ -12,8 +12,7 @@ const telefonoValido = (v) => v === '' || /^[\d\s()+-]{8,20}$/.test(v);
 const reglasCrearPaciente = [
   body('nombre').trim().notEmpty().withMessage('El nombre es obligatorio'),
   body('apellido').trim().notEmpty().withMessage('El apellido es obligatorio'),
-  body('dni').trim().notEmpty().withMessage('El DNI es obligatorio').bail()
-    .matches(DNI_REGEX).withMessage(DNI_MENSAJE),
+  body('dni').optional({ values: 'null' }).custom(esDniOpcionalValido).withMessage(DNI_MENSAJE),
   body('fecha_nacimiento').customSanitizer(v => {
     // Convertir dd/MM/yyyy → yyyy-MM-dd si viene del browser en español
     if (v && /^\d{2}\/\d{2}\/\d{4}$/.test(v)) {

@@ -13,6 +13,7 @@ import FileUpload from '../components/ui/FileUpload';
 import MiniMarkdown from '../components/ui/MiniMarkdown';
 import api from '../services/api';
 import { getErrorMessage } from '../utils/errores';
+import { textoDni } from '../utils/dni';
 
 const TABS = [
   { id: 'historial', label: 'Historial', icon: FileText },
@@ -200,7 +201,7 @@ export default function PacienteDetallePage() {
               </span>
             </div>
             <div className="text-sm text-gray-500 mt-1 space-y-0.5">
-              <p>DNI {paciente.dni} · {edad} años · {format(new Date(paciente.fecha_nacimiento), 'dd/MM/yyyy')}</p>
+              <p>{textoDni(paciente.dni)} · {edad} años · {format(new Date(paciente.fecha_nacimiento), 'dd/MM/yyyy')}</p>
               {paciente.obra_social && <p>OS: {paciente.obra_social.nombre}{paciente.numero_afiliado ? ` (${paciente.numero_afiliado})` : ''}</p>}
               {paciente.profesional_principal && (
                 <p>Prof.: {paciente.profesional_principal.apellido}, {paciente.profesional_principal.nombre}</p>

@@ -1,4 +1,4 @@
-const { DNI_REGEX, DNI_MENSAJE, esDniValido } = require('../../src/utils/dni');
+const { DNI_REGEX, DNI_MENSAJE, esDniValido, normalizarDni, esDniOpcionalValido } = require('../../src/utils/dni');
 
 describe('regla única del DNI (server)', () => {
   test.each([
@@ -19,5 +19,18 @@ describe('regla única del DNI (server)', () => {
   test('CP-U310 el mensaje dice el formato esperado y la expresión no tiene flags', () => {
     expect(DNI_MENSAJE).toBe('El DNI debe tener 7 u 8 dígitos, sin puntos ni espacios');
     expect(DNI_REGEX.flags).toBe('');
+  });
+
+  test.each([
+    ['vacío', '', null, true],
+    ['solo espacios', '   ', null, true],
+    ['null', null, null, true],
+    ['sin valor', undefined, null, true],
+    ['con espacios alrededor', ' 1234567 ', '1234567', true],
+    ['número en vez de texto', 12345678, '12345678', true],
+    ['inválido', '123456', '123456', false]
+  ])('CP-U399 DNI opcional: %s se guarda como %p y es válido: %s', (_caso, valor, guardado, valido) => {
+    expect(normalizarDni(valor)).toBe(guardado);
+    expect(esDniOpcionalValido(valor)).toBe(valido);
   });
 });

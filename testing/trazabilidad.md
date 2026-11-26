@@ -310,11 +310,11 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U306 | el botón Cerrar también devuelve el foco | Modal accesible (DEF-A20) | Unitaria (componente) | `client/src/components/ui/Modal.test.jsx` |  |
 | CP-U307 | cerrado no renderiza nada | Modal accesible (DEF-A20) | Unitaria (componente) | `client/src/components/ui/Modal.test.jsx` |  |
 | CP-U308 | "Nuevo turno" abre un diálogo y cada campo se encuentra por su label | Formulario de turno accesible (DEF-A20) | Unitaria (componente) | `client/src/pages/AgendaPage.test.jsx` |  |
-| CP-U309 | la regla del DNI acepta 7 y 8 dígitos y rechaza 6, 9, puntos, espacios, letras y vacío | Regla única del DNI | Unitaria | `server/__tests__/unit/dni.test.js` |  |
+| CP-U309 | la regla del DNI acepta 7 y 8 dígitos y rechaza 6, 9, puntos, espacios, letras y vacío (el vacío lo cubre la regla opcional, CP-U399) | Regla única del DNI | Unitaria | `server/__tests__/unit/dni.test.js` |  |
 | CP-U310 | el mensaje dice el formato esperado y la expresión no tiene flags | Regla única del DNI | Unitaria | `server/__tests__/unit/dni.test.js` |  |
 | CP-U311 | POST y PATCH /pacientes con DNI inválido responden el mensaje de la regla única | Regla única del DNI | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
 | CP-U312 | crear_paciente desde el chat con DNI inválido no inserta y responde el mensaje de la regla única | Regla única del DNI | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
-| CP-U313 | validarDni acepta 7 y 8 dígitos y devuelve el mensaje en los demás casos | Regla única del DNI | Unitaria | `client/src/utils/dni.test.js` |  |
+| CP-U313 | validarDni acepta 7 y 8 dígitos y vacío (el DNI es opcional) y devuelve el mensaje en los demás casos | Regla única del DNI | Unitaria | `client/src/utils/dni.test.js` |  |
 | CP-U314 | el patrón para react-hook-form usa la misma expresión y mensaje | Regla única del DNI | Unitaria | `client/src/utils/dni.test.js` |  |
 | CP-U315 | client y server tienen exactamente la misma regla y el mismo mensaje | Regla única del DNI (contrato client–server) | Unitaria | `client/src/utils/dni.test.js` |  |
 | CP-U316 | el formulario del chat con DNI inválido avisa con el mensaje de la regla única y no envía | Regla única del DNI | Unitaria (componente) | `client/src/components/chat/PacienteFormCard.test.jsx` |  |
@@ -397,6 +397,13 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U393 | el menú del chat muestra las consultas de IA usadas hoy y que hay respaldo | IA: respaldo y uso diario | Unitaria | `client/src/components/chat/ChatSidebar.test.jsx` |  |
 | CP-U394 | el menú avisa cuando la cuota está agotada y no hay respaldo | IA: respaldo y uso diario | Unitaria | `client/src/components/chat/ChatSidebar.test.jsx` |  |
 | CP-U395 | si no se pudo saber el uso, el menú no muestra el bloque | IA: respaldo y uso diario | Unitaria | `client/src/components/chat/ChatSidebar.test.jsx` |  |
+| CP-U396 | textoDni muestra "DNI n" o "Sin DNI" | DNI opcional | Unitaria | `client/src/utils/dni.test.js` |  |
+| CP-U397 | sin DNI se crea igual: el DNI es opcional y no tiene asterisco | DNI opcional | Unitaria (componente) | `client/src/pages/NuevoPacientePage.test.jsx` |  |
+| CP-U398 | el formulario del chat sin DNI envía el alta | DNI opcional | Unitaria (componente) | `client/src/components/chat/PacienteFormCard.test.jsx` |  |
+| CP-U399 | DNI opcional: vacío, espacios o sin valor se guardan como null; si viene, cumple la regla | DNI opcional | Unitaria | `server/__tests__/unit/dni.test.js` |  |
+| CP-U400 | POST sin DNI o con DNI vacío y PATCH que borra el DNI pasan la validación | DNI opcional | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
+| CP-U401 | crear sin DNI (o vacío) guarda null y no choca con el UNIQUE | DNI opcional | Unitaria | `server/__tests__/unit/paciente-service.test.js` |  |
+| CP-U402 | actualizar: borrar el DNI lo guarda como null y no tocarlo no lo cambia | DNI opcional | Unitaria | `server/__tests__/unit/paciente-service.test.js` |  |
 | CP-A01 | GET /health responde ok | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A02 | POST /auth/login como profesional | Autenticación (necesita credenciales de un proyecto de test) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A03 | POST /auth/login con email inválido → 422 | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |

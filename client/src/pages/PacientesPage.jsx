@@ -5,6 +5,7 @@ import { Search, Plus, ChevronRight, User, ArrowLeftRight } from 'lucide-react';
 import api from '../services/api';
 import { differenceInYears } from 'date-fns';
 import { useDebounce } from '../hooks/useDebounce';
+import { textoDni } from '../utils/dni';
 
 const ESTADO_BADGE = {
   activo: 'bg-green-100 text-green-700',
@@ -118,7 +119,7 @@ export default function PacientesPage() {
                     </span>
                   </div>
                   <div className="text-sm text-gray-500 flex items-center gap-3 flex-wrap mt-0.5">
-                    <span>DNI {paciente.dni}</span>
+                    <span>{textoDni(paciente.dni)}</span>
                     <span>·</span>
                     <span>{differenceInYears(new Date(), new Date(paciente.fecha_nacimiento))} años</span>
                     {paciente.profesional_principal && (
