@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Settings, Users, UserPlus, Edit2, Power } from 'lucide-react';
 import api from '../services/api';
 import Modal from '../components/ui/Modal';
+import BotonVolver from '../components/ui/BotonVolver';
 import { getErrorMessage } from '../utils/errores';
 
 const ESPECIALIDAD_LABEL = {
@@ -55,7 +56,10 @@ export default function AdminPage() {
 
   return (
     <div className="p-4 lg:p-6 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-gray-900 mb-6">Administración</h1>
+      <div className="flex items-center gap-3 mb-6">
+        <BotonVolver />
+        <h1 className="text-2xl font-bold text-gray-900">Administración</h1>
+      </div>
 
       <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-6">
         {[

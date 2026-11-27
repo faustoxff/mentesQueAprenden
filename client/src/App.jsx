@@ -8,7 +8,6 @@ import RegisterPage from './components/auth/RegisterPage';
 import ResetPasswordPage from './components/auth/ResetPasswordPage';
 import MainShell from './components/layout/MainShell';
 import InicioPage from './pages/InicioPage';
-import PacientesPage from './pages/PacientesPage';
 import NuevoPacientePage from './pages/NuevoPacientePage';
 import EditarPacientePage from './pages/EditarPacientePage';
 import PacienteDetallePage from './pages/PacienteDetallePage';
@@ -54,7 +53,8 @@ export default function App() {
                 <MainShell>
                   <Routes>
                     <Route path="/" element={<InicioPage />} />
-                    <Route path="/pacientes" element={<PacientesPage />} />
+                    {/* La lista de pacientes está en Inicio; la dirección vieja lleva ahí. */}
+                    <Route path="/pacientes" element={<Navigate to="/" replace />} />
                     <Route path="/pacientes/nuevo" element={<NuevoPacientePage />} />
                     <Route path="/pacientes/:id" element={<PacienteDetallePage />} />
                     <Route path="/pacientes/:id/editar" element={<EditarPacientePage />} />

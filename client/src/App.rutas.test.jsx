@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import api from './services/api';
 import App from './App';
 import { useAuthStore } from './store/authStore';
@@ -79,5 +80,24 @@ describe('ProtectedRoute y PublicOnlyRoute', () => {
     ir('/admin');
 
     await waitFor(() => expect(window.location.pathname).toBe('/'), { timeout: 1500 });
+  });
+
+  it('CP-U404 /pacientes con sesión lleva al inicio, donde está la lista de pacientes', async () => {
+    entrarComo(PROF);
+
+    ir('/pacientes');
+
+    await waitFor(() => expect(window.location.pathname).toBe('/'));
+  });
+});
+
+describe('flecha de volver en las pantallas del menú', () => {
+  it.each(['/admin', '/historial', '/pagos', '/agenda'])('CP-U405 %s tiene la flecha de volver y lleva al inicio', async (ruta) => {
+    entrarComo(ADMIN);
+    ir(ruta);
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Volver' }));
+
+    await waitFor(() => expect(window.location.pathname).toBe('/'));
   });
 });

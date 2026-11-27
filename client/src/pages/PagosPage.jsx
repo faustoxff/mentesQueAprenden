@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
 import Modal from '../components/ui/Modal';
+import BotonVolver from '../components/ui/BotonVolver';
 
 const METODO_LABEL = {
   efectivo: 'Efectivo', transferencia: 'Transferencia',
@@ -54,7 +55,10 @@ export default function PagosPage() {
   return (
     <div className="p-4 lg:p-6 max-w-5xl mx-auto">
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-gray-900">Pagos</h1>
+        <div className="flex items-center gap-3">
+          <BotonVolver />
+          <h1 className="text-2xl font-bold text-gray-900">Pagos</h1>
+        </div>
         <input
           type="month"
           value={mes}

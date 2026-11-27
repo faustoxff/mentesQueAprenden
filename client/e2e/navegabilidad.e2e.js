@@ -31,7 +31,7 @@ test.describe('navegabilidad: rutas públicas', () => {
 test.describe('navegabilidad: rutas de App.jsx con sesión', () => {
   test.skip(!tieneCuenta(cuentas.uno), SIN_UNO);
 
-  const estaticas = ['/', '/pacientes', '/pacientes/nuevo', '/agenda', '/historial', '/sesiones/nueva', '/evaluaciones/nueva', '/derivaciones', '/pagos'];
+  const estaticas = ['/', '/pacientes/nuevo', '/agenda', '/historial', '/sesiones/nueva', '/evaluaciones/nueva', '/derivaciones', '/pagos'];
 
   test('CP-E07 todas las rutas cargan sin 404, sin errores de consola y sin pedidos fallidos', async ({ page, request, baseURL }) => {
     await ingresar(page, cuentas.uno);
@@ -69,15 +69,15 @@ test.describe('navegabilidad: rutas de App.jsx con sesión', () => {
 
   test('CP-E08 Atrás y F5 mantienen la ruta y la sesión', async ({ page }) => {
     await ingresar(page, cuentas.uno);
-    await page.goto('/pacientes');
+    await page.goto('/historial');
     await page.goto('/agenda');
 
     await page.goBack();
-    await expect(page).toHaveURL(/\/pacientes$/);
+    await expect(page).toHaveURL(/\/historial$/);
     await page.reload();
 
-    await expect(page).toHaveURL(/\/pacientes$/);
-    await expect(page.getByPlaceholder('Buscar por nombre, apellido o DNI...')).toBeVisible();
+    await expect(page).toHaveURL(/\/historial$/);
+    await expect(page.getByRole('heading', { name: 'Historial de turnos', level: 1 })).toBeVisible();
   });
 
   test('CP-E09 F5 después de crear un paciente no reenvía el formulario', async ({ page, request, baseURL }) => {

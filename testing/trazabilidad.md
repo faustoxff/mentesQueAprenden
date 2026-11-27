@@ -404,6 +404,9 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U400 | POST sin DNI o con DNI vacío y PATCH que borra el DNI pasan la validación | DNI opcional | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
 | CP-U401 | crear sin DNI (o vacío) guarda null y no choca con el UNIQUE | DNI opcional | Unitaria | `server/__tests__/unit/paciente-service.test.js` |  |
 | CP-U402 | actualizar: borrar el DNI lo guarda como null y no tocarlo no lo cambia | DNI opcional | Unitaria | `server/__tests__/unit/paciente-service.test.js` |  |
+| CP-U403 | la barra inferior tiene Inicio y Menta; no tiene Pacientes (la lista está en Inicio) ni Agenda | Navegación mobile | Unitaria (componente) | `client/src/components/layout/MainShell.test.jsx` |  |
+| CP-U404 | /pacientes con sesión lleva al inicio, donde está la lista de pacientes | Rutas protegidas y por rol | Unitaria (componente) | `client/src/App.rutas.test.jsx` |  |
+| CP-U405 | %s tiene la flecha de volver y lleva al inicio (admin, historial, pagos, agenda) | Navegación jerárquica | Unitaria (componente) | `client/src/App.rutas.test.jsx` |  |
 | CP-A01 | GET /health responde ok | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A02 | POST /auth/login como profesional | Autenticación (necesita credenciales de un proyecto de test) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A03 | POST /auth/login con email inválido → 422 | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
@@ -448,7 +451,7 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-A42 | POST /auth/signup con contraseña corta → 422 sin devolverla | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` | DEF-A18 |
 | CP-E01 | sin sesión, una ruta protegida manda a /login | Sesión (E2E) | E2E | `client/e2e/sesion.e2e.js` |  |
 | CP-E02 | cerrar sesión vuelve al login y Atrás no reabre la app | Sesión (E2E) | E2E | `client/e2e/sesion.e2e.js` |  |
-| CP-E03 | crear paciente → aparece en el listado → baja lógica | Pacientes (E2E) | E2E | `client/e2e/pacientes.e2e.js` |  |
+| CP-E03 | crear paciente → aparece en la lista de Inicio → baja lógica | Pacientes (E2E) | E2E | `client/e2e/pacientes.e2e.js` |  |
 | CP-E04 | un turno en el consultorio 3 se crea; el mismo consultorio y horario se rechaza | Turnos (E2E) | E2E | `client/e2e/turnos.e2e.js` |  |
 | CP-E05 | el profesional 2 no ve el paciente del 1; con la derivación aceptada sí | Aislamiento y derivación (E2E) | E2E | `client/e2e/aislamiento.e2e.js` |  |
 | CP-E06 | ${ruta} carga sin errores de consola ni pedidos fallidos | Navegabilidad | E2E | `client/e2e/navegabilidad.e2e.js` |  |
@@ -460,9 +463,9 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-E12 | sin red: enviar el alta de paciente avisa, no pierde lo cargado y no duplica al reintentar | Móvil y sin red | E2E | `client/e2e/movil.e2e.js` |  |
 | CP-E13 | login sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
 | CP-E14 | inicio sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
-| CP-E15 | pacientes sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
+| CP-E15 | derivaciones sin violaciones serious/critical (antes: la pantalla de pacientes, eliminada) | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
 | CP-E16 | agenda sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
 | CP-E17 | el historial se abre desde el menú y no muestra la ocupación de otros profesionales | Historial de turnos | E2E | `client/e2e/navegabilidad.e2e.js` |  |
 | CP-E18 | historial sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
 
-Totales: 355 IDs unitarios, 42 de API y 18 E2E.
+Totales: 358 IDs unitarios, 42 de API y 18 E2E.

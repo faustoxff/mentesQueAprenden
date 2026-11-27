@@ -94,7 +94,7 @@ client/src/
 │   ├── chat/                  ChatSidebar y tarjetas de resultados
 │   ├── auth/                  Login, registro, ProtectedRoute
 │   └── ui/                    Modal, subida de archivos, MiniMarkdown…
-├── pages/             Una por pantalla (Inicio, Pacientes, Agenda, Sesiones…)
+├── pages/             Una por pantalla (Inicio, ficha de paciente, Agenda, Sesiones…)
 ├── services/api.js    Cliente HTTP (axios) con interceptores
 ├── store/authStore.js Sesión y usuario (Zustand, persistido)
 └── utils/errores.js   getErrorMessage / aplicarErroresAlForm
@@ -103,7 +103,7 @@ client/src/
 - **Datos del servidor**: React Query (`useQuery`/`useMutation`) en cada página; cachea 2 minutos.
 - **Sesión**: `authStore` guarda tokens y profesional. [api.js](../client/src/services/api.js) agrega el token a cada pedido y, ante un 401, **renueva una sola vez** (un `refreshEnCurso` compartido, porque Supabase rota el refresh token y solo sirve una vez). Si no puede, avisa y cierra sesión. `/auth/login` y similares no intentan renovar.
 - **Errores**: el backend puede devolver `error` como texto u objeto `{code, message}`. **Siempre** mostralos con `getErrorMessage(err, 'mensaje por defecto')`; renderizar el objeto directo rompe React (error #31).
-- **Mobile**: `MainShell` muestra una sola cosa a la vez (contenido o chat) con una barra inferior (Inicio, Pacientes, Menta). En escritorio ve las dos. `ChatSidebar` queda siempre montado para no perder la conversación.
+- **Mobile**: `MainShell` muestra una sola cosa a la vez (contenido o chat) con una barra inferior (Inicio y Menta; la lista de pacientes está en Inicio y `/pacientes` redirige ahí). En escritorio ve las dos. Las pantallas que se abren desde el menú (Agenda, Historial, Pagos, Administración) tienen la flecha de volver (`components/ui/BotonVolver.jsx`). `ChatSidebar` queda siempre montado para no perder la conversación.
 - **Agenda**: FullCalendar. Los props que le pasás (`headerToolbar`, `businessHours`…) tienen que ser **objetos estables a nivel de módulo**; si se recrean en cada render, el calendario se reinicia y entra en un bucle infinito.
 
 ## 5. Tests, cobertura y CI/CD

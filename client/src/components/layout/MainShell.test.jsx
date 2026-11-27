@@ -16,12 +16,12 @@ const renderShell = (ruta = '/') => render(
 );
 
 describe('MainShell (barra inferior mobile)', () => {
-  it('tiene Inicio, Pacientes y Menta; no tiene Agenda', () => {
+  it('CP-U403 tiene Inicio y Menta; no tiene Pacientes (la lista está en Inicio) ni Agenda', () => {
     renderShell();
     const nav = screen.getByRole('navigation', { name: /navegación principal/i });
     expect(nav).toHaveTextContent('Inicio');
-    expect(nav).toHaveTextContent('Pacientes');
     expect(nav).toHaveTextContent('Menta');
+    expect(nav).not.toHaveTextContent('Pacientes');
     expect(nav).not.toHaveTextContent('Agenda');
   });
 
@@ -34,9 +34,9 @@ describe('MainShell (barra inferior mobile)', () => {
   });
 
   it('navegar a otra sección vuelve al contenido', async () => {
-    renderShell();
+    renderShell('/agenda');
     await userEvent.click(screen.getByRole('button', { name: /abrir chat con menta/i }));
-    await userEvent.click(screen.getByRole('link', { name: /pacientes/i }));
+    await userEvent.click(screen.getByRole('link', { name: /inicio/i }));
     expect(screen.getByTestId('chat')).toHaveClass('hidden');
   });
 
