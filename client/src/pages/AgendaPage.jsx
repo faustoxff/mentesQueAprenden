@@ -12,6 +12,7 @@ import { Plus, DoorOpen } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../services/api';
 import { useAuthStore } from '../store/authStore';
+import BotonVolver from '../components/ui/BotonVolver';
 import Modal from '../components/ui/Modal';
 import { getErrorMessage } from '../utils/errores';
 import { COLORES_ESTADO, TIPO_OPTIONS, urlRegistrarSesion } from '../utils/turnos';
@@ -153,7 +154,10 @@ export default function AgendaPage() {
     <div className="p-4 lg:p-6">
       {/* Header */}
       <div className="flex items-center justify-between mb-4 flex-wrap gap-3">
-        <h1 className="text-2xl font-bold text-gray-900">Agenda</h1>
+        <div className="flex items-center gap-3">
+          <BotonVolver />
+          <h1 className="text-2xl font-bold text-gray-900">Agenda</h1>
+        </div>
         <div className="flex items-center gap-2 flex-wrap">
           {isAdmin() && (
             <select

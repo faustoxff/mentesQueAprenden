@@ -136,7 +136,7 @@ export default function EditarPacientePage() {
                 <option value="otro">Otro</option>
               </select>
             </Field>
-            <Field label="Estado" required>
+            <Field label="Estado">
               <select {...register('estado')} className={inputClass(false)}>
                 <option value="activo">Activo</option>
                 <option value="derivado">Derivado</option>

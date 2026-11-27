@@ -6,6 +6,7 @@ import { es } from 'date-fns/locale';
 import { History } from 'lucide-react';
 import api from '../services/api';
 import { getErrorMessage } from '../utils/errores';
+import BotonVolver from '../components/ui/BotonVolver';
 import { COLORES_ESTADO, ESTADO_LABEL, TIPO_OPTIONS, urlRegistrarSesion } from '../utils/turnos';
 
 // Turnos y sesiones ya pasados del profesional. Los turnos con fecha pasada se permiten
@@ -139,6 +140,7 @@ export default function HistorialPage() {
   return (
     <div className="p-4 lg:p-6 max-w-5xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
+        <BotonVolver />
         <History size={24} className="text-primary-600" aria-hidden="true" />
         <h1 className="text-2xl font-bold text-gray-900">Historial de turnos</h1>
       </div>

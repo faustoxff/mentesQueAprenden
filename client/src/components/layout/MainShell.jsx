@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Home, Users, Bot } from 'lucide-react';
+import { Home, Bot } from 'lucide-react';
 import ChatSidebar from '../chat/ChatSidebar';
 
+// No hay pestaña de pacientes: la lista está en Inicio.
 const TABS = [
-  { to: '/', label: 'Inicio', icon: Home, end: true },
-  { to: '/pacientes', label: 'Pacientes', icon: Users }
+  { to: '/', label: 'Inicio', icon: Home, end: true }
 ];
 
 const tabClass = (active) =>

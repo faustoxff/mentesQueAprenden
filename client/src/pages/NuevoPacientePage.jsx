@@ -53,7 +53,7 @@ export default function NuevoPacientePage() {
   return (
     <div className="p-4 lg:p-6 max-w-3xl mx-auto">
       <div className="flex items-center gap-3 mb-6">
-        <button onClick={() => navigate('/pacientes')} className="p-2 rounded-xl hover:bg-gray-100" aria-label="Volver">
+        <button onClick={() => navigate('/')} className="p-2 rounded-xl hover:bg-gray-100" aria-label="Volver">
           <ArrowLeft size={20} />
         </button>
         <h1 className="text-2xl font-bold text-gray-900">Nuevo paciente</h1>
@@ -105,7 +105,7 @@ export default function NuevoPacientePage() {
                 <option value="otro">Otro</option>
               </select>
             </Field>
-            <Field label="Estado" required>
+            <Field label="Estado">
               <select {...register('estado')} className={inputClass(false)}>
                 <option value="activo">Activo</option>
                 <option value="derivado">Derivado</option>
@@ -223,7 +223,7 @@ export default function NuevoPacientePage() {
         <div className="flex gap-3 pb-8">
           <button
             type="button"
-            onClick={() => navigate('/pacientes')}
+            onClick={() => navigate('/')}
             className="flex-1 py-3 border border-gray-300 rounded-xl font-medium text-gray-700 hover:bg-gray-50 transition-colors"
           >
             Cancelar
