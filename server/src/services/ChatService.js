@@ -391,7 +391,7 @@ class ChatService {
         const resultado = await this.ejecutarTool(nombre, accion.params || {}, profesional, db);
         toolResult = { name: nombre, result: resultado };
       } catch (err) {
-        toolResult = { name: nombre, result: { error: err.message } };
+        toolResult = { name: nombre, result: { error: mensajeDeErrorDeHerramienta(err, profesional) } };
       }
       toolResults.push(toolResult);
 
@@ -412,4 +412,16 @@ class ChatService {
   }
 }
 
+// Un error con status (404, 409, 422…) es una respuesta de negocio pensada para la persona.
+// Uno sin status es técnico (por ejemplo, de la base): el detalle lo ve solo un admin;
+// el resto, y el modelo cuando habla con ellos, recibe un aviso genérico.
+const MENSAJE_ERROR_INTERNO = 'No se pudo completar la acción por un problema del sistema. Avisale al administrador.';
+function mensajeDeErrorDeHerramienta(err, profesional) {
+  if (err.status && err.status < 500) return err.message;
+  console.error('Error en una herramienta del chat:', err.message);
+  return profesional?.rol === 'admin' ? `${MENSAJE_ERROR_INTERNO} Detalle técnico: ${err.message}` : MENSAJE_ERROR_INTERNO;
+}
+
 module.exports = new ChatService();
+module.exports.mensajeDeErrorDeHerramienta = mensajeDeErrorDeHerramienta;
+module.exports.MENSAJE_ERROR_INTERNO = MENSAJE_ERROR_INTERNO;

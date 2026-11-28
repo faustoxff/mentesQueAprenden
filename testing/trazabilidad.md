@@ -385,6 +385,8 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U404 | /pacientes con sesión lleva al inicio, donde está la lista de pacientes | Rutas protegidas y por rol | Unitaria (componente) | `client/src/App.rutas.test.jsx` |  |
 | CP-U405 | %s tiene la flecha de volver y lleva al inicio (admin, historial, pagos, agenda) | Navegación jerárquica | Unitaria (componente) | `client/src/App.rutas.test.jsx` |  |
 | CP-U406 | el pago guarda solo el monto total, sin reparto de honorarios | Pagos | Unitaria | `server/__tests__/unit/pago-service.test.js` |  |
+| CP-U407 | un error técnico (sin status) no le muestra el detalle a un profesional, ni al modelo | Asistente de IA (chat) | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
+| CP-U408 | un admin sí ve el detalle técnico del error | Asistente de IA (chat) | Unitaria | `server/__tests__/unit/ia-modelo-mockeado.test.js` |  |
 | CP-A01 | GET /health responde ok | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A02 | POST /auth/login como profesional | Autenticación (necesita credenciales de un proyecto de test) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A03 | POST /auth/login con email inválido → 422 | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
@@ -443,6 +445,6 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-E17 | el historial se abre desde el menú y no muestra la ocupación de otros profesionales | Historial de turnos | E2E | `client/e2e/navegabilidad.e2e.js` |  |
 | CP-E18 | historial sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
 
-Totales: 336 IDs unitarios, 39 de API y 18 E2E.
+Totales: 338 IDs unitarios, 39 de API y 18 E2E.
 
 IDs retirados el 2026-11-27 al sacar el porcentaje de honorarios y la liquidación mensual (KAN-58), porque probaban una funcionalidad que ya no existe: CP-U06 a CP-U09, CP-U52 a CP-U57, CP-U65 a CP-U70, CP-U131, CP-U151, CP-U152, CP-U267, CP-U299, CP-U300, CP-U301, CP-A29, CP-A32 y CP-A33. No se reutilizan.

@@ -7,7 +7,7 @@ class TurnoRepository {
     let q = db
       .from('turnos')
       .select(`
-        id, fecha_inicio, fecha_fin, estado, tipo, notas, consultorio, recordatorio_enviado,
+        id, fecha_inicio, fecha_fin, estado, tipo, notas, consultorio,
         paciente_id,
         paciente:pacientes(id, nombre, apellido, telefono),
         profesional:profesionales!profesional_id(id, nombre, apellido, especialidad),
