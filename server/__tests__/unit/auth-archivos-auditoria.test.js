@@ -82,9 +82,9 @@ describe('AuthService: registro', () => {
     mockAdmin.from.mockImplementation(admin.db.from);
     mockAuth.signInWithPassword.mockResolvedValue({ data: { session: sesionSupabase }, error: null });
 
-    await AuthService.signup({ ...datos, rol: 'admin', porcentaje_honorarios: 100 });
+    await AuthService.signup({ ...datos, rol: 'admin' });
 
-    expect(admin.enTabla('profesionales', 'insert')[0][0]).toMatchObject({ rol: 'profesional', porcentaje_honorarios: 70 });
+    expect(admin.enTabla('profesionales', 'insert')[0][0]).toMatchObject({ rol: 'profesional' });
   });
 
   test('CP-U127 si falla el alta en profesionales se borra el usuario de Auth (rollback)', async () => {
@@ -122,15 +122,6 @@ describe('AuthService: registro', () => {
     expect(res).toEqual({ profesional: { id: 'u9' }, session: null });
   });
 
-  test('CP-U131 un admin puede registrar un profesional con 0 % de honorarios', async () => {
-    mockAdminAuth.createUser.mockResolvedValue({ data: { user: { id: 'u9' } }, error: null });
-    const admin = crearDb({ profesionales: ok({ id: 'u9' }) });
-    mockAdmin.from.mockImplementation(admin.db.from);
-
-    await AuthService.registrar({ ...datos, porcentaje_honorarios: 0 });
-
-    expect(admin.enTabla('profesionales', 'insert')[0][0].porcentaje_honorarios).toBe(0);
-  });
 });
 
 describe('AuthService: sesión y contraseña', () => {
@@ -317,24 +308,6 @@ describe('ProfesionalService', () => {
     await expect(ProfesionalService.actualizar('otro', { id: 'yo', rol: 'profesional' }, { nombre: 'X' })).rejects.toMatchObject({ status: 403 });
   });
 
-  test('CP-U151 un profesional no puede cambiarse su propio porcentaje de honorarios', async () => {
-    const admin = crearDb({ profesionales: ok({ id: 'yo' }) });
-    mockAdmin.from.mockImplementation(admin.db.from);
-
-    await ProfesionalService.actualizar('yo', { id: 'yo', rol: 'profesional' }, { telefono: '1122334455', porcentaje_honorarios: 100 });
-
-    expect(admin.enTabla('profesionales', 'update')[0][0]).toEqual({ telefono: '1122334455' });
-  });
-
-  test('CP-U152 un admin sí puede cambiar el porcentaje de otro', async () => {
-    const admin = crearDb({ profesionales: ok({ id: 'otro' }) });
-    mockAdmin.from.mockImplementation(admin.db.from);
-
-    await ProfesionalService.actualizar('otro', { id: 'adm', rol: 'admin' }, { porcentaje_honorarios: 60 });
-
-    expect(admin.enTabla('profesionales', 'update')[0][0]).toEqual({ porcentaje_honorarios: 60 });
-  });
-
   test('CP-U153 nadie puede cambiarse el rol ni el estado activo por PATCH', async () => {
     const admin = crearDb({ profesionales: ok({ id: 'yo' }) });
     mockAdmin.from.mockImplementation(admin.db.from);
@@ -352,27 +325,6 @@ describe('ProfesionalService', () => {
 
     expect(admin.enTabla('profesionales', 'update')[0][0]).toEqual({ activo: false });
     expect(admin.enTabla('profesionales', 'delete')).toHaveLength(0);
-  });
-
-  const PROFESIONALES = [
-    { id: 'yo', nombre: 'Ana', porcentaje_honorarios: 70 },
-    { id: 'otro', nombre: 'Luis', porcentaje_honorarios: 60 }
-  ];
-
-  test('CP-U267 un profesional ve solo su propio porcentaje de honorarios', async () => {
-    mockAdmin.from.mockImplementation(crearDb({ profesionales: ok(PROFESIONALES) }).db.from);
-
-    const lista = await ProfesionalService.listar({ id: 'yo', rol: 'profesional' });
-
-    expect(lista).toEqual([{ id: 'yo', nombre: 'Ana', porcentaje_honorarios: 70 }, { id: 'otro', nombre: 'Luis' }]);
-  });
-
-  test('CP-U299 el admin ve el porcentaje de honorarios de todos', async () => {
-    mockAdmin.from.mockImplementation(crearDb({ profesionales: ok(PROFESIONALES) }).db.from);
-
-    const lista = await ProfesionalService.listar({ id: 'adm', rol: 'admin' });
-
-    expect(lista).toEqual(PROFESIONALES);
   });
 
   test('CP-U155 listar devuelve solo profesionales activos', async () => {

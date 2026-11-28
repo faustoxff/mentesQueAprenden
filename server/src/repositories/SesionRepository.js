@@ -127,10 +127,11 @@ class SesionRepository {
     return datosOpcionales(await db.from('sesiones').select('id, profesional_id').eq('id', id).maybeSingle());
   }
 
-  async obtenerConHonorariosComoAdmin(id) {
+  // Lo que hace falta para registrar el cobro (solo después de verificar el permiso).
+  async obtenerParaCobroComoAdmin(id) {
     return datosOpcionales(await supabaseAdmin
       .from('sesiones')
-      .select('*, profesional:profesionales!profesional_id(porcentaje_honorarios)')
+      .select('id, paciente_id, profesional_id, pagado')
       .eq('id', id)
       .single());
   }

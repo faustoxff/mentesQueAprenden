@@ -23,8 +23,8 @@ Aplicación web para un centro de salud interdisciplinario (psicopedagogía, psi
 
 ### Autenticación y profesionales
 - Registro público de profesionales, login, logout, refresh de sesión, recuperación y cambio de contraseña (Supabase Auth).
-- Dos roles: **admin** y **profesional**. El admin gestiona profesionales (edición y baja) y ve la liquidación mensual.
-- Cada profesional tiene especialidad y un porcentaje de honorarios (70 % por defecto).
+- Dos roles: **admin** y **profesional**. El admin gestiona profesionales (alta, edición y baja).
+- Cada profesional tiene especialidad y matrícula.
 
 ### Pacientes
 - Alta, edición, búsqueda, listado paginado y baja lógica (no se borra la historia clínica).
@@ -55,10 +55,9 @@ Aplicación web para un centro de salud interdisciplinario (psicopedagogía, psi
 ### Archivos adjuntos
 - Subida y descarga de documentos del paciente (informes, estudios, consentimientos) en Supabase Storage (bucket `historias-clinicas`), mediante URLs firmadas de corta duración.
 
-### Pagos y liquidación
-- Registro de pagos por sesión; el monto se divide automáticamente entre el profesional (según su porcentaje) y el espacio.
-- Listado de sesiones pendientes de cobro.
-- Liquidación mensual por profesional (solo admin).
+### Pagos
+- Registro del cobro de cada sesión (monto total y método de pago).
+- Listado de sesiones pendientes de cobro y de pagos cobrados por mes.
 
 ### Asistente de IA
 - Chat lateral que entiende pedidos en lenguaje natural y ejecuta acciones sobre el sistema (ver detalle en [Asistente de IA](#asistente-de-ia)).
@@ -136,7 +135,7 @@ cp client/.env.example client/.env
 # …y completar los valores (ver sección siguiente)
 
 # 4. Crear la base de datos: ejecutar en orden, en el SQL Editor de Supabase,
-#    los archivos server/migrations/001_*.sql a 009_*.sql
+#    los archivos server/migrations/001_*.sql a 010_*.sql
 
 # 5. Crear en Supabase Storage un bucket privado llamado "historias-clinicas"
 
@@ -199,8 +198,9 @@ El esquema vive en `server/migrations/` y se aplica en orden:
 | `005_derivacion_solo_aceptada.sql` | El acceso por derivación requiere que esté aceptada |
 | `006_fix_pacientes_update_check.sql` | Corrección de la política de actualización de pacientes |
 | `007_consultorios.sql` | Consultorios compartidos y trigger anti-superposición de turnos |
-| `008_endurecimiento_seguridad.sql` | RLS en `profesionales`, `obras_sociales` y `configuracion_espacio`; protección de rol/estado/honorarios; `turnos_select` restrictivo + funciones `turnos_ocupacion` y `consultorio_libre` para el calendario compartido; los INSERT exigen acceso al paciente; DELETE de archivos; titularidad de pacientes solo admin |
+| `008_endurecimiento_seguridad.sql` | RLS en `profesionales`, `obras_sociales` y `configuracion_espacio`; protección de rol/estado; `turnos_select` restrictivo + funciones `turnos_ocupacion` y `consultorio_libre` para el calendario compartido; los INSERT exigen acceso al paciente; DELETE de archivos; titularidad de pacientes solo admin |
 | `009_dni_opcional.sql` | El DNI del paciente deja de ser obligatorio (sigue siendo único si se carga) |
+| `010_sin_honorarios.sql` | Se saca el porcentaje de honorarios: columnas de reparto en `pagos`, `profesionales` y `configuracion_espacio`, y el trigger de la 008 deja de copiarlo |
 
 ---
 
@@ -217,7 +217,7 @@ Todas las rutas están bajo `/api` y (salvo registro/login/recuperación) requie
 | `/evaluaciones` | `GET /:id`, `POST /`, `PATCH /:id`, `GET /paciente/:pacienteId`, `POST /:id/pruebas`, `PATCH /pruebas/:pruebaId`, `DELETE /pruebas/:pruebaId`, `POST /:id/generar-informe` |
 | `/derivaciones` | `GET /`, `GET /pendientes`, `POST /`, `PATCH /:id/responder`, `PATCH /:id/completar` |
 | `/archivos` | `POST /upload-url`, `GET /:id/download-url`, `DELETE /:id` |
-| `/pagos` | `GET /`, `GET /sesiones-pendientes`, `POST /`, `GET /liquidacion` (admin) |
+| `/pagos` | `GET /`, `GET /sesiones-pendientes`, `POST /` |
 | `/profesionales` | `GET /`, `PATCH /:id`, `DELETE /:id` (admin) |
 | `/obras-sociales` | `GET /` |
 | `/ia` | `POST /chat`, `POST /sugerir-notas`, `POST /resumir-sesion`, `POST /sugerir-derivacion`, `POST /analizar-pdf` |
@@ -253,7 +253,7 @@ Como los modelos `:free` de OpenRouter comparten capacidad entre todos sus usuar
 - Archivos clínicos en un bucket privado, accesibles solo por URLs firmadas que vencen a los 5 minutos.
 - No hay tokens de atajo ni usuarios de desarrollo: toda sesión pasa por Supabase Auth.
 - **El chat de IA no puede borrar nada por su cuenta:** pide una confirmación firmada por el servidor y la baja la ejecuta la persona con un botón (`POST /api/ia/confirmar`). Los endpoints y herramientas de IA usan el cliente del propio usuario, así que RLS aplica igual que en el resto de la app.
-- Los profesionales no pueden cambiarse el rol, el estado ni los honorarios (trigger en la base), y solo un admin reasigna la titularidad de un paciente.
+- Los profesionales no pueden cambiarse el rol ni el estado (trigger en la base), y solo un admin reasigna la titularidad de un paciente.
 - Rate limit propio para `/api/ia` (30 pedidos por minuto por IP, configurable con `RATE_LIMIT_IA_MAX`).
 
 ---

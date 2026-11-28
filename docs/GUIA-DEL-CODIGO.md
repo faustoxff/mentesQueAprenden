@@ -62,7 +62,7 @@ Definido en `server/migrations/` (SQL, 001 → 009), en este orden de importanci
 2. Las derivaciones tienen estados (`pendiente → aceptada/rechazada → completada`). Completar o rechazar cierra el acceso.
 3. `registrarAcceso` (auditoría) deja un registro en `logs_acceso` cada vez que alguien abre una historia clínica (Ley 25.326).
 
-Migración **008**: RLS en todas las tablas, `puede_acceder_paciente()` como condición de los INSERT, protección de rol/honorarios y de la titularidad con triggers, y dos funciones (`turnos_ocupacion`, `consultorio_libre`) para el calendario compartido, que devuelven solo ocupación y nunca `paciente_id` ni `notas`. La **009** (la más reciente) hace opcional el DNI del paciente.
+Migración **008**: RLS en todas las tablas, `puede_acceder_paciente()` como condición de los INSERT, protección de rol y de la titularidad con triggers, y dos funciones (`turnos_ocupacion`, `consultorio_libre`) para el calendario compartido, que devuelven solo ocupación y nunca `paciente_id` ni `notas`. La **009** (la más reciente) hace opcional el DNI del paciente.
 
 Trampa conocida: al crear con `insert(...).select()` la fila tiene que pasar la política de **insert y la de select**. Un admin que crea un paciente asignado a otro profesional pasa la primera y falla la segunda ("violates row-level security policy"): por eso ese caso puntual se inserta con el cliente admin, ya autorizado.
 

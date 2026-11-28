@@ -28,7 +28,7 @@ Más detalle en [docs/GUIA-DEL-CODIGO.md](docs/GUIA-DEL-CODIGO.md) (cómo está 
 - Los repositorios reciben `db`, el cliente con el token del profesional, así **RLS decide qué filas ve cada uno**.
 - Las funciones que usan el cliente admin (ignora RLS) terminan en `ComoAdmin`, y el service las llama **solo después de verificar el permiso**. No uses el cliente admin para "arreglar" un error de permisos.
 
-**La seguridad vive en la base (a propósito):** las políticas RLS, `puede_acceder_paciente()` (exige paciente activo y acceso), los triggers (choque de consultorio, rol y honorarios) y las funciones `consultorio_libre` / `turnos_ocupacion` están en Postgres (migración 008). Aunque el server tenga un error, la base bloquea el acceso indebido. **No las saques de la base.** Consecuencia aceptada: cambiar Supabase por otra base no es simple (habría que reescribir esas reglas y el login).
+**La seguridad vive en la base (a propósito):** las políticas RLS, `puede_acceder_paciente()` (exige paciente activo y acceso), los triggers (choque de consultorio y rol) y las funciones `consultorio_libre` / `turnos_ocupacion` están en Postgres (migración 008). Aunque el server tenga un error, la base bloquea el acceso indebido. **No las saques de la base.** Consecuencia aceptada: cambiar Supabase por otra base no es simple (habría que reescribir esas reglas y el login).
 
 **Pacientes:**
 - Todo lo que aplica **reglas de pacientes** (existe, no está dado de baja, RLS lo deja ver) pasa por `PacienteService`: `asegurarAcceso`, `obtenerDatosBasicos`, `buscar`.

@@ -89,7 +89,7 @@ describe('api: errores', () => {
     api.defaults.adapter = (config) => Promise.reject(falla(config, 403, { error: 'Se requiere rol admin' }));
     const refresh = vi.spyOn(axios, 'post');
 
-    const err = await api.get('/pagos/liquidacion').catch((e) => e);
+    const err = await api.delete('/profesionales/p9').catch((e) => e);
 
     expect(refresh).not.toHaveBeenCalled();
     expect(useAuthStore.getState().profesional).toEqual({ id: 1 });

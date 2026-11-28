@@ -55,8 +55,7 @@ Fuente: `docs/API.md` y `server/src/routes/*.js` (relevado el 2026-10-27). Base:
 | DELETE | `/archivos/:id` | Borra archivo (quien lo subió o admin) | auth | Supabase Storage | **Alto** | — |
 | GET | `/pagos` | Pagos (filtro por mes / profesional) | auth | Supabase (RLS) | **Alto** | — |
 | GET | `/pagos/sesiones-pendientes` | Sesiones sin cobrar | auth | Supabase (RLS) | **Alto** | — |
-| POST | `/pagos` | Registra cobro y reparte honorarios | auth | Supabase (RLS + admin) | **Alto** | CP-A28 |
-| GET | `/pagos/liquidacion` | Resumen mensual por profesional | admin | Supabase (admin) | **Alto** | CP-A29, CP-A32, CP-A33 |
+| POST | `/pagos` | Registra el cobro de una sesión | auth | Supabase (RLS + admin) | **Alto** | CP-A28 |
 | GET | `/profesionales` | Profesionales activos | auth | Supabase (admin) | Medio | CP-A34 |
 | PATCH | `/profesionales/:id` | Edita datos (porcentaje solo admin) | auth | Supabase (admin) | **Alto** | — |
 | DELETE | `/profesionales/:id` | Baja lógica (`activo = false`) | admin | Supabase (admin) | **Alto** | CP-A35 |

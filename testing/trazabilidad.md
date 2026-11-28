@@ -9,10 +9,6 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U03 | token vencido o que Supabase no reconoce → 401  | Capa HTTP: auth, roles, validación y formato de error | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
 | CP-U04 | token válido de una cuenta desactivada → 403 | Capa HTTP: auth, roles, validación y formato de error | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
 | CP-U05 | GET /auth/me devuelve el perfil sin contraseña ni claves | Capa HTTP: auth, roles, validación y formato de error | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
-| CP-U06 | un profesional en /pagos/liquidacion → 403 y no se calcula nada | Capa HTTP: auth, roles, validación y formato de error | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
-| CP-U07 | un admin en /pagos/liquidacion con mes válido → 200 | Capa HTTP: auth, roles, validación y formato de error | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
-| CP-U08 | un admin en /pagos/liquidacion sin mes → 422 | Capa HTTP: auth, roles, validación y formato de error | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
-| CP-U09 | un admin en /pagos/liquidacion con mes mal formado (%s) → 422 | Capa HTTP: auth, roles, validación y formato de error | Unitaria | `server/__tests__/unit/rutas-api.test.js` | DEF-A10 |
 | CP-U10 | un profesional no puede registrar profesionales (POST /auth/register → 403) | Capa HTTP: auth, roles, validación y formato de error | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
 | CP-U11 | un profesional no puede desactivar profesionales (DELETE /profesionales/:id → 403) | Capa HTTP: auth, roles, validación y formato de error | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
 | CP-U12 | monto %s → 422 y no se registra el pago | Capa HTTP: auth, roles, validación y formato de error | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
@@ -54,25 +50,13 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U49 | forgot-password siempre responde lo mismo, exista o no el email | Capa HTTP: auth, roles, validación y formato de error | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
 | CP-U50 | /health responde sin autenticación | Capa HTTP: auth, roles, validación y formato de error | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
 | CP-U51 | fecha de calendario inexistente (30/02) → 422 | Capa HTTP: auth, roles, validación y formato de error | Unitaria | `server/__tests__/unit/rutas-api.test.js` | DEF-A13 |
-| CP-U52 | con 100 % el espacio no se queda con nada | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` |  |
-| CP-U53 | con 0 % todo el monto queda para el espacio | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` | DEF-A01 |
-| CP-U54 | con un porcentaje decimal (62,5 %) el reparto es exacto | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` |  |
-| CP-U55 | con monto %p y %p %% las dos partes suman exactamente el total | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` |  |
-| CP-U56 | los montos repartidos se guardan redondeados a centavos | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` | DEF-A14 |
-| CP-U57 | sin porcentaje cargado (undefined) usa el 70 % por defecto | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` |  |
-| CP-U58 | pide solo sesiones no pagadas y con monto cargado, de la más nueva a la más vieja | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` |  |
-| CP-U59 | un error de la base se propaga | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` |  |
-| CP-U60 | con mes filtra desde el 1° a las 00:00 (UTC-3) hasta el 1° del mes siguiente | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` |  |
-| CP-U61 | diciembre cierra en enero del año siguiente | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` |  |
-| CP-U62 | sin mes ni profesional no aplica filtros | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` |  |
-| CP-U63 | con profesional_id filtra por ese profesional | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` |  |
-| CP-U64 | con un mes mal formado responde un error de validación (422) | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` | DEF-A10 |
-| CP-U65 | agrupa por profesional y suma totales y cantidad de sesiones | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` |  |
-| CP-U66 | los totales generales suman lo de todos los profesionales | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` |  |
-| CP-U67 | los montos que vienen como texto (numeric de Postgres) se suman como números | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` |  |
-| CP-U68 | un mes sin pagos devuelve totales en cero, no un error | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` |  |
-| CP-U69 | se calcula con el cliente admin (ve los pagos de todos) en el rango del mes | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` |  |
-| CP-U70 | un error de la base se propaga | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` |  |
+| CP-U58 | pide solo sesiones no pagadas y con monto cargado, de la más nueva a la más vieja | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-listados.test.js` |  |
+| CP-U59 | un error de la base se propaga | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-listados.test.js` |  |
+| CP-U60 | con mes filtra desde el 1° a las 00:00 (UTC-3) hasta el 1° del mes siguiente | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-listados.test.js` |  |
+| CP-U61 | diciembre cierra en enero del año siguiente | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-listados.test.js` |  |
+| CP-U62 | sin mes ni profesional no aplica filtros | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-listados.test.js` |  |
+| CP-U63 | con profesional_id filtra por ese profesional | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-listados.test.js` |  |
+| CP-U64 | con un mes mal formado responde un error de validación (422) | Pagos: honorarios y liquidación | Unitaria | `server/__tests__/unit/pago-listados.test.js` | DEF-A10 |
 | CP-U71 | compara con desigualdades estrictas: un turno que empieza justo cuando termina otro NO choca | Turnos, consultorios y sesiones | Unitaria | `server/__tests__/unit/turnos-consultorios.test.js` |  |
 | CP-U72 | solo compara turnos del mismo consultorio que no estén cancelados | Turnos, consultorios y sesiones | Unitaria | `server/__tests__/unit/turnos-consultorios.test.js` |  |
 | CP-U73 | el choque se informa con el código 23P01 que el backend traduce a 409 | Turnos, consultorios y sesiones | Unitaria | `server/__tests__/unit/turnos-consultorios.test.js` |  |
@@ -133,7 +117,6 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U128 | email repetido → 409 con mensaje claro (y rollback) | Auth, archivos, auditoría, profesionales y evaluaciones | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` |  |
 | CP-U129 | si Supabase Auth rechaza el usuario → 400 y no se inserta nada | Auth, archivos, auditoría, profesionales y evaluaciones | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` |  |
 | CP-U130 | si el login automático tras el registro falla, devuelve el perfil sin sesión | Auth, archivos, auditoría, profesionales y evaluaciones | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` |  |
-| CP-U131 | un admin puede registrar un profesional con 0 % de honorarios | Auth, archivos, auditoría, profesionales y evaluaciones | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` | DEF-A01 |
 | CP-U132 | refresh con un token inválido → 401 | Auth, archivos, auditoría, profesionales y evaluaciones | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` |  |
 | CP-U133 | refresh correcto devuelve los nuevos tokens | Auth, archivos, auditoría, profesionales y evaluaciones | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` |  |
 | CP-U134 | logout revoca el token del usuario | Auth, archivos, auditoría, profesionales y evaluaciones | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` |  |
@@ -153,8 +136,6 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U148 | si falla el log, el pedido sigue igual | Auth, archivos, auditoría, profesionales y evaluaciones | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` |  |
 | CP-U149 | ver el detalle de una sesión deja registro en logs_acceso | Auth, archivos, auditoría, profesionales y evaluaciones | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` | DEF-A02 |
 | CP-U150 | un profesional no puede editar a otro (403) | Auth, archivos, auditoría, profesionales y evaluaciones | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` |  |
-| CP-U151 | un profesional no puede cambiarse su propio porcentaje de honorarios | Auth, archivos, auditoría, profesionales y evaluaciones | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` |  |
-| CP-U152 | un admin sí puede cambiar el porcentaje de otro | Auth, archivos, auditoría, profesionales y evaluaciones | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` |  |
 | CP-U153 | nadie puede cambiarse el rol ni el estado activo por PATCH | Auth, archivos, auditoría, profesionales y evaluaciones | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` |  |
 | CP-U154 | desactivar es una baja lógica (activo = false), no un borrado | Auth, archivos, auditoría, profesionales y evaluaciones | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` |  |
 | CP-U155 | listar devuelve solo profesionales activos | Auth, archivos, auditoría, profesionales y evaluaciones | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` |  |
@@ -268,7 +249,6 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U264 | un resultado de eliminar_paciente sin type  | Confirmación de baja desde el chat | Unitaria (componente) | `client/src/components/chat/ConfirmCard.casos.test.jsx` |  |
 | CP-U265 | la tarjeta advierte que la acción no se puede deshacer | Confirmación de baja desde el chat | Unitaria (componente) | `client/src/components/chat/ConfirmCard.casos.test.jsx` |  |
 | CP-U266 | un 422 de registro no devuelve la contraseña enviada | Capa HTTP: auth, roles, validación y formato de error | Unitaria | `server/__tests__/unit/rutas-api.test.js` | DEF-A18 |
-| CP-U267 | el listado general no expone el porcentaje de honorarios de los demás | Auth, archivos, auditoría, profesionales y evaluaciones | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` | DEF-A17 |
 | CP-U268 | con contraseñas distintas no llama al servidor y explica el motivo | Registro: confirmación de contraseña | Unitaria (componente) | `client/src/components/auth/LoginRegister.test.jsx` |  |
 | CP-U269 | el aviso aparece mientras no coinciden y se va cuando se corrige | Registro: confirmación de contraseña | Unitaria (componente) | `client/src/components/auth/LoginRegister.test.jsx` |  |
 | CP-U270 | corregir cualquiera de los dos campos borra el aviso del envío | Registro: confirmación de contraseña | Unitaria (componente) | `client/src/components/auth/LoginRegister.test.jsx` |  |
@@ -300,9 +280,6 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U296 | los 422 de signup, register, change-password, pacientes y turnos traen solo campo y mensaje, sin el valor enviado | Errores de validación (DEF-A18) | Unitaria | `server/__tests__/unit/rutas-api.test.js` |  |
 | CP-U297 | erroresDeValidacion devuelve solo path y msg | Errores de validación (DEF-A18) | Unitaria | `server/__tests__/unit/validacion.test.js` |  |
 | CP-U298 | si falla el log de la descarga, la descarga sigue y queda el error en consola | Auditoría de accesos (DEF-A02) | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` |  |
-| CP-U299 | el admin ve el porcentaje de honorarios de todos | Porcentaje de honorarios (DEF-A17) | Unitaria | `server/__tests__/unit/auth-archivos-auditoria.test.js` |  |
-| CP-U300 | porcentajeHonorarios: 0, 100, decimales, texto y sin valor → 70; fuera de 0–100 → 422 | Honorarios (DEF-A01) | Unitaria | `server/__tests__/unit/honorarios.test.js` |  |
-| CP-U301 | el reparto en centavos suma exactamente el total ($10,05, $0,01, $100,01, 0 % y 100 %) | Honorarios (DEF-A14) | Unitaria | `server/__tests__/unit/pago-honorarios.test.js` |  |
 | CP-U302 | el meta viewport no bloquea el zoom | Zoom en móvil (DEF-A19) | Unitaria | `client/src/viewport.test.js` |  |
 | CP-U303 | en pantallas chicas los campos usan al menos 16 px | Zoom en móvil (DEF-A19) | Unitaria | `client/src/viewport.test.js` |  |
 | CP-U304 | el modal se anuncia como diálogo con el título como nombre | Modal accesible (DEF-A20) | Unitaria (componente) | `client/src/components/ui/Modal.test.jsx` |  |
@@ -407,6 +384,7 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-U403 | la barra inferior tiene Inicio y Menta; no tiene Pacientes (la lista está en Inicio) ni Agenda | Navegación mobile | Unitaria (componente) | `client/src/components/layout/MainShell.test.jsx` |  |
 | CP-U404 | /pacientes con sesión lleva al inicio, donde está la lista de pacientes | Rutas protegidas y por rol | Unitaria (componente) | `client/src/App.rutas.test.jsx` |  |
 | CP-U405 | %s tiene la flecha de volver y lleva al inicio (admin, historial, pagos, agenda) | Navegación jerárquica | Unitaria (componente) | `client/src/App.rutas.test.jsx` |  |
+| CP-U406 | el pago guarda solo el monto total, sin reparto de honorarios | Pagos | Unitaria | `server/__tests__/unit/pago-service.test.js` |  |
 | CP-A01 | GET /health responde ok | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A02 | POST /auth/login como profesional | Autenticación (necesita credenciales de un proyecto de test) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A03 | POST /auth/login con email inválido → 422 | Sin credenciales (no llegan a Supabase) | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
@@ -435,11 +413,8 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-A26 | GET /derivaciones (contrato) | Permisos, pagos y archivos | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A27 | POST /archivos/upload-url de 10 MB + 1 byte → 422 | Permisos, pagos y archivos | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A28 | POST /pagos con monto 0 → 422 | Permisos, pagos y archivos | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
-| CP-A29 | GET /pagos/liquidacion como profesional → 403 | Permisos, pagos y archivos | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A30 | DELETE /pacientes/:id hace la baja lógica | Limpieza | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A31 | POST /turnos con 1 minuto de solape → 409 | Turnos y consultorios | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
-| CP-A32 | GET /pagos/liquidacion como admin (contrato) | Permisos, pagos y archivos | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
-| CP-A33 | GET /pagos/liquidacion con mes inválido → 422 | Permisos, pagos y archivos | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` | DEF-A10 |
 | CP-A34 | GET /profesionales (contrato, sin datos sensibles) | Permisos, pagos y archivos | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` | DEF-A17 |
 | CP-A35 | DELETE /profesionales/:id como profesional → 403 | Permisos, pagos y archivos | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
 | CP-A36 | POST /ia/confirmar con un token inventado → 400 | Permisos, pagos y archivos | API (Newman) | `testing/api/MentesQueAprenden.postman_collection.json` |  |
@@ -468,4 +443,6 @@ Generada a partir de los nombres de los tests (2026-10-27). Un mismo ID puede ag
 | CP-E17 | el historial se abre desde el menú y no muestra la ocupación de otros profesionales | Historial de turnos | E2E | `client/e2e/navegabilidad.e2e.js` |  |
 | CP-E18 | historial sin violaciones serious/critical | Accesibilidad automática | E2E (accesibilidad) | `client/e2e/accesibilidad.e2e.js` |  |
 
-Totales: 358 IDs unitarios, 42 de API y 18 E2E.
+Totales: 336 IDs unitarios, 39 de API y 18 E2E.
+
+IDs retirados el 2026-11-27 al sacar el porcentaje de honorarios y la liquidación mensual (KAN-58), porque probaban una funcionalidad que ya no existe: CP-U06 a CP-U09, CP-U52 a CP-U57, CP-U65 a CP-U70, CP-U131, CP-U151, CP-U152, CP-U267, CP-U299, CP-U300, CP-U301, CP-A29, CP-A32 y CP-A33. No se reutilizan.

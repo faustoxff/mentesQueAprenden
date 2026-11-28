@@ -22,8 +22,7 @@ router.post('/register',
     body('apellido').trim().notEmpty().withMessage('El apellido es obligatorio'),
     body('especialidad').isIn(['psicopedagogia', 'psicologia', 'fonoaudiologia', 'otro']).withMessage('Elegí una especialidad válida'),
     body('rol').optional().isIn(['admin', 'profesional']),
-    body('matricula').optional().trim(),
-    body('porcentaje_honorarios').optional().isFloat({ min: 0, max: 100 })
+    body('matricula').optional().trim()
   ],
   async (req, res) => {
     const errors = validationResult(req);
