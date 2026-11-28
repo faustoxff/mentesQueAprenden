@@ -14,7 +14,7 @@ function manejarError(res, err, fallback = { status: 500, message: 'Error intern
 // GET /profesionales - Lista todos los profesionales activos
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const data = await profesionalService.listar(req.profesional);
+    const data = await profesionalService.listar();
     res.json(data);
   } catch (err) {
     manejarError(res, err);
@@ -25,8 +25,7 @@ router.get('/', requireAuth, async (req, res) => {
 router.patch('/:id',
   requireAuth,
   [
-    body('telefono').optional().trim(),
-    body('porcentaje_honorarios').optional().isFloat({ min: 0, max: 100 })
+    body('telefono').optional().trim()
   ],
   async (req, res) => {
     const errors = validationResult(req);

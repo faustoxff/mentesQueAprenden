@@ -1,7 +1,7 @@
 const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { erroresDeValidacion } = require('../utils/validacion');
-const { requireAuth, requireAdmin, getAuthenticatedClient } = require('../middleware/auth');
+const { requireAuth, getAuthenticatedClient } = require('../middleware/auth');
 const pagoService = require('../services/PagoService');
 
 const router = express.Router();
@@ -51,18 +51,5 @@ router.post('/',
     }
   }
 );
-
-// GET /pagos/liquidacion?mes=2024-06 - resumen por profesional (solo admin)
-router.get('/liquidacion', requireAuth, requireAdmin, async (req, res) => {
-  const { mes } = req.query;
-  if (!mes) return res.status(422).json({ error: 'Se requiere el parámetro mes (YYYY-MM)' });
-
-  try {
-    const resultado = await pagoService.liquidacion(mes);
-    res.json(resultado);
-  } catch (err) {
-    manejarError(res, err);
-  }
-});
 
 module.exports = router;

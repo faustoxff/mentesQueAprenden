@@ -22,7 +22,7 @@ export default function AdminPage() {
   const [form, setForm] = useState({
     nombre: '', apellido: '', email: '', password: '',
     especialidad: 'psicopedagogia', rol: 'profesional',
-    matricula: '', porcentaje_honorarios: 70
+    matricula: ''
   });
 
   const { data: profesionales, isLoading: cargandoProfesionales } = useQuery({
@@ -35,7 +35,7 @@ export default function AdminPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['profesionales-admin'] });
       setModalNuevo(false);
-      setForm({ nombre: '', apellido: '', email: '', password: '', especialidad: 'psicopedagogia', rol: 'profesional', matricula: '', porcentaje_honorarios: 70 });
+      setForm({ nombre: '', apellido: '', email: '', password: '', especialidad: 'psicopedagogia', rol: 'profesional', matricula: '' });
     }
   });
 
@@ -109,7 +109,7 @@ export default function AdminPage() {
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-gray-900">{prof.apellido}, {prof.nombre}</p>
                   <p className="text-xs text-gray-500">
-                    {ESPECIALIDAD_LABEL[prof.especialidad]} · {prof.rol} · {prof.porcentaje_honorarios}% honorarios
+                    {ESPECIALIDAD_LABEL[prof.especialidad]} · {prof.rol}
                   </p>
                 </div>
                 <div className="flex gap-2 flex-shrink-0">
@@ -142,11 +142,7 @@ export default function AdminPage() {
       {tab === 'configuracion' && (
         <div className="bg-white rounded-2xl border border-gray-100 p-6">
           <h2 className="font-semibold text-gray-900 mb-4">Configuración del espacio</h2>
-          <p className="text-sm text-gray-500">
-            La configuración del porcentaje de honorarios se gestiona desde la tabla
-            <code className="bg-gray-100 px-1 rounded text-xs ml-1">configuracion_espacio</code> en Supabase.
-          </p>
-          <div className="mt-4 bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-700">
+          <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 text-sm text-amber-700">
             <p className="font-medium mb-1">Variables de entorno necesarias:</p>
             <ul className="space-y-1 text-xs font-mono">
               <li>OPENROUTER_API_KEY — para asistencia IA</li>
@@ -191,15 +187,9 @@ export default function AdminPage() {
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">Matrícula</label>
-              <input value={form.matricula} onChange={(e) => setForm(p => ({ ...p, matricula: e.target.value }))} className={inputClass} />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">% Honorarios</label>
-              <input type="number" min={0} max={100} value={form.porcentaje_honorarios} onChange={(e) => setForm(p => ({ ...p, porcentaje_honorarios: e.target.value }))} className={inputClass} />
-            </div>
+          <div>
+            <label className="text-sm font-medium text-gray-700 block mb-1">Matrícula</label>
+            <input value={form.matricula} onChange={(e) => setForm(p => ({ ...p, matricula: e.target.value }))} className={inputClass} />
           </div>
           {crearMutation.isError && (
             <p className="text-sm text-red-600">{getErrorMessage(crearMutation.error)}</p>
@@ -250,17 +240,13 @@ export default function AdminPage() {
               </div>
             </div>
             <div>
-              <label className="text-sm font-medium text-gray-700 block mb-1">% Honorarios</label>
-              <input type="number" min={0} max={100} value={modalEditar.porcentaje_honorarios} onChange={(e) => setModalEditar(p => ({ ...p, porcentaje_honorarios: Number(e.target.value) }))} className={inputClass} />
-            </div>
-            <div>
               <label className="text-sm font-medium text-gray-700 block mb-1">Matrícula</label>
               <input value={modalEditar.matricula || ''} onChange={(e) => setModalEditar(p => ({ ...p, matricula: e.target.value }))} className={inputClass} />
             </div>
             <div className="flex gap-3">
               <button onClick={() => setModalEditar(null)} className="flex-1 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700">Cancelar</button>
               <button
-                onClick={() => editarMutation.mutate({ id: modalEditar.id, nombre: modalEditar.nombre, apellido: modalEditar.apellido, matricula: modalEditar.matricula, porcentaje_honorarios: modalEditar.porcentaje_honorarios })}
+                onClick={() => editarMutation.mutate({ id: modalEditar.id, nombre: modalEditar.nombre, apellido: modalEditar.apellido, matricula: modalEditar.matricula })}
                 disabled={editarMutation.isPending}
                 className="flex-1 py-2.5 bg-primary-600 hover:bg-primary-700 disabled:opacity-60 text-white rounded-xl text-sm font-medium"
               >

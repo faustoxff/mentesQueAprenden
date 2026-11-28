@@ -14,13 +14,13 @@ Relevamiento del 2026-10-27 sobre `master` (commit `a6d110b` más los tests de e
 
 | ID | Título | Prioridad | Seguridad | Estado |
 |---|---|---|---|---|
-| DEF-A01 | Un 0 % de honorarios se guarda como 70 % | **Alta** | No | **Corregido** (`b0f0c5f`) |
+| DEF-A01 | Un 0 % de honorarios se guarda como 70 % | **Alta** | No | **Corregido** (`b0f0c5f`) · funcionalidad eliminada el 27/11 (KAN-58) |
 | DEF-A02 | La descarga de archivos y la vista de sesiones no quedan en el log de accesos | **Alta** | **Sí** | **Corregido** (`4cdc62f`) |
-| DEF-A17 | Cualquier profesional ve el porcentaje de honorarios de todos | **Alta** | **Sí** | **Corregido** (`6d9047f`) |
+| DEF-A17 | Cualquier profesional ve el porcentaje de honorarios de todos | **Alta** | **Sí** | **Corregido** (`6d9047f`) · funcionalidad eliminada el 27/11 (KAN-58) |
 | DEF-A19 | El zoom está bloqueado en móvil (`maximum-scale=1.0`) | **Alta** | No (accesibilidad) | **Corregido** (`70600f0`) |
 | DEF-A20 | Formulario de turno sin labels asociados y modales sin `role="dialog"` | **Alta** | No (accesibilidad) | **Corregido** (`bbea9f1`) |
 | DEF-A03 | Se acepta un turno que termina antes de empezar | Media | No | Abierto |
-| DEF-A14 | El reparto de honorarios no se redondea: se crean o pierden centavos | Media | No | **Corregido** (`fb6adda`) |
+| DEF-A14 | El reparto de honorarios no se redondea: se crean o pierden centavos | Media | No | **Corregido** (`fb6adda`) · funcionalidad eliminada el 27/11 (KAN-58) |
 | DEF-A18 | Los errores 422 devuelven la contraseña enviada | Media | **Sí** | **Corregido** (`cb82e1d`) |
 | DEF-A04 | Cancelar un turno ajeno responde "Turno cancelado" sin cancelar nada | Baja | No | Abierto |
 | DEF-A05 | Un id que no es UUID termina en 500 | Baja | No | Abierto |
@@ -28,7 +28,7 @@ Relevamiento del 2026-10-27 sobre `master` (commit `a6d110b` más los tests de e
 | DEF-A07 | `/pacientes` expone el mensaje interno de la base en los 500 | Baja | **Sí** | Abierto |
 | DEF-A08 | `/auth/logout` y `/auth/forgot-password` quedan colgados si Supabase falla | Baja | No | Abierto |
 | DEF-A09 | `/auth/refresh` ignora su propia validación | Baja | No | Abierto |
-| DEF-A10 | Un `mes` mal formado en pagos/liquidación da 500 | Baja | No | Abierto |
+| DEF-A10 | Un `mes` mal formado en pagos da 500 | Baja | No | Abierto |
 | DEF-A11 | Paginado de pacientes sin normalizar `page` ni tope para `limit` | Baja | Sí (bajo) | Abierto |
 | DEF-A12 | Si el modelo devuelve `content: null`, la IA falla con TypeError | Baja | No | **Corregido** (ver detalle) |
 | DEF-A13 | Una fecha inexistente (30/02) pasa la validación y da 500 | Baja | No | Abierto |
@@ -43,6 +43,7 @@ Totales: 22 defectos (5 alta, 3 media, 14 baja), 7 con impacto en seguridad. **C
 
 ## DEF-A01 — Un 0 % de honorarios se guarda como 70 %
 - **Estado:** **Corregido** en `b0f0c5f`: `porcentajeHonorarios` (`server/src/utils/honorarios.js`): 70 solo si no viene el dato, `"0"` cuenta como 0 y fuera de 0–100 da 422. Tests de regresión: CP-U53, CP-U131, CP-U300.
+- **Nota (2026-11-27):** el porcentaje de honorarios se sacó del sistema (KAN-58, migración 010); este defecto ya no puede ocurrir y sus tests se retiraron.
 - **Dónde:** `server/src/services/PagoService.js:80` (`porcentaje_honorarios || 70`) y `server/src/services/AuthService.js:57` (`porcentaje_honorarios || 70.00`).
 - **Pasos:** 1) Un admin registra un profesional con `porcentaje_honorarios: 0` (la ruta acepta 0–100). 2) Se cobra una sesión de ese profesional.
 - **Esperado:** el profesional cobra $0 y el espacio el 100 %; el alta guarda 0 %.
@@ -115,12 +116,12 @@ Totales: 22 defectos (5 alta, 3 media, 14 baja), 7 con impacto en seguridad. **C
 - **Evidencia:** CP-U47.
 - **Probabilidad:** baja · **Impacto:** bajo · **Prioridad:** baja · **Seguridad:** no.
 
-## DEF-A10 — Un `mes` mal formado en pagos o liquidación da 500
-- **Dónde:** `server/src/routes/pagos.js:57` solo verifica que `mes` exista; `rangoDelMes` (`PagoService.js:3`) llama a `toISOString()` sobre una fecha inválida y lanza `RangeError`.
-- **Pasos:** `GET /api/pagos/liquidacion?mes=2026-13` como admin.
+## DEF-A10 — Un `mes` mal formado en pagos da 500
+- **Dónde:** `GET /pagos` no valida `mes`; `rangoDelMes` (`PagoService.js`) llama a `toISOString()` sobre una fecha inválida y lanza `RangeError`. (La liquidación, que tenía el mismo problema, se eliminó el 27/11 con KAN-58.)
+- **Pasos:** `GET /api/pagos?mes=2026-13`.
 - **Esperado:** 422 "mes con formato AAAA-MM".
 - **Obtenido:** 500.
-- **Evidencia:** CP-U09 (3 valores), CP-U64; CP-A33 (bloqueado).
+- **Evidencia:** CP-U64.
 - **Probabilidad:** baja (la UI usa un selector de mes) · **Impacto:** medio · **Prioridad:** baja · **Seguridad:** no.
 
 ## DEF-A11 — Paginado de pacientes sin normalizar `page` ni tope para `limit`
@@ -150,6 +151,7 @@ Totales: 22 defectos (5 alta, 3 media, 14 baja), 7 con impacto en seguridad. **C
 
 ## DEF-A14 — El reparto de honorarios no se redondea: se crean o pierden centavos
 - **Estado:** **Corregido** en `fb6adda`: el reparto se calcula en centavos enteros (`repartirHonorarios`): se redondea el honorario y el espacio se queda con la diferencia. $10,05 al 70 % ahora da 7,04 + 3,01. Tests de regresión: CP-U56, CP-U301.
+- **Nota (2026-11-27):** el porcentaje de honorarios se sacó del sistema (KAN-58, migración 010); este defecto ya no puede ocurrir y sus tests se retiraron.
 - **Pagos ya guardados:** el arreglo no corrige los registros viejos. Para detectarlos, con consultas de solo lectura:
   ```sql
   -- Pagos cuyas partes no suman el total (DEF-A14)
@@ -187,6 +189,7 @@ Totales: 22 defectos (5 alta, 3 media, 14 baja), 7 con impacto en seguridad. **C
 
 ## DEF-A17 — Cualquier profesional ve el porcentaje de honorarios de todos
 - **Estado:** **Corregido** en `6d9047f`: `GET /profesionales` devuelve el porcentaje de todos solo al admin; un profesional ve únicamente el propio. Las otras pantallas que usan la lista solo leen nombre e id. Tests de regresión: CP-U267, CP-U299.
+- **Nota (2026-11-27):** el porcentaje de honorarios se sacó del sistema (KAN-58, migración 010); este defecto ya no puede ocurrir y sus tests se retiraron.
 - **Dónde:** `server/src/services/ProfesionalService.js:9`; `GET /api/profesionales` lo usa cualquier profesional (por ejemplo, el alta de paciente y la agenda).
 - **Pasos:** iniciar sesión como profesional y mirar la respuesta de `GET /api/profesionales`.
 - **Esperado:** el porcentaje solo para admin (o solo el propio).

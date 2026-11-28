@@ -36,7 +36,7 @@ Superado el límite → `429`.
 
 | Método | Ruta | Acceso | Body | Respuesta |
 |---|---|---|---|---|
-| POST | `/register` | admin | `email`, `password` (≥8), `nombre`, `apellido`, `especialidad`, `rol?`, `matricula?`, `porcentaje_honorarios?` (0–100) | `201` |
+| POST | `/register` | admin | `email`, `password` (≥8), `nombre`, `apellido`, `especialidad`, `rol?`, `matricula?` | `201` |
 | POST | `/signup` | público | `email`, `password` (≥8), `nombre`, `apellido`, `especialidad`, `matricula?`, `telefono?` | `201` |
 | POST | `/login` | público | `email`, `password` | tokens + profesional |
 | POST | `/logout` | auth | — | `{ message }` |
@@ -132,14 +132,13 @@ Flujo de **URLs firmadas**: los archivos no pasan por el backend, el cliente sub
 | GET | `/` | auth | Pagos. Query: `mes` (`YYYY-MM`), `profesional_id` |
 | GET | `/sesiones-pendientes` | auth | Sesiones sin pagar |
 | POST | `/` | auth | `sesion_id`, `monto_total` (>0), `metodo_pago` (`efectivo` · `transferencia` · `debito` · `credito` · `obra_social`) |
-| GET | `/liquidacion?mes=YYYY-MM` | **admin** | Resumen por profesional (el mes se interpreta en UTC-3) |
 
 ### Profesionales y obras sociales
 
 | Método | Ruta | Acceso | Descripción |
 |---|---|---|---|
 | GET | `/api/profesionales` | auth | Lista |
-| PATCH | `/api/profesionales/:id` | auth | `telefono?`, `porcentaje_honorarios?` (0–100) |
+| PATCH | `/api/profesionales/:id` | auth | `nombre?`, `apellido?`, `matricula?`, `especialidad?`, `telefono?` |
 | DELETE | `/api/profesionales/:id` | **admin** | Baja |
 | GET | `/api/obras-sociales` | auth | Lista |
 

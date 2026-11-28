@@ -12,7 +12,7 @@ const conectarAdmin = (resultados) => {
 };
 
 const sesion = (extra = {}) => ({
-  data: { id: 's1', paciente_id: 'pac', profesional_id: 'prof', pagado: false, profesional: { porcentaje_honorarios: 70 }, ...extra },
+  data: { id: 's1', paciente_id: 'pac', profesional_id: 'prof', pagado: false, ...extra },
   error: null
 });
 
@@ -57,28 +57,16 @@ describe('PagoService.crear', () => {
       .rejects.toMatchObject({ status: 409 });
   });
 
-  test('reparte el monto según el porcentaje del profesional (70/30)', async () => {
+  test('CP-U406 el pago guarda solo el monto total, sin reparto de honorarios', async () => {
     conectarAdmin({ sesiones: [sesion(), { error: null }] });
     const { db, enTabla } = dbDe({ pagos: ok({ id: 'p1' }) });
+
     await PagoService.crear(db, PROF, { sesion_id: 's1', monto_total: 10000, metodo_pago: 'efectivo' }, 'profesional');
-    expect(enTabla('pagos', 'insert')[0][0]).toMatchObject({
-      monto_total: 10000, monto_profesional: 7000, monto_espacio: 3000,
-      porcentaje_profesional: 70, registrado_por: PROF
-    });
-  });
 
-  test('usa el porcentaje propio del profesional', async () => {
-    conectarAdmin({ sesiones: [sesion({ profesional: { porcentaje_honorarios: 50 } }), { error: null }] });
-    const { db, enTabla } = dbDe({ pagos: ok({}) });
-    await PagoService.crear(db, PROF, { sesion_id: 's1', monto_total: 200 }, 'profesional');
-    expect(enTabla('pagos', 'insert')[0][0]).toMatchObject({ monto_profesional: 100, monto_espacio: 100 });
-  });
-
-  test('si el profesional no tiene porcentaje cargado, cae al 70', async () => {
-    conectarAdmin({ sesiones: [sesion({ profesional: { porcentaje_honorarios: null } }), { error: null }] });
-    const { db, enTabla } = dbDe({ pagos: ok({}) });
-    await PagoService.crear(db, PROF, { sesion_id: 's1', monto_total: 100 }, 'profesional');
-    expect(enTabla('pagos', 'insert')[0][0].porcentaje_profesional).toBe(70);
+    const insertado = enTabla('pagos', 'insert')[0][0];
+    expect(insertado).toMatchObject({ monto_total: 10000, metodo_pago: 'efectivo', registrado_por: PROF });
+    expect(insertado).not.toHaveProperty('monto_profesional');
+    expect(insertado).not.toHaveProperty('porcentaje_profesional');
   });
 
   test('marca la sesión como pagada después de registrar el pago', async () => {

@@ -2,10 +2,9 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { DollarSign, CheckCircle, Printer } from 'lucide-react';
+import { DollarSign, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import api from '../services/api';
-import { useAuthStore } from '../store/authStore';
 import Modal from '../components/ui/Modal';
 import BotonVolver from '../components/ui/BotonVolver';
 
@@ -15,7 +14,6 @@ const METODO_LABEL = {
 };
 
 export default function PagosPage() {
-  const { profesional, isAdmin } = useAuthStore();
   const queryClient = useQueryClient();
   const [mes, setMes] = useState(format(new Date(), 'yyyy-MM'));
   const [tab, setTab] = useState('pendientes');
@@ -32,18 +30,11 @@ export default function PagosPage() {
     queryFn: () => api.get('/pagos', { params: { mes } }).then(r => r.data)
   });
 
-  const { data: liquidacion } = useQuery({
-    queryKey: ['liquidacion', mes],
-    queryFn: () => api.get('/pagos/liquidacion', { params: { mes } }).then(r => r.data),
-    enabled: isAdmin()
-  });
-
   const pagarMutation = useMutation({
     mutationFn: (data) => api.post('/pagos', data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sesiones-pendientes'] });
       queryClient.invalidateQueries({ queryKey: ['pagos', mes] });
-      queryClient.invalidateQueries({ queryKey: ['liquidacion', mes] });
       setModalPagar(null);
       toast.success('Cobro registrado');
     },
@@ -87,8 +78,7 @@ export default function PagosPage() {
       <div className="flex gap-1 bg-gray-100 p-1 rounded-xl mb-4">
         {[
           { id: 'pendientes', label: `Pendientes ${pendientes?.length ? `(${pendientes.length})` : ''}` },
-          { id: 'cobrados', label: 'Cobrados' },
-          ...(isAdmin() ? [{ id: 'liquidacion', label: 'Liquidación' }] : [])
+          { id: 'cobrados', label: 'Cobrados' }
         ].map(t => (
           <button
             key={t.id}
@@ -164,56 +154,6 @@ export default function PagosPage() {
               </div>
               <div className="text-right flex-shrink-0">
                 <p className="font-semibold text-gray-900">${Number(pago.monto_total).toLocaleString('es-AR')}</p>
-                <p className="text-xs text-gray-400">Prof: ${Number(pago.monto_profesional).toLocaleString('es-AR')}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Liquidación (solo admin) */}
-      {tab === 'liquidacion' && liquidacion && (
-        <div className="space-y-3">
-          <div className="flex justify-end">
-            <button
-              onClick={() => window.print()}
-              className="flex items-center gap-2 px-3 py-2 border border-gray-300 rounded-xl text-sm text-gray-600 hover:bg-gray-50 print:hidden"
-            >
-              <Printer size={15} /> Imprimir / Guardar PDF
-            </button>
-          </div>
-          <div className="bg-primary-50 rounded-2xl border border-primary-100 p-4 flex items-center justify-between">
-            <div>
-              <p className="text-sm text-primary-600 font-medium">Total espacio — {mes}</p>
-              <p className="text-2xl font-bold text-primary-900">${liquidacion.total_espacio?.toLocaleString('es-AR')}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-primary-500">Total facturado</p>
-              <p className="text-lg font-bold text-primary-700">${liquidacion.total_facturado?.toLocaleString('es-AR')}</p>
-            </div>
-          </div>
-
-          {liquidacion.profesionales?.map((prof, i) => (
-            <div key={i} className="bg-white rounded-2xl border border-gray-100 p-4">
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <p className="font-semibold text-gray-900">{prof.profesional?.apellido}, {prof.profesional?.nombre}</p>
-                  <p className="text-xs text-gray-500">{prof.profesional?.especialidad} · {prof.cantidad_sesiones} sesiones</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-3 gap-2 text-center">
-                <div className="bg-gray-50 rounded-xl p-2">
-                  <p className="text-xs text-gray-500">Facturado</p>
-                  <p className="font-semibold text-sm">${Number(prof.total_facturado).toLocaleString('es-AR')}</p>
-                </div>
-                <div className="bg-green-50 rounded-xl p-2">
-                  <p className="text-xs text-green-600">A pagar</p>
-                  <p className="font-semibold text-sm text-green-700">${Number(prof.total_profesional).toLocaleString('es-AR')}</p>
-                </div>
-                <div className="bg-primary-50 rounded-xl p-2">
-                  <p className="text-xs text-primary-600">Espacio</p>
-                  <p className="font-semibold text-sm text-primary-700">${Number(prof.total_espacio).toLocaleString('es-AR')}</p>
-                </div>
               </div>
             </div>
           ))}

@@ -21,7 +21,7 @@ class ProfesionalRepository {
   async listarActivosComoAdmin() {
     return datosDe(await supabaseAdmin
       .from('profesionales')
-      .select('id, nombre, apellido, especialidad, rol, matricula, activo, porcentaje_honorarios')
+      .select('id, nombre, apellido, especialidad, rol, matricula, activo')
       .eq('activo', true)
       .order('apellido'));
   }

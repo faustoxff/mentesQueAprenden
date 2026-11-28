@@ -1,9 +1,7 @@
-const { supabaseAdmin } = require('../config/supabase');
 const { datosDe } = require('./errores');
 
-// Consultas a la tabla `pagos`. Las que reciben `db` usan el cliente con el token del
-// profesional (RLS aplica); las que terminan en `ComoAdmin` usan el cliente de servicio
-// y ven los datos de todos.
+// Consultas a la tabla `pagos`. Reciben `db`, el cliente con el token del profesional
+// (RLS aplica).
 class PagoRepository {
   async listar(db, { desde, hasta, profesionalId }) {
     let q = db
@@ -24,19 +22,6 @@ class PagoRepository {
 
   async crear(db, pago) {
     return datosDe(await db.from('pagos').insert(pago).select().single());
-  }
-
-  // Montos de todos los profesionales en el rango, para la liquidación del mes.
-  async listarMontosComoAdmin({ desde, hasta }) {
-    return datosDe(await supabaseAdmin
-      .from('pagos')
-      .select(`
-        profesional_id,
-        monto_total, monto_profesional, monto_espacio,
-        profesional:profesionales!profesional_id(nombre, apellido, especialidad)
-      `)
-      .gte('fecha_pago', desde)
-      .lt('fecha_pago', hasta));
   }
 }
 

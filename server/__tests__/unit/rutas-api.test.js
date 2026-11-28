@@ -29,7 +29,7 @@ jest.mock('../../src/config/supabase', () => {
 });
 
 const mockServicio = (metodos) => () => Object.fromEntries(metodos.map((m) => [m, jest.fn()]));
-jest.mock('../../src/services/PagoService', () => mockServicio(['listar', 'listarSesionesPendientes', 'crear', 'liquidacion'])());
+jest.mock('../../src/services/PagoService', () => mockServicio(['listar', 'listarSesionesPendientes', 'crear'])());
 jest.mock('../../src/services/TurnoService', () => mockServicio(['listar', 'crear', 'actualizar', 'cancelar'])());
 jest.mock('../../src/services/PacienteService', () => mockServicio(['listar', 'obtener', 'crear', 'actualizar', 'eliminar', 'listarSesiones', 'listarTurnos', 'listarDerivaciones', 'listarArchivos'])());
 jest.mock('../../src/services/DerivacionService', () => mockServicio(['crear', 'responder', 'completar', 'listar', 'listarPendientes'])());
@@ -116,39 +116,6 @@ describe('autenticación en las rutas protegidas', () => {
 // Roles
 // ─────────────────────────────────────────────────────────────
 describe('roles: admin vs profesional', () => {
-  test('CP-U06 un profesional en /pagos/liquidacion → 403 y no se calcula nada', async () => {
-    const res = await comoProf(request(app).get('/api/pagos/liquidacion?mes=2026-10'));
-
-    expect(res.status).toBe(403);
-    expect(pagoService.liquidacion).not.toHaveBeenCalled();
-  });
-
-  test('CP-U07 un admin en /pagos/liquidacion con mes válido → 200', async () => {
-    pagoService.liquidacion.mockResolvedValue({ mes: '2026-10', profesionales: [] });
-
-    const res = await comoAdmin(request(app).get('/api/pagos/liquidacion?mes=2026-10'));
-
-    expect(res.status).toBe(200);
-    expect(pagoService.liquidacion).toHaveBeenCalledWith('2026-10');
-  });
-
-  test('CP-U08 un admin en /pagos/liquidacion sin mes → 422', async () => {
-    const res = await comoAdmin(request(app).get('/api/pagos/liquidacion'));
-
-    expect(res.status).toBe(422);
-    expect(res.body.error).toMatch(/mes/);
-  });
-
-  // DEF-A10: el mes no se valida; "2026-13" o "octubre" llegan al service y terminan en 500.
-  test.failing.each(['2026-13', 'octubre', '2026-1'])('CP-U09 un admin en /pagos/liquidacion con mes mal formado (%s) → 422', async (mes) => {
-    pagoService.liquidacion.mockResolvedValue({});
-
-    const res = await comoAdmin(request(app).get(`/api/pagos/liquidacion?mes=${mes}`));
-
-    expect(res.status).toBe(422);
-    expect(pagoService.liquidacion).not.toHaveBeenCalled();
-  });
-
   test('CP-U10 un profesional no puede registrar profesionales (POST /auth/register → 403)', async () => {
     const res = await comoProf(request(app).post('/api/auth/register').send({
       email: 'x@y.com', password: '12345678', nombre: 'A', apellido: 'B', especialidad: 'otro', rol: 'admin'
