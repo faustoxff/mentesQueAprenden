@@ -142,12 +142,33 @@ describe('chat: loop de acciones', () => {
 
   test('CP-U177 si una acción falla, el error queda en tool_results y el chat sigue', async () => {
     jest.spyOn(clienteIA, 'crearCompletion').mockResolvedValueOnce(accion('ver_paciente', { paciente_id: 'x' })).mockResolvedValueOnce(respuesta('No lo encontré.'));
-    jest.spyOn(chatService, 'ejecutarTool').mockRejectedValue(new Error('Paciente no encontrado'));
+    jest.spyOn(chatService, 'ejecutarTool').mockRejectedValue(Object.assign(new Error('Paciente no encontrado'), { status: 404 }));
 
     const res = await chatService.chat({ messages: [{ role: 'user', content: 'ver x' }], profesional, db: crearDb().db });
 
     expect(res.tool_results).toEqual([{ name: 'ver_paciente', result: { error: 'Paciente no encontrado' } }]);
     expect(res.message).toBe('No lo encontré.');
+  });
+
+  test('CP-U407 un error técnico (sin status) no le muestra el detalle a un profesional, ni al modelo', async () => {
+    const crear = jest.spyOn(clienteIA, 'crearCompletion').mockResolvedValueOnce(accion('ver_agenda')).mockResolvedValueOnce(respuesta('Hubo un problema.'));
+    jest.spyOn(chatService, 'ejecutarTool').mockRejectedValue(new Error('column turnos.recordatorio_enviado does not exist'));
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await chatService.chat({ messages: [{ role: 'user', content: 'agenda' }], profesional, db: crearDb().db });
+
+    expect(res.tool_results).toEqual([{ name: 'ver_agenda', result: { error: chatService.MENSAJE_ERROR_INTERNO } }]);
+    expect(JSON.stringify(crear.mock.calls[1][0].messages)).not.toContain('recordatorio_enviado');
+  });
+
+  test('CP-U408 un admin sí ve el detalle técnico del error', async () => {
+    jest.spyOn(clienteIA, 'crearCompletion').mockResolvedValueOnce(accion('ver_agenda')).mockResolvedValueOnce(respuesta('Hubo un problema.'));
+    jest.spyOn(chatService, 'ejecutarTool').mockRejectedValue(new Error('column turnos.recordatorio_enviado does not exist'));
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+
+    const res = await chatService.chat({ messages: [{ role: 'user', content: 'agenda' }], profesional: { ...profesional, rol: 'admin' }, db: crearDb().db });
+
+    expect(res.tool_results[0].result.error).toContain('recordatorio_enviado');
   });
 
   test('CP-U178 un formulario corta el loop sin texto del modelo', async () => {
